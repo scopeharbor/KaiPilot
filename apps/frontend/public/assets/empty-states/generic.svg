@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 160" role="img" aria-labelledby="title desc">
+  <title id="title">Empty workspace illustration</title>
+  <desc id="desc">A calm product panel with structured placeholder rows.</desc>
+  <rect x="38" y="30" width="164" height="100" rx="14" fill="#F8FAFC" stroke="#CBD5E1"/>
+  <rect x="60" y="54" width="76" height="10" rx="5" fill="#3B6BEF"/>
+  <rect x="60" y="76" width="120" height="8" rx="4" fill="#CBD5E1"/>
+  <rect x="60" y="94" width="92" height="8" rx="4" fill="#E2E8F0"/>
+  <circle cx="176" cy="56" r="12" fill="#EDE9FE"/>
+  <circle cx="176" cy="56" r="5" fill="#7C3AED"/>
+</svg>

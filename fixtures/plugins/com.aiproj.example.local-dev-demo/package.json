@@ -1,0 +1,7 @@
+{
+  "name": "com.aiproj.example.local-dev-demo",
+  "version": "1.0.0",
+  "description": "Minimal first-party demo for local developer kit",
+  "private": true,
+  "license": "UNLICENSED"
+}

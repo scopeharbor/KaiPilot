@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0",
+  "profiles": [
+    {
+      "profileKey": "project_charter",
+      "name": "项目章程抽取",
+      "version": "1.0.0",
+      "description": "从已确认 OCR 文本中提取项目名称和目标日期",
+      "fields": [
+        { "key": "project_name", "label": "项目名称", "type": "string", "required": true },
+        { "key": "target_date", "label": "目标日期", "type": "date" }
+      ],
+      "entities": [
+        {
+          "key": "risk_links",
+          "label": "风险关联",
+          "entityType": "risk",
+          "matchFields": ["project_name"]
+        }
+      ],
+      "review": {
+        "groups": [
+          {
+            "key": "basics",
+            "label": "基本信息",
+            "component": "field-list",
+            "fieldKeys": ["project_name", "target_date"]
+          }
+        ]
+      }
+    }
+  ]
+}

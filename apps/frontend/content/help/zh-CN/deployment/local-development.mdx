@@ -1,0 +1,219 @@
+---
+id: deployment.local-development
+title: 本机开发环境搭建
+summary: 在本机用 pnpm dev 启动前后端全栈：安装依赖、初始化 SQLite、运行迁移与种子、用演示账号登录验证。
+contentType: how-to
+roles: [system_admin, org_admin, project_manager]
+permissions: []
+editions: [free, team, enterprise]
+productVersion: v3
+featureFlags: []
+owner: platform
+updatedAt: 2026-09-01
+reviewAfter: 2026-12-01
+related:
+  [
+    deployment.docker-compose,
+    admin.accounts-organizations-and-roles,
+    reference.permissions,
+    reference.limits-and-statuses,
+  ]
+screenshots: []
+keywords: [本地开发, pnpm, dev, sqlite, 迁移, 种子, 演示账号, windows, 端口]
+contentStatus: complete
+---
+
+# 本机开发环境搭建
+
+本机开发路径：`pnpm install` → 初始化数据库 → `pnpm dev`，一条命令并行启动前端（Next.js，端口 3000）与后端（AdonisJS，端口 3333）。数据库默认使用文件型 SQLite，**无需 Docker、PostgreSQL 或 Redis**（Redis 默认关闭，限流/缓存走单节点内存实现）。本路径与容器部署（[Docker Compose 部署](/help/articles/deployment.docker-compose)）并行、互不影响。
+
+## 适用范围
+
+| 维度     | 说明                                                                                                             |
+| -------- | ---------------------------------------------------------------------------------------------------------------- |
+| 适用角色 | `system_admin`、`org_admin`、`project_manager`（需要在本机运行或调试完整应用的任何角色均可，本文以运维视角组织） |
+| 适用套餐 | 全部套餐（`free` / `team` / `enterprise`）——本机开发与套餐无关                                                   |
+| 支持系统 | Windows（推荐 Git Bash）、macOS、Linux                                                                           |
+
+## 开始之前
+
+| 依赖    | 版本要求                    | 说明                                                                                                    |
+| ------- | --------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Node.js | `>= 26`（当前基线 26.10.0） | Windows 从 [nodejs.org](https://nodejs.org/) 下载 `.msi` 安装；macOS/Linux 使用官方版本管理或发行包安装 |
+| pnpm    | `12.8.1`                    | 由根 `package.json` 的 `packageManager` 字段锁定，见下方安装                                            |
+| Git     | 任意现代版本                | 克隆仓库                                                                                                |
+
+> ⚠️ **不需要** Docker、PostgreSQL、Redis 或任何其他外部服务。PostgreSQL / Redis 支持已加入代码库作为 **opt-in** 选项（见第 8/9 步），默认路径全程零外部依赖。
+
+## 操作步骤
+
+### 1. 安装 pnpm
+
+三种方式任选其一：
+
+```bash
+npm install -g corepack@0.36.0 # 方式 A（推荐）：Node 26 先安装固定 Corepack
+corepack enable
+corepack prepare pnpm@12.8.1 --activate
+pnpm --version                # 期望输出 12.8.1
+npm install -g pnpm@12.8.1    # 方式 B / 方式 C：npm 全局安装
+```
+
+> Node 26 不再内置 Corepack。方式 C 与方式 B 命令相同，仅适用场景不同：Corepack 安装或启用失败时，以管理员身份打开 PowerShell 执行 `npm install -g pnpm@12.8.1`。
+
+**Windows 注意**：推荐使用 **Git Bash** 运行后续命令；若 PowerShell 执行策略受限，可临时执行 `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`。若使用 `nvm`，根目录已配置 `.nvmrc = 26.10.0`，进入目录后执行 `nvm use` 即可切换。
+
+### 2. 克隆仓库并安装依赖
+
+```bash
+git clone <仓库地址> aiproj
+cd aiproj
+pnpm install
+```
+
+首次安装可能需要几分钟。安装成功时你会看到 `• dependencies: (x packages) ✓` 与 `• devDependencies: (y packages) ✓` 的完成输出。
+
+### 3. 首次初始化数据库（迁移 + 种子）
+
+首次启动后端前必须执行（必须在 `apps/backend` 目录下，否则提示 `node ace` 命令找不到）：
+
+```bash
+cd apps/backend
+node ace migration:run     # 基于 database/migrations/ 创建全部表结构
+node ace db:seed           # 填充默认组织、演示账号与演示项目
+cd ../..
+```
+
+- `migration:run` 输出每个迁移的执行时间；重复执行会输出 `Already up to date`。
+- `db:seed` 仅在 `development` 和 `test` 环境运行，**生产环境不会触发**。
+
+### 4. 并行启动前后端
+
+```bash
+pnpm dev
+```
+
+Turbo 会并行启动两个进程，你会在终端看到：
+
+| 进程 | 技术栈                               | 监听地址              |
+| ---- | ------------------------------------ | --------------------- |
+| 前端 | Next.js（`next dev`）                | http://localhost:3000 |
+| 后端 | AdonisJS（`node ace serve --watch`） | http://localhost:3333 |
+
+等待看到后端 `started` 信息后即可访问。按 workspace 单独启动：`pnpm --filter @aiproj/backend dev`（仅后端）或 `pnpm --filter @aiproj/frontend dev`（仅前端）。
+
+### 5. 验证服务健康
+
+```bash
+curl http://localhost:3333/api/v1/health/ready
+```
+
+期望：HTTP 200 且 `checks.database.status` 为 `up`。启动后首次调用可能短暂返回 503（迁移尚未完成），属正常预期，过几秒再试。另两个端点：`/api/v1/health`（综合健康，数据库不可达时返回 200 + `degraded`）与 `/api/v1/health/live`（存活探针，不探外部依赖，数据库不可达也返回 200）。
+
+### 6. 用演示账号登录验证
+
+浏览器打开 http://localhost:3000，用以下任一演示账号登录（`db:seed` 后创建，**仅限本机开发/测试环境**）：
+
+| 邮箱                      | 名称           | 角色                                          | 密码          |
+| ------------------------- | -------------- | --------------------------------------------- | ------------- |
+| `admin@aiproj.local`      | 测试管理员     | 组织管理员（owner，默认组织「我的默认组织」） | `password123` |
+| `superadmin@aiproj.local` | 系统管理员     | 超级管理员（跨组织全放行）                    | `password123` |
+| `org-admin@aiproj.local`  | 组织管理员示例 | 组织管理员（admin）                           | `password123` |
+| `org-member@aiproj.local` | 组织成员示例   | 组织成员（member）                            | `password123` |
+| `org-viewer@aiproj.local` | 组织访客示例   | 组织访客（viewer）                            | `password123` |
+
+登录后你会看到工作台，并带有一个种子演示项目「演示项目」（code DEMO，含示例任务、里程碑与风险数据），可直接用于体验各视图与 AI 能力。角色的详细权限见[权限参考](/help/articles/reference.permissions)。
+
+### 7. 停止开发服务
+
+在终端按 **Ctrl + C** 即可停止。若并行运行多个进程，可能需要分别停止。
+
+### 8. （可选）启用本机 PostgreSQL
+
+如果你已有本机 PostgreSQL 服务（版本 >= 14）并希望启用 PG 路径：
+
+1. 创建目标数据库：`createdb aiproj_dev`
+2. 在 `apps/backend/.env` 中设置 PG 参数：
+
+```ini
+DB_CONNECTION=pg
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=
+DB_DATABASE=aiproj_dev
+DB_SSL=false
+DB_POOL_MIN=2
+DB_POOL_MAX=10
+```
+
+3. 重新执行迁移与种子（PG 迁移与 SQLite 使用同一迁移目录）：`node ace migration:run` → `node ace db:seed`
+4. 验证连接类型：`curl http://localhost:3333/api/v1/health/ready | jq .checks.database.connection`，期望返回 `"PostgreSQL"`
+
+**回退 SQLite**：删除 `apps/backend/.env` 中的 `DB_CONNECTION=pg` 行（或设为 `sqlite`），重启后即回到默认路径，无需修改代码。排障：`ECONNREFUSED` = PG 未启动或连接参数错误；`role "postgres" does not exist` = 设置 `DB_USER` 为当前系统用户名；`database "aiproj_dev" does not exist` = 先执行 `createdb aiproj_dev`。
+
+### 9. （可选）启用本机 Redis
+
+Redis **默认关闭**。不设置 `REDIS_ENABLED` 时，后端以单节点内存模式运行，限流器与缓存均走内存实现，功能完整可用、无需任何外部 Redis。仅当你想共享限流状态（跨进程/跨重启）或启用缓存加速层时才启用：
+
+1. 确认本机 Redis 运行：`redis-cli ping` 应返回 `PONG`
+2. 在 `apps/backend/.env` 设置：`REDIS_ENABLED=true`、`REDIS_HOST=localhost`、`REDIS_PORT=6379`、`REDIS_DB=0`（可选 `REDIS_PASSWORD` / `REDIS_TLS`）
+3. 切换限流器到 Redis（可选）：`LIMITER_STORE=redis`
+
+> ⚠️ `LIMITER_STORE=redis` 但 `REDIS_ENABLED` 未开时，后端会在启动阶段**失败并报错**（禁止静默回退内存，以免限流的安全语义与实际不符）；要回退就把 `LIMITER_STORE` 改回 `memory`。启用但不可达时，后端仍可启动、能力回退内存，Redis 状态只影响 `/health` 报告的 `checks.redis`，**不拉低** `/api/v1/health/ready` 的就绪判定。
+
+### 10. 数据备份与重置
+
+- **数据库文件位置**：`apps/backend/database.sqlite`（已 gitignore，不会提交）。
+- **备份**：先停止后端（Ctrl+C），再复制：`cp apps/backend/database.sqlite apps/backend/database.sqlite.bak`。建议升级前与重置前都备份；先停后端再复制，避免 SQLite 文件锁导致备份不完整。
+- **重置（清空全部业务数据，仅限开发环境）**：先停止后端（Ctrl+C），再执行：
+
+```bash
+rm apps/backend/database.sqlite    # 删除数据库文件
+cd apps/backend && node ace migration:run && node ace db:seed && cd ../..   # 重建表结构并重新填充演示数据
+```
+
+## 验证结果
+
+- `pnpm dev` 启动后，前端 http://localhost:3000 与后端 http://localhost:3333 均可访问。
+- `curl http://localhost:3333/api/v1/health/ready` 返回 HTTP 200 且 `checks.database.status` 为 `up`（PG 启用时为 `"PostgreSQL"`）。
+- 用 `admin@aiproj.local / password123` 能登录，看到工作台与种子演示项目。
+- 本机路径与容器部署路径互不影响：同一仓库的 Docker Compose 启动不依赖本机 Node 环境，反之亦然。
+
+## 常见问题
+
+**启动/安装速查表：**
+
+| 症状                              | 原因                         | 修复                                                             |
+| --------------------------------- | ---------------------------- | ---------------------------------------------------------------- |
+| `command not found: pnpm`         | pnpm/Corepack 未安装         | 按第 1 步安装 Corepack 并启用，或用 npm 全局安装 pnpm            |
+| `ERR_PNPM_OUTDATED_LOCKFILE`      | lockfile 过期                | `pnpm install --frozen-lockfile` 或 `pnpm update`                |
+| `module not found: @aiproj/types` | workspace 依赖未链接         | 重新 `pnpm install`（Turborepo 会自动处理 workspace 链接）       |
+| `EACCES: permission denied`       | Linux/macOS 权限不足         | 不要用 `sudo pnpm`；用 nvm 管理 Node 或重装到用户目录            |
+| `node ace` 命令找不到             | 当前目录不在 `apps/backend/` | `cd apps/backend` 后重试                                         |
+| `pnpm install` 网络超时           | 默认源访问慢                 | `pnpm config set registry https://registry.npmmirror.com` 后重试 |
+
+**端口被占用：** 启动报 `EADDRINUSE: address already in use :3333`（或 `:3000`）时，先找占用进程：`lsof -i :3333`（或 Windows PowerShell `netstat -ano | Select-String :3333`），找到 PID 后 `kill -9 <PID>`（Windows `taskkill /F /PID <PID>`）；或改端口——后端在 `apps/backend/.env` 设置 `PORT=3334`，前端修改 `apps/frontend/.env`。
+
+**SQLite 被锁或只读：** 启动报 `SQLITE_BUSY` = 上一个后端进程未完全退出，先确保全部停止；`SQLITE_READONLY` = 文件权限不足，检查 `ls -la apps/backend/database.sqlite` 并 `chmod 644`。仍失败可备份后删除重建（见第 10 步）。
+
+**迁移失败：** 报 `SQLITE_ERROR: duplicate column name` 等时，通常是迁移已部分运行再冲突——重置数据库后重跑（第 10 步）；持续失败则检查 `apps/backend/database/migrations/` 文件名顺序（时间戳前缀）。
+
+**健康端点返回 `degraded`：** 执行 `ls -la apps/backend/database.sqlite` 确认文件存在；不存在则运行 `node ace migration:run`；权限 644/660 可读写；最后核对后端日志中的具体错误。
+
+**前端页面空白/404：** 确认前端在 3000 端口运行；打开浏览器控制台（F12 → Console）查看报错；API 返回 401 则先确认已登录（`/api/v1/auth/login` 正常）。
+
+## 安全与限制
+
+- **演示账号仅限本机**：`password123` 为弱密码、暴露在代码仓库中，**严禁**用于任何共享、演示或生产环境；系统不提供任何后门账号或绕过认证的方式。任何互联网可达的部署都必须立即更改（详见[Docker Compose 部署](/help/articles/deployment.docker-compose)）。
+- **生产必换密钥**：计划在本机以外运行时，必须把 `APP_KEY`（AdonisJS 应用级加密）、`JWT_ACCESS_SECRET`（JWT 签名）、`AI_CONNECTION_ENCRYPTION_KEY`（AI 连接加密存储）替换为随机值（`node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"` 生成），其中前两者在容器路径下由 `init-config` 自动生成。
+- **种子范围**：seeders 带 `static environment = ['development', 'test']` 标注，仅 dev/test 环境运行，不会在生产环境意外触发。
+- **默认路径零外部依赖**：SQLite + 内存限流；PG/Redis 均为 opt-in，且本机启用的 PG 不引入 Docker、K8s 或容器化 CI/CD。
+- **数据安全**：`database.sqlite` 是明文文件型数据库，按需备份与隔离，不要提交到版本库。
+
+## 下一步
+
+- [Docker Compose 部署](/help/articles/deployment.docker-compose)（单机/目标机容器化路径）
+- [账号、组织与角色](/help/articles/admin.accounts-organizations-and-roles)（演示账号与角色的关系）
+- [权限参考](/help/articles/reference.permissions)（六个规范角色权限矩阵）
+- [状态与限制](/help/articles/reference.limits-and-statuses)（免费套餐额度等产品限制）

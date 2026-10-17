@@ -1,0 +1,85 @@
+# =============================================================================
+# 开项 OpenXiang —— Docker 构建上下文排除清单（v3-docker-compose-runtime-foundation）
+#
+# 目标：构建上下文只携带复现镜像所需内容，绝不携带本机敏感/大体积产物。
+# 约定：排除后如需保留某个 example/config 文件，用 `!` 显式放行（见 env 段）。
+# =============================================================================
+
+# --- VCS 与协作元数据 ---
+.git
+.github
+.gitignore
+.gitattributes
+.editorconfig
+.agents
+.claude
+.codex
+.kimi
+.kimi-code
+.mimocode
+.opencode
+.impeccable
+.playwright-mcp
+.headroom
+.tokensave
+.codebase-memory
+.mcp.json
+
+# --- 环境变量：真实 env 一律不进构建上下文，仅保留 example 模板 ---
+**/.env
+**/.env.*
+!**/.env.example
+!.env.compose.example
+.env.compose
+
+# --- 宿主依赖与构建缓存（镜像内重新 frozen install，禁止复用宿主产物） ---
+**/node_modules
+**/.turbo
+**/.next
+**/tsconfig.tsbuildinfo
+apps/backend/build
+apps/backend/.adonisjs
+packages/sdk/dist
+
+# --- SQLite 数据库与本机测试库 ---
+**/*.sqlite
+**/*.sqlite3
+**/*.sqlite-journal
+**/*.sqlite.bak
+
+# --- 运行时资料：上传附件、报表导出、本机 secret（容器内由 named volume 承载） ---
+apps/backend/storage/uploads
+apps/backend/storage/secrets
+deploy/secrets
+
+# --- 日志 ---
+**/*.log
+
+# --- 测试与覆盖率产物 ---
+**/coverage
+**/test-results
+**/playwright-report
+apps/frontend/.nyc_output
+
+# --- 本机工具缓存与临时目录 ---
+.pnpm-store
+.uv-cache
+.uv-tools
+.tmp
+.tmp-*
+.writing-index.sqlite
+
+# --- 与镜像构建无关的仓库内容（文档/规范/进度/夹具/E2E/本机杂项） ---
+docs
+openspec
+progress
+fixtures
+packages/e2e
+baidu-wangpan-parse
+李计忠著作PDF
+# 仅排除仓库根的截图/导出杂项；apps/frontend/public 的静态资源照常进入构建上下文
+/*.png
+/*.html
+
+# --- 顶层脚本只在协作主机/目标机门禁中使用，镜像构建不需要 ---
+scripts

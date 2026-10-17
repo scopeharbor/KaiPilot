@@ -1,0 +1,189 @@
+{
+  "totals": {
+    "routeOperations": 153,
+    "openApiOperations": 153,
+    "registryEntries": 153,
+    "covered": 144,
+    "unsupported": 6,
+    "deferred": 3,
+    "excluded": 0
+  },
+  "sdkMissing": [],
+  "sdkExtra": [],
+  "testMissing": [],
+  "codeOnly": [],
+  "docOnly": [],
+  "inventoryStale": [],
+  "duplicateMappings": [],
+  "whitelist": [
+    {
+      "method": "GET",
+      "path": "/api/v1/dev/ai-m0/inputs"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/health"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/health/live"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/health/ready"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/dev/ai-m0/evaluation/plan"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/dev/ai-m0/generate/once"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/dev/ai-m0/generate/stream"
+    }
+  ],
+  "unsupported": [
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/:projectId/attachments",
+      "domain": "collaboration-reporting",
+      "operationId": "projectsAttachmentsStore",
+      "routeName": "projects.attachments.store",
+      "sdkExportPath": "AiprojClient.coverage.projectsAttachmentsStore",
+      "supportStatus": "unsupported-with-reason",
+      "fixtureTestId": "sdk-fixture:file-transfer-classification",
+      "owner": "sdk-file-transfer-owner",
+      "reason": "File transfer endpoint needs typed form-data/binary handling and is not routed through JSON transport in this pass.",
+      "openApiPath": "/api/v1/projects/{projectId}/attachments",
+      "key": "POST /api/v1/projects/{projectId}/attachments",
+      "exportName": "projectsAttachmentsStore"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/:projectId/files",
+      "domain": "collaboration-reporting",
+      "operationId": "projectsFilesStore",
+      "routeName": "projects.files.store",
+      "sdkExportPath": "AiprojClient.coverage.projectsFilesStore",
+      "supportStatus": "unsupported-with-reason",
+      "fixtureTestId": "sdk-fixture:file-transfer-classification",
+      "owner": "sdk-file-transfer-owner",
+      "reason": "File transfer endpoint needs typed form-data/binary handling and is not routed through JSON transport in this pass.",
+      "openApiPath": "/api/v1/projects/{projectId}/files",
+      "key": "POST /api/v1/projects/{projectId}/files",
+      "exportName": "projectsFilesStore"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/:projectId/files/:documentId/move",
+      "domain": "collaboration-reporting",
+      "operationId": "projectsFilesMove",
+      "routeName": "projects.files.move",
+      "sdkExportPath": "AiprojClient.coverage.projectsFilesMove",
+      "supportStatus": "unsupported-with-reason",
+      "fixtureTestId": "sdk-fixture:file-transfer-classification",
+      "owner": "sdk-file-transfer-owner",
+      "reason": "File transfer endpoint needs typed form-data/binary handling and is not routed through JSON transport in this pass.",
+      "openApiPath": "/api/v1/projects/{projectId}/files/{documentId}/move",
+      "key": "POST /api/v1/projects/{projectId}/files/{documentId}/move",
+      "exportName": "projectsFilesMove"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/:projectId/files/v2/batch/tag",
+      "domain": "collaboration-reporting",
+      "operationId": "projectsFilesV2BatchTag",
+      "routeName": "projects.files.v2.batch.tag",
+      "sdkExportPath": "AiprojClient.coverage.projectsFilesV2BatchTag",
+      "supportStatus": "unsupported-with-reason",
+      "fixtureTestId": "sdk-fixture:file-transfer-classification",
+      "owner": "sdk-file-transfer-owner",
+      "reason": "File transfer endpoint needs typed form-data/binary handling and is not routed through JSON transport in this pass.",
+      "openApiPath": "/api/v1/projects/{projectId}/files/v2/batch/tag",
+      "key": "POST /api/v1/projects/{projectId}/files/v2/batch/tag",
+      "exportName": "projectsFilesV2BatchTag"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/:projectId/files/v2/links",
+      "domain": "collaboration-reporting",
+      "operationId": "projectsFilesV2LinksStore",
+      "routeName": "projects.files.v2.links.store",
+      "sdkExportPath": "AiprojClient.coverage.projectsFilesV2LinksStore",
+      "supportStatus": "unsupported-with-reason",
+      "fixtureTestId": "sdk-fixture:file-transfer-classification",
+      "owner": "sdk-file-transfer-owner",
+      "reason": "File transfer endpoint needs typed form-data/binary handling and is not routed through JSON transport in this pass.",
+      "openApiPath": "/api/v1/projects/{projectId}/files/v2/links",
+      "key": "POST /api/v1/projects/{projectId}/files/v2/links",
+      "exportName": "projectsFilesV2LinksStore"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/:projectId/files/v2/tags",
+      "domain": "collaboration-reporting",
+      "operationId": "projectsFilesV2TagsStore",
+      "routeName": "projects.files.v2.tags.store",
+      "sdkExportPath": "AiprojClient.coverage.projectsFilesV2TagsStore",
+      "supportStatus": "unsupported-with-reason",
+      "fixtureTestId": "sdk-fixture:file-transfer-classification",
+      "owner": "sdk-file-transfer-owner",
+      "reason": "File transfer endpoint needs typed form-data/binary handling and is not routed through JSON transport in this pass.",
+      "openApiPath": "/api/v1/projects/{projectId}/files/v2/tags",
+      "key": "POST /api/v1/projects/{projectId}/files/v2/tags",
+      "exportName": "projectsFilesV2TagsStore"
+    }
+  ],
+  "deferred": [
+    {
+      "method": "GET",
+      "path": "/api/v1/ai/compiler/runs/:id/events",
+      "domain": "ai-compiler-integration",
+      "operationId": "compilerRunsEvents",
+      "routeName": "compiler.runs.events",
+      "sdkExportPath": "AiprojClient.coverage.compilerRunsEvents",
+      "supportStatus": "deferred-with-owner",
+      "fixtureTestId": "sdk-fixture:sse-classification",
+      "owner": "sdk-streaming-owner",
+      "reason": "SSE/streaming endpoint requires a typed streaming adapter; raw request is not counted as SDK coverage.",
+      "openApiPath": "/api/v1/ai/compiler/runs/{id}/events",
+      "key": "GET /api/v1/ai/compiler/runs/{id}/events",
+      "exportName": "compilerRunsEvents"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ai/project-drafts/:id/events",
+      "domain": "ai-compiler-integration",
+      "operationId": "aiDraftsEvents",
+      "routeName": "ai.drafts.events",
+      "sdkExportPath": "AiprojClient.coverage.aiDraftsEvents",
+      "supportStatus": "deferred-with-owner",
+      "fixtureTestId": "sdk-fixture:sse-classification",
+      "owner": "sdk-streaming-owner",
+      "reason": "SSE/streaming endpoint requires a typed streaming adapter; raw request is not counted as SDK coverage.",
+      "openApiPath": "/api/v1/ai/project-drafts/{id}/events",
+      "key": "GET /api/v1/ai/project-drafts/{id}/events",
+      "exportName": "aiDraftsEvents"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ai/project-drafts/stream",
+      "domain": "ai-compiler-integration",
+      "operationId": "aiDraftsStream",
+      "routeName": "ai.drafts.stream",
+      "sdkExportPath": "AiprojClient.coverage.aiDraftsStream",
+      "supportStatus": "deferred-with-owner",
+      "fixtureTestId": "sdk-fixture:sse-classification",
+      "owner": "sdk-streaming-owner",
+      "reason": "SSE/streaming endpoint requires a typed streaming adapter; raw request is not counted as SDK coverage.",
+      "openApiPath": "/api/v1/ai/project-drafts/stream",
+      "key": "POST /api/v1/ai/project-drafts/stream",
+      "exportName": "aiDraftsStream"
+    }
+  ],
+  "excluded": [],
+  "passed": true
+}

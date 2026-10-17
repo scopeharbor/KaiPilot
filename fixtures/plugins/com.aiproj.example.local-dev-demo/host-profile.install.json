@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "local-plugin-host-profile-v1",
+  "hostContractVersion": "1.0",
+  "catalogDigest": "a20e3f11",
+  "currentStatus": "not_installed",
+  "allowedScopeKinds": ["organization"],
+  "referenceTime": "2026-08-21T00:00:00.000Z"
+}

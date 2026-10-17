@@ -1,0 +1,6 @@
+{
+  "skillKey": "triz-advisor-core",
+  "skillVersion": "1.0.0",
+  "lifecycleRef": "active",
+  "description": "TRIZ 顾问核心 Skill 引用（宿主拥有 lifecycle）"
+}

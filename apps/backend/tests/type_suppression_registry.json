@@ -1,0 +1,1936 @@
+{
+  "_comment": "v3-backend-type-debt-closure 8.4：类型抑制棘轮登记。每文件登记当前 @ts-ignore/@ts-expect-error/as any 计数上限；测试要求不得超出、新增文件不得带抑制。削减抑制后请同步下调（重生成：node tests/.regen_suppression_registry.mjs）。",
+  "generatedAt": "2026-08-29",
+  "files": {
+    "app/controllers/bi_aggregation_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "app/controllers/bi_custom_report_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/controllers/bi_report_template_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 5
+    },
+    "app/controllers/bi_risk_heatmap_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/controllers/change_impact_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/controllers/codegen_candidate_run_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "app/controllers/compiler_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "app/controllers/compiler_skills_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 8
+    },
+    "app/controllers/copilot_memory_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/controllers/cross_project_allocation_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "app/controllers/evaluation_score_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/controllers/multi_project_dependencies_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "app/controllers/notifications_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/controllers/ocr_document_search_index_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "app/controllers/ocr_privacy_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/controllers/ocr_provider_observability_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "app/controllers/ocr_structured_extraction_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "app/controllers/okr_cascade_alignment_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 24
+    },
+    "app/controllers/okr_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 43
+    },
+    "app/controllers/okr_progress_backflow_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 8
+    },
+    "app/controllers/outgoing_webhook_templates_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/controllers/periodic_report_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "app/controllers/physical_contradiction_analyzer_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/controllers/plugin_permission_observation_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/controllers/plugin_runtime_health_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 5
+    },
+    "app/controllers/pmo_investment_distribution_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/controllers/portfolio_dashboard_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "app/controllers/portfolio_grouping_view_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "app/controllers/portfolio_traffic_light_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/controllers/project_predictions_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "app/controllers/project_recommendations_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 5
+    },
+    "app/controllers/quality_validation_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/controllers/renderer_configs_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/controllers/resource_demand_forecasting_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 18
+    },
+    "app/controllers/resource_skill_matrix_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/controllers/task_external_links_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/controllers/triz_contradiction_matrix_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "app/controllers/triz_ifr_visualization_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 6
+    },
+    "app/controllers/triz_pm_phase_integration_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "app/controllers/triz_skill_layer_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "app/controllers/triz_technical_contradiction_analyzer_controller.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/middleware/jwt_guard.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/models/comment.ts": {
+      "tsIgnore": 1,
+      "tsExpectError": 0,
+      "asAny": 0
+    },
+    "app/models/cross_project_allocation_draft.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/models/okr_cycle.ts": {
+      "tsIgnore": 1,
+      "tsExpectError": 0,
+      "asAny": 0
+    },
+    "app/models/okr_objective.ts": {
+      "tsIgnore": 1,
+      "tsExpectError": 0,
+      "asAny": 0
+    },
+    "app/policies/codegen_candidate_run_policy.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "app/policies/multi_project_dependency_policy.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "app/policies/observability_retention_policy.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/policies/ocr_batch_queue_policy.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 13
+    },
+    "app/policies/ocr_document_policy.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 7
+    },
+    "app/policies/ocr_document_search_index_policy.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/policies/ocr_entity_linking_policy.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/policies/ocr_permission_audit_policy.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/policies/ocr_privacy_policy.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/policies/ocr_structured_extraction_policy.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/policies/plugin_runtime_health_policy.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/policies/renderer_config_policy.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/policies/resource_gap_analysis_policy.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/services/ai_budget/budget_status_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/services/ai_m0/openai_adapter.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 5
+    },
+    "app/services/ai_m0/resolver.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 6
+    },
+    "app/services/ai_ocr/fake_pdf_normalizer_adapter.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/services/ai_ocr/ocr_budget_guard.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "app/services/ai_ocr/ocr_document_job_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/services/ai_ocr/ocr_entity_linking_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "app/services/ai_ocr/ocr_privacy_policy_resolver.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "app/services/ai_ocr/ocr_provider_attempt_recorder.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 7
+    },
+    "app/services/ai_ocr/ocr_provider_execution_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "app/services/ai_ocr/ocr_result_retention_policy_resolver.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "app/services/ai_ocr/ocr_result_retention_read_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 17
+    },
+    "app/services/ai_ocr/ocr_result_retention_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 16
+    },
+    "app/services/ai_ocr/ocr_structured_extraction_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "app/services/audit_log_query_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 5
+    },
+    "app/services/bi_aggregation/index.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/services/bi_custom_report/definition_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "app/services/bi_custom_report/definition_validator.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "app/services/bi_custom_report/preview_planner.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/services/bi_risk_heatmap_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 6
+    },
+    "app/services/candidates/candidate_confirm_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/services/candidates/candidate_event_handler.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/services/change_impact/ai_explanation_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 9
+    },
+    "app/services/change_impact/analysis_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 7
+    },
+    "app/services/change_impact/input_collector.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "app/services/change_impact/report_data_source.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "app/services/change_impact/ruleset.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 9
+    },
+    "app/services/change_request_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "app/services/compiler/budget_policy_resolver.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/services/compiler/compiler_realtime_publisher.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/services/compiler/compiler_run_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 6
+    },
+    "app/services/compiler/dev_debug_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/services/compiler/observability_summary_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "app/services/compiler/pipeline_executor.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "app/services/compiler/repair/repair_history_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/services/compiler/repair/repair_issue_classifier.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/services/compiler/repair/repair_planner.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/services/compiler/skills/builtin_seed_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 6
+    },
+    "app/services/compiler/skills/skill_eval_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 11
+    },
+    "app/services/compiler/skills/skill_knowledge_authoring_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 6
+    },
+    "app/services/compiler/skills/skill_registry_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 8
+    },
+    "app/services/compiler/validation/hard_suite/evaluator.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 5
+    },
+    "app/services/compiler/validation/hard_suite/hard_validation_suite.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/services/compiler_template_contribution_resolver.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "app/services/copilot/copilot_context_assembly_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "app/services/copilot/copilot_context_sanitizer.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/services/copilot_clarification/copilot_clarification_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "app/services/copilot_inbox/inbox_query_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "app/services/copilot_notification/badge_inapp_delivery.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "app/services/copilot_orchestration/copilot_agent_orchestration_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/services/copilot_routing_ledger/copilot_routing_ledger_aggregation.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/services/copilot_session/copilot_session_retention_policy_resolver.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "app/services/copilot_session/copilot_session_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/services/copilot_triggers/fatigue_control_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "app/services/copilot_turn/copilot_turn_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/services/copilot_turn/copilot_voice_asr_execution_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "app/services/copilot_usage/usage_surface_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "app/services/copilot_web_search/authorization_gate.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "app/services/cross_project_allocation_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 5
+    },
+    "app/services/database_schema_introspection.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "app/services/database_tenant_boundary.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 5
+    },
+    "app/services/draft_layer/decision_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "app/services/draft_layer/dry_run_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/services/draft_layer/handoff_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "app/services/draft_layer/preview_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "app/services/integrations/gitlab_readonly_client.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "app/services/integrations/integration_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 7
+    },
+    "app/services/multi_project_dependency_detection_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "app/services/multi_project_dependency_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 31
+    },
+    "app/services/multi_project_impact_analysis_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 7
+    },
+    "app/services/okr_cascade_alignment_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 10
+    },
+    "app/services/okr_progress_backflow_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 18
+    },
+    "app/services/okr_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 14
+    },
+    "app/services/organization_dashboard_layout_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 7
+    },
+    "app/services/pdm_migration/extractors/ai_draft_extractor.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 8
+    },
+    "app/services/pdm_migration/extractors/project_extractor.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 14
+    },
+    "app/services/pdm_migration/projectors/pdm_projector.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 8
+    },
+    "app/services/pdm_migration/validators/pg_compatibility_gate.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "app/services/plugin_permission_decision/strict_audit_append.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/services/plugin_runtime_health/health_circuit_probe.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "app/services/plugin_runtime_health/health_event_recorder.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 8
+    },
+    "app/services/plugin_runtime_health/health_query_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "app/services/plugin_security_gate/gate_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 9
+    },
+    "app/services/plugin_security_gate/resolvers.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 6
+    },
+    "app/services/plugin_server_hook_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "app/services/plugin_template_pack_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "app/services/pmo_investment_distribution_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/services/pmo_recommendation/pmo_ai_priority_recommendation_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "app/services/pmo_recommendation/traffic_light_adapter.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/services/portfolio_grouping_view_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "app/services/portfolio_traffic_light_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 12
+    },
+    "app/services/prediction/dashboard_adapter.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "app/services/prediction/prediction_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 6
+    },
+    "app/services/push_notification_bridge.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/services/resource_demand_forecasting_ai.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/services/resource_gap_analysis_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "app/services/resource_skill_matrix_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "app/services/streaming/domain_adapters.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "app/services/triz_compiler/triz_compiler_analysis_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/services/triz_compiler/triz_context_section.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/services/triz_contradiction/function_analysis_input_collector.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "app/services/triz_contradiction/input_collector.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 7
+    },
+    "app/services/triz_contradiction/physical_input_collector.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 9
+    },
+    "app/services/triz_contradiction/project_contradiction_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "app/services/triz_contradiction/technical_analysis_input_collector.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 8
+    },
+    "app/services/triz_decision/triz_decision_center_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 8
+    },
+    "app/services/triz_evolution_trend_analysis_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 23
+    },
+    "app/services/triz_evolution_trend_input_collector.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "app/services/triz_ifr/triz_ifr_visualization_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/services/triz_pm_phase_integration_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 6
+    },
+    "app/services/triz_resource_analysis_input_collector.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 8
+    },
+    "app/services/triz_resource_analyzer_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 20
+    },
+    "app/services/triz_skill_layer/triz_skill_layer_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "app/services/unified_ai_feedback/endpoint_adapter.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "app/services/webhooks/outgoing_webhook_stats_service.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "database/fixtures/okr_cascade_performance_fixture.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/copilot_context_assembly.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 20
+    },
+    "tests/functional/ai_draft/ai_draft_import.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/functional/ai_draft/ai_draft_models.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/functional/ai_draft/generation_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/functional/ai_m0_sandbox.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "tests/functional/ai_ocr_api.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/functional/api_v2_capabilities.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "tests/functional/audit/audit.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/functional/audit/audit_query.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 9
+    },
+    "tests/functional/builtin_seed_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/functional/change-requests/change_request_audit.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 8
+    },
+    "tests/functional/codegen_candidate_run_api.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 14
+    },
+    "tests/functional/compiler_cache_management.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "tests/functional/compiler_config_management.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 16
+    },
+    "tests/functional/compiler_skills_api.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 16
+    },
+    "tests/functional/copilot_first_party_tool_pack_e2e.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "tests/functional/copilot_plugin_tool_contract_e2e.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 6
+    },
+    "tests/functional/db_schema/_helpers.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 8
+    },
+    "tests/functional/db_schema/change_requests_v1.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 6
+    },
+    "tests/functional/db_schema/cross_project_allocation.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "tests/functional/db_schema/foreign_key_strategies.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 6
+    },
+    "tests/functional/db_schema/general_modules.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/functional/db_schema/knowledge_items.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/functional/db_schema/migration_compatibility.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 11
+    },
+    "tests/functional/db_schema/projects.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/functional/db_schema/projects_v3_facts.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "tests/functional/db_schema/triz_evolution_trend.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/functional/db_schema/triz_resource_analyzer.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/functional/db_schema/users_organizations.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/functional/files/document_markdown_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/functional/integrations/github_light_link_boundary.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/functional/integrations/integration_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/functional/integrations/outgoing_webhook_subscription_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "tests/functional/integrations/outgoing_webhooks_api.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "tests/functional/integrations/webhook_ingest.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 13
+    },
+    "tests/functional/multi_project_dependency_rollback.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 5
+    },
+    "tests/functional/notifications/notification_center_api.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/functional/ocr_retention_integration.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/functional/ocr_search_index_api.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "tests/functional/ocr_structured_extraction_api.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/functional/official_bi_report_pack_e2e.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 7
+    },
+    "tests/functional/okr_cascade_performance.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "tests/functional/okr_dashboard_api.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "tests/functional/plugin_install_api.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "tests/functional/plugin_skill_adapter_api.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 10
+    },
+    "tests/functional/pmo_investment_distribution_api.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/functional/projects/projects.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "tests/functional/projects/projects_v3_facts.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/functional/renderer_api.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/functional/report_periodic_api.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/functional/resource_demand_forecasting_audit.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/functional/resource_gap_analysis_api.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "tests/functional/resource_gap_analysis_audit.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/functional/resource_gap_analysis_e2e.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "tests/functional/resource_gap_analysis_performance.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/functional/resources/load_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "tests/functional/search/search_api.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/functional/skill_eval_api.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 12
+    },
+    "tests/functional/timeline/timeline_api.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/functional/triz_contradiction_matrix_integration.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/functional/triz_evolution_trend_api.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/functional/triz_evolution_trend_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "tests/functional/triz_physical_contradiction_api.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/functional/triz_resource_analyzer_api.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 6
+    },
+    "tests/functional/triz_resource_analyzer_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 8
+    },
+    "tests/functional/triz_technical_contradiction_api.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/unit/agent_assignment_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "tests/unit/ai-experiment/experiment_config.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/ai/_fakes.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 6
+    },
+    "tests/unit/ai/_helpers.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/ai_m0_evaluation.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/unit/ai_m0_recovery_and_judge.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/ai_security_event_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "tests/unit/badge_inapp_delivery.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/unit/bi_custom_report_registry.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/bi_report_template_registry.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/bi_risk_heatmap_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "tests/unit/compiler_execution_gap_benchmark.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/unit/compiler_generation_contract_manifest.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/unit/compiler_orchestrator_wiring.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 17
+    },
+    "tests/unit/compiler_realtime_mapper.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 8
+    },
+    "tests/unit/compiler_resume_replay_wiring.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 25
+    },
+    "tests/unit/compiler_security_diagnosis.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 9
+    },
+    "tests/unit/compiler_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 20
+    },
+    "tests/unit/compiler_stage_cache_wiring.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 9
+    },
+    "tests/unit/copilot/copilot_external_content_safety.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/copilot/copilot_skill_activation_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "tests/unit/copilot_agent_orchestration.spec.ts": {
+      "tsIgnore": 2,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "tests/unit/copilot_attachment.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 9
+    },
+    "tests/unit/copilot_clarification.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/unit/copilot_comment_agent.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 10
+    },
+    "tests/unit/copilot_mcp_tool_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 7
+    },
+    "tests/unit/copilot_memory.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/unit/copilot_memory_api.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/unit/copilot_proactive_triggers.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/copilot_session_retention.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "tests/unit/copilot_structured_output_analyzer.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/copilot_voice_authorization_gate.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 9
+    },
+    "tests/unit/copilot_voice_input_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 7
+    },
+    "tests/unit/copilot_web_search_authorization.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/custom_view_policy_permissions.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 31
+    },
+    "tests/unit/delivery_orchestrator.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/unit/diagram_policy_permissions.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "tests/unit/diagram_spec_generators.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 10
+    },
+    "tests/unit/diagram_spec_validator.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/unit/dialect_helper.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/unit/document_formula_extractor.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "tests/unit/document_intelligence_workbench_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 1,
+      "asAny": 0
+    },
+    "tests/unit/document_search_policy.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/document_search_schema.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/unit/dynamic-routing/compiler_routing_management.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 2,
+      "asAny": 0
+    },
+    "tests/unit/dynamic-routing/orchestrator_routing.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/unit/dynamic-routing/routing.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 6
+    },
+    "tests/unit/eval_gate_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 21
+    },
+    "tests/unit/github_audit_security.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 14
+    },
+    "tests/unit/github_token_cipher_security.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 13
+    },
+    "tests/unit/gitlab_provider_registry.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/health_diagnosis_ai_draft.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "tests/unit/health_diagnosis_dashboard_report.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/unit/health_diagnosis_perf.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/observability_privacy_redline.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 6
+    },
+    "tests/unit/observability_retention_policy.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/unit/ocr_document_search_adapter.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/unit/ocr_document_search_index_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "tests/unit/ocr_entity_linking_policy.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 18
+    },
+    "tests/unit/ocr_permission_audit_policy.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 9
+    },
+    "tests/unit/ocr_privacy_schema.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "tests/unit/ocr_provider_boundary.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/unit/ocr_search_index_schema.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "tests/unit/ocr_structured_extraction_policy.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 13
+    },
+    "tests/unit/official_bi_report_pack.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 6
+    },
+    "tests/unit/okr_backflow_audit.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "tests/unit/okr_backflow_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "tests/unit/okr_dashboard_backflow_reader.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "tests/unit/okr_dashboard_policy.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/okr_dashboard_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "tests/unit/okr_dashboard_telemetry.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/unit/okr_policy.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/okr_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 9
+    },
+    "tests/unit/openai_adapter_ocr.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/organization_dashboard_layout_model.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/unit/organization_dashboard_layout_policy.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 15
+    },
+    "tests/unit/organization_dashboard_layout_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 7
+    },
+    "tests/unit/organization_resource_pool_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/outgoing_webhook_boundary.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "tests/unit/pdm_migration.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/plugin_security_gate_orchestrator.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "tests/unit/plugin_security_gate_resolvers.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 8
+    },
+    "tests/unit/plugin_skill_injection.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 14
+    },
+    "tests/unit/pmo_grouping_view_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/pmo_investment_distribution_cache.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "tests/unit/pmo_investment_distribution_no_external_calls.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/pmo_investment_distribution_performance.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/pmo_investment_distribution_policy.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 6
+    },
+    "tests/unit/pmo_investment_distribution_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/pmo_priority_scoring_audit.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/portfolio_dashboard_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "tests/unit/portfolio_dashboard_validator.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/prediction_collector_ruleset.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "tests/unit/prediction_integration.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "tests/unit/prediction_model.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "tests/unit/prediction_performance.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/prediction_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/unit/pwa_web_push_validator.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "tests/unit/recommendation_model.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/unit/recommendation_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/unit/repair/repair_candidate_patch.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "tests/unit/repair/repair_executor_integration.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/report_policy_permissions.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 6
+    },
+    "tests/unit/resource_contention_detection.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/unit/resource_demand_forecasting_ai.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 14
+    },
+    "tests/unit/resource_demand_forecasting_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/resource_demand_forecasting_validator.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/unit/risk_suggestion_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/skill_eval_service.spec.ts": {
+      "tsIgnore": 4,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/unit/task_external_link_model.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "tests/unit/tenant_api_boundary_middleware.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/traceability.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 7
+    },
+    "tests/unit/transport-health/ai_draft_observer.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/transport-health/compiler_observer.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/transport-health/metrics_port.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "tests/unit/triz_assistant_model.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/triz_clarification/triz_clarification_integration.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/triz_clarification/triz_clarification_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 6
+    },
+    "tests/unit/triz_compiler/triz_ai_draft_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "tests/unit/triz_compiler/triz_analysis_integration.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 11
+    },
+    "tests/unit/triz_compiler/triz_analysis_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 13
+    },
+    "tests/unit/triz_contradiction_matrix_handoff.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "tests/unit/triz_decision_center/triz_decision_center_actions.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/triz_decision_center/triz_decision_center_api.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/triz_decision_center/triz_decision_center_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/triz_decision_log/triz_decision_log_integration.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "tests/unit/triz_decision_log/triz_decision_log_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    },
+    "tests/unit/triz_innovation_narrative_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "tests/unit/triz_physical_contradiction_collector.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "tests/unit/triz_physical_contradiction_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/unit/triz_rationale/triz_rationale_api.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 42
+    },
+    "tests/unit/triz_rationale/triz_rationale_feedback.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 9
+    },
+    "tests/unit/triz_rationale/triz_rationale_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 17
+    },
+    "tests/unit/triz_skill_layer/triz_skill_layer_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "tests/unit/triz_technical_contradiction_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 6
+    },
+    "tests/unit/type_suppression_regression.spec.ts": {
+      "tsIgnore": 5,
+      "tsExpectError": 5,
+      "asAny": 5
+    },
+    "tests/unit/unified_ai_feedback_aggregation.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/unit/unified_ai_feedback_projection.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 4
+    },
+    "tests/unit/unified_ai_feedback_recorder.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 1,
+      "asAny": 0
+    },
+    "tests/unit/unified_ai_invocation_ledger_bridge.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "tests/unit/unified_ai_invocation_ledger_schema.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "tests/unit/usage_surface_performance.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "tests/unit/usage_surface_service.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 3
+    },
+    "tests/unit/validation/deepseek_wrapper.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 2
+    },
+    "tests/unit/validation/evidence_writer.spec.ts": {
+      "tsIgnore": 0,
+      "tsExpectError": 0,
+      "asAny": 1
+    }
+  }
+}

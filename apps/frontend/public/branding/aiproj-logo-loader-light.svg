@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="加载中">
+  <!-- 开项 OpenXiang 载入动画 —— 亮色模式 -->
+  <!-- 动画语义：「开引号」一笔画出 = 一句话开始；朱砂方块弹出 = 项目被开启；随后淡出、循环。
+       已内置 prefers-reduced-motion 降级：用户关闭动效时静止显示 logo 本身。 -->
+  <style>
+    .corner { stroke-dasharray: 240; animation: ox-draw 2.2s cubic-bezier(.65,0,.35,1) infinite; }
+    .item { transform-origin: 154px 154px; transform-box: view-box; animation: ox-pop 2.2s cubic-bezier(.34,1.56,.64,1) infinite; }
+    @keyframes ox-draw {
+      0%   { stroke-dashoffset: 240; opacity: 1; }
+      40%  { stroke-dashoffset: 0;   opacity: 1; }
+      85%  { stroke-dashoffset: 0;   opacity: 1; }
+      100% { stroke-dashoffset: 0;   opacity: 0; }
+    }
+    @keyframes ox-pop {
+      0%, 35% { transform: scale(0); opacity: 0; }
+      55%     { transform: scale(1); opacity: 1; }
+      85%     { transform: scale(1); opacity: 1; }
+      100%    { transform: scale(1); opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .corner, .item { animation: none; stroke-dashoffset: 0; opacity: 1; transform: none; }
+    }
+  </style>
+  <path class="corner" d="M 70 190 V 70 H 190" fill="none" stroke="#4338CA" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect class="item" x="112" y="112" width="84" height="84" rx="20" fill="#F04E30"/>
+</svg>

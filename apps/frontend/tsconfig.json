@@ -1,0 +1,32 @@
+{
+  "extends": "@aiproj/config/tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "ES2022"],
+    "jsx": "preserve",
+    "incremental": true,
+    "noEmit": true,
+    "paths": {
+      "@/*": ["./*"]
+    },
+    "allowJs": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "include": [
+    "next-env.d.ts",
+    "app/**/*",
+    "lib/**/*",
+    "stores/**/*",
+    "components/**/*",
+    "hooks/**/*",
+    "__tests__/**/*",
+    ".next/types/**/*.ts",
+    ".next-build/types/**/*.ts",
+    ".next-personal-org/types/**/*.ts",
+    ".next-personal-org-prod/types/**/*.ts"
+  ],
+  "exclude": ["node_modules", ".next", "out"]
+}

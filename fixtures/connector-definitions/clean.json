@@ -1,0 +1,256 @@
+{
+  "definitions": [
+    {
+      "definitionSchemaVersion": "1.0",
+      "identity": {
+        "connectorKey": "demo.connector",
+        "displayName": "Demo Connector",
+        "version": "1.0.0",
+        "providerKey": "demo",
+        "category": "other",
+        "provenance": {
+          "sourceRef": "local:fixture",
+          "kind": "local"
+        }
+      },
+      "compatibility": {
+        "hostContractVersion": "1.0.0"
+      },
+      "auth": {
+        "kind": "none"
+      },
+      "schemas": [
+        {
+          "schemaKey": "demo.input",
+          "fields": [
+            {
+              "fieldKey": "title",
+              "type": "string",
+              "required": true,
+              "description": "标题"
+            },
+            {
+              "fieldKey": "count",
+              "type": "integer",
+              "required": false,
+              "description": "数量"
+            }
+          ]
+        },
+        {
+          "schemaKey": "demo.output",
+          "fields": [
+            {
+              "fieldKey": "id",
+              "type": "string",
+              "required": true
+            }
+          ]
+        }
+      ],
+      "operations": [
+        {
+          "operationKey": "demo.query",
+          "kind": "query",
+          "title": "查询示例",
+          "description": "只读查询",
+          "inputSchemaRef": "demo.input",
+          "outputSchemaRef": "demo.output",
+          "hostCapabilityRef": "server-query",
+          "permissionRefs": ["demo.read"],
+          "scopeKind": "organization",
+          "sideEffect": "read-only",
+          "confirmation": "not-required",
+          "idempotency": "idempotent",
+          "networkPolicy": "none"
+        }
+      ],
+      "protocolHints": {
+        "pagination": {
+          "mode": "cursor",
+          "cursorField": "id",
+          "maxPageSize": 100
+        },
+        "rateLimit": {
+          "maxRequestsPerWindow": 100,
+          "windowSeconds": 60,
+          "scope": "per-connector"
+        },
+        "retry": {
+          "retryPolicy": "none",
+          "maxAttempts": 0
+        },
+        "errorTaxonomy": {
+          "categories": ["provider", "validation"],
+          "retryableCategories": ["provider"]
+        }
+      },
+      "extensions": {
+        "icon": "demo-icon",
+        "documentationRef": "docs/demo.md",
+        "tags": ["demo", "fixture"]
+      }
+    },
+    {
+      "definitionSchemaVersion": "1.0",
+      "identity": {
+        "connectorKey": "acme.full-connector",
+        "displayName": "Acme Full Connector",
+        "description": "完整连接器示例，覆盖触发器与动作",
+        "version": "2.1.0",
+        "providerKey": "acme",
+        "category": "automation",
+        "provenance": {
+          "sourceRef": "repo:github.com/acme/connector@abc123",
+          "kind": "curated"
+        }
+      },
+      "compatibility": {
+        "hostContractVersion": "1.0.0"
+      },
+      "auth": {
+        "kind": "oauth2",
+        "hostCapabilityRef": "auth.oauth2",
+        "profileRef": "auth.profile.acme",
+        "scopeKeys": ["read:work", "write:work"],
+        "credentialHandleFields": [
+          {
+            "fieldKey": "accessTokenHandle",
+            "displayName": "Access Token Handle",
+            "required": true
+          }
+        ]
+      },
+      "schemas": [
+        {
+          "schemaKey": "acme.issueInput",
+          "title": "Issue Input",
+          "description": "创建任务的输入",
+          "fields": [
+            {
+              "fieldKey": "projectKey",
+              "type": "string",
+              "required": true
+            },
+            {
+              "fieldKey": "summary",
+              "type": "string",
+              "required": true,
+              "description": "摘要"
+            },
+            {
+              "fieldKey": "meta",
+              "type": "object",
+              "required": false,
+              "fields": [
+                {
+                  "fieldKey": "priority",
+                  "type": "string",
+                  "enumValues": ["low", "medium", "high"]
+                },
+                {
+                  "fieldKey": "labels",
+                  "type": "array",
+                  "itemType": "string"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "schemaKey": "acme.issueOutput",
+          "fields": [
+            {
+              "fieldKey": "issueId",
+              "type": "string",
+              "required": true
+            },
+            {
+              "fieldKey": "url",
+              "type": "string",
+              "required": false
+            }
+          ]
+        },
+        {
+          "schemaKey": "acme.triggerOutput",
+          "fields": [
+            {
+              "fieldKey": "eventId",
+              "type": "string",
+              "required": true
+            }
+          ]
+        }
+      ],
+      "operations": [
+        {
+          "operationKey": "acme.onIssueCreated",
+          "kind": "trigger",
+          "title": "任务创建触发器",
+          "description": "当外部任务创建时触发",
+          "outputSchemaRef": "acme.triggerOutput",
+          "hostCapabilityRef": "trigger.webhook",
+          "permissionRefs": ["acme.trigger"],
+          "scopeKind": "project",
+          "sideEffect": "read-only",
+          "confirmation": "not-required",
+          "idempotency": "idempotent",
+          "networkPolicy": "host-brokered"
+        },
+        {
+          "operationKey": "acme.queryIssues",
+          "kind": "query",
+          "title": "查询任务",
+          "inputSchemaRef": "acme.issueInput",
+          "outputSchemaRef": "acme.issueOutput",
+          "hostCapabilityRef": "server-query",
+          "permissionRefs": ["acme.read"],
+          "scopeKind": "organization",
+          "sideEffect": "read-only",
+          "confirmation": "not-required",
+          "idempotency": "idempotent"
+        },
+        {
+          "operationKey": "acme.createIssue",
+          "kind": "action",
+          "title": "创建任务",
+          "description": "提案式创建，需人工确认",
+          "inputSchemaRef": "acme.issueInput",
+          "outputSchemaRef": "acme.issueOutput",
+          "hostCapabilityRef": "server-command-proposal",
+          "permissionRefs": ["acme.write"],
+          "scopeKind": "project",
+          "sideEffect": "proposal",
+          "confirmation": "explicit",
+          "idempotency": "non-idempotent",
+          "networkPolicy": "host-brokered"
+        }
+      ],
+      "protocolHints": {
+        "pagination": {
+          "mode": "cursor",
+          "cursorField": "issueId",
+          "maxPageSize": 50
+        },
+        "rateLimit": {
+          "maxRequestsPerWindow": 60,
+          "windowSeconds": 60
+        },
+        "retry": {
+          "retryPolicy": "exponential",
+          "maxAttempts": 3,
+          "initialDelayMs": 1000
+        },
+        "errorTaxonomy": {
+          "categories": ["provider", "auth", "rate-limit", "validation", "timeout", "unavailable"]
+        }
+      },
+      "extensions": {
+        "icon": "acme-icon",
+        "documentationRef": "docs/acme-connector.md",
+        "tags": ["acme", "automation"]
+      }
+    }
+  ]
+}

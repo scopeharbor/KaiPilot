@@ -1,0 +1,225 @@
+# =============================================================================
+# 开项 OpenXiang —— SQLite 兼容完整栈（Redis + 文件型 SQLite）
+# （v3-docker-compose-runtime-foundation, design D1/D5/D7）
+#
+# 入口（与默认 PG 栈二选一）：
+#   docker compose -f compose.sqlite.yaml up -d --build
+#
+# 与默认栈共用：backend/frontend 镜像、edge 配置、runtime-secret 契约、
+# Lucid migrations、Redis 与健康检查。差异仅限：
+#   - 不启动、不依赖 PostgreSQL（零 PG service/dependency/host）
+#   - DB_CONNECTION=sqlite，数据库文件在 sqlite-data volume 的 /app/data/database.sqlite
+#   - init-config 不生成 PG password
+# 与默认栈的数据库 volume 严格分离（pgdata vs sqlite-data 不同键，不会误共享）。
+# =============================================================================
+
+services:
+  # --- 一次性：runtime-secret 初始化（不生成 PG password） ---
+  init-config:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    image: aiproj-backend:local
+    user: '0:0'
+    command: ['init-config']
+    environment:
+      AIPROJ_INIT_POSTGRES: 'false'
+      AIPROJ_APP_KEY: ${AIPROJ_APP_KEY:-}
+      AIPROJ_JWT_ACCESS_SECRET: ${AIPROJ_JWT_ACCESS_SECRET:-}
+    volumes:
+      - runtime-secrets:/run/aiproj-secrets
+      - sqlite-data:/app/data
+      - storage:/app/storage
+    networks:
+      - aiproj
+    restart: 'no'
+
+  # --- 单节点 Redis（与默认栈同一契约） ---
+  redis:
+    image: redis:8.10-alpine
+    command: ['redis-server', '--appendonly', 'yes', '--appendfsync', 'everysec']
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 3s
+    networks:
+      - aiproj
+    restart: unless-stopped
+
+  # --- 一次性：Lucid migrations（同一套迁移目录，SQLite 方言） ---
+  migrate:
+    image: aiproj-backend:local
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    user: '10001:10001'
+    command: ['migrate']
+    environment:
+      TZ: UTC
+      NODE_ENV: production
+      LOG_LEVEL: info
+      PORT: '3333'
+      HOST: 0.0.0.0
+      APP_URL: ${AIPROJ_PUBLIC_ORIGIN:-http://localhost}
+      FRONTEND_URL: ${AIPROJ_PUBLIC_ORIGIN:-http://localhost}
+      SESSION_DRIVER: cookie
+      DB_CONNECTION: sqlite
+      # 绝对路径固定指向 sqlite-data volume；backend 与 migrate 必须一致
+      DB_DATABASE: /app/data/database.sqlite
+      JWT_ACCESS_TTL: 15m
+      JWT_REFRESH_TTL: 8h
+      LIMITER_STORE: redis
+      REDIS_ENABLED: 'true'
+      REDIS_HOST: redis
+      REDIS_PORT: '6379'
+      REDIS_DB: ${AIPROJ_REDIS_DB:-0}
+      UPLOAD_ROOT: /app/storage/uploads
+      AIPROJ_APP_KEY: ${AIPROJ_APP_KEY:-}
+      AIPROJ_JWT_ACCESS_SECRET: ${AIPROJ_JWT_ACCESS_SECRET:-}
+    volumes:
+      - runtime-secrets:/run/aiproj-secrets:ro
+      - sqlite-data:/app/data
+      - storage:/app/storage
+    networks:
+      - aiproj
+    restart: 'no'
+    depends_on:
+      init-config:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
+  # --- 后端 API + Socket.IO ---
+  backend:
+    image: aiproj-backend:local
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    user: '10001:10001'
+    command: ['serve']
+    environment:
+      TZ: UTC
+      NODE_ENV: production
+      LOG_LEVEL: info
+      PORT: '3333'
+      HOST: 0.0.0.0
+      APP_URL: ${AIPROJ_PUBLIC_ORIGIN:-http://localhost}
+      FRONTEND_URL: ${AIPROJ_PUBLIC_ORIGIN:-http://localhost}
+      SESSION_DRIVER: cookie
+      DB_CONNECTION: sqlite
+      DB_DATABASE: /app/data/database.sqlite
+      JWT_ACCESS_TTL: 15m
+      JWT_REFRESH_TTL: 8h
+      LIMITER_STORE: redis
+      REDIS_ENABLED: 'true'
+      REDIS_HOST: redis
+      REDIS_PORT: '6379'
+      REDIS_DB: ${AIPROJ_REDIS_DB:-0}
+      UPLOAD_ROOT: /app/storage/uploads
+      AI_DSH_IDENTITY_PATH: /app/storage/secrets/dsh-anonymous-user-id
+      # 慢推理模型可能在首个答案 token 前保持静默；Docker 默认值与本机代码一致。
+      AI_M0_REQUEST_TIMEOUT_MS: ${AI_M0_REQUEST_TIMEOUT_MS:-3000000}
+      AI_ADAPTIVE_CLARIFICATION_ATTEMPT_TIMEOUT_MS: ${AI_ADAPTIVE_CLARIFICATION_ATTEMPT_TIMEOUT_MS:-1200000}
+      AI_ADAPTIVE_CLARIFICATION_ROUND_TIMEOUT_MS: ${AI_ADAPTIVE_CLARIFICATION_ROUND_TIMEOUT_MS:-1500000}
+      AI_DRAFT_TIME_BUDGET_SCALE: ${AI_DRAFT_TIME_BUDGET_SCALE:-5}
+      AI_DRAFT_OUTPUT_BUDGET_SCALE: ${AI_DRAFT_OUTPUT_BUDGET_SCALE:-5}
+      # 矛盾求解（TRIZ）真实模型开关：未传入时容器内看不到该变量；显式写出便于在 .env.compose 关闭
+      AIPROJ_TRIZ_ENABLE_REAL_AI: ${AIPROJ_TRIZ_ENABLE_REAL_AI:-true}
+      # Google 登录（可选）：设置 AIPROJ_GOOGLE_OAUTH_SECRET_FILE 后才启用（见 .env.compose.example）；
+      # 没有设置时只挂占位文件、不传 JSON 路径，登录页的 Google 按钮显示「未配置」。
+      GOOGLE_OAUTH_CLIENT_JSON_PATH: ${AIPROJ_GOOGLE_OAUTH_SECRET_FILE:+/run/secrets/google-oauth-client.json}
+      GOOGLE_OAUTH_REDIRECT_URI: ${AIPROJ_GOOGLE_OAUTH_ORIGIN:-http://localhost}/api/v1/auth/google/callback
+      GOOGLE_AUTH_SUCCESS_REDIRECT_URL: ${AIPROJ_GOOGLE_OAUTH_ORIGIN:-http://localhost}/auth/google/callback
+      GOOGLE_AUTH_FAILURE_REDIRECT_URL: ${AIPROJ_GOOGLE_OAUTH_ORIGIN:-http://localhost}/login
+      AIPROJ_APP_KEY: ${AIPROJ_APP_KEY:-}
+      AIPROJ_JWT_ACCESS_SECRET: ${AIPROJ_JWT_ACCESS_SECRET:-}
+    volumes:
+      - runtime-secrets:/run/aiproj-secrets:ro
+      - sqlite-data:/app/data
+      - storage:/app/storage
+    secrets:
+      - source: google-oauth-client
+        target: google-oauth-client.json
+    healthcheck:
+      test: ['CMD', 'node', '/app/docker/healthcheck.mjs']
+      interval: 10s
+      timeout: 6s
+      retries: 12
+      start_period: 20s
+    networks:
+      - aiproj
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
+  # --- 前端 standalone ---
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+      args:
+        # 新 UI 组织级灰度门控（构建期内联，改值需 --build）；见 .env.compose.example
+        NEXT_PUBLIC_FF_NEXT_UI: ${AIPROJ_FF_NEXT_UI:-true}
+        NEXT_PUBLIC_FF_NEXT_UI_ORGS: ${AIPROJ_FF_NEXT_UI_ORGS:-}
+        # 「源代码」链接地址（AGPL 第 13 条，构建期内联）；留空不显示
+        NEXT_PUBLIC_AIPROJ_SOURCE_URL: ${AIPROJ_SOURCE_URL:-https://github.com/scopeharbor/OpenXiang}
+    image: aiproj-frontend:local
+    healthcheck:
+      test: ['CMD', 'node', '/app/docker/healthcheck.mjs']
+      interval: 10s
+      timeout: 6s
+      retries: 12
+      start_period: 15s
+    networks:
+      - aiproj
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  # --- 同源 edge ---
+  edge:
+    image: nginxinc/nginx-unprivileged:1.31-alpine
+    ports:
+      - '${AIPROJ_BIND_ADDRESS:-0.0.0.0}:${AIPROJ_HTTP_PORT:-80}:8080'
+    volumes:
+      - ./edge/default.conf:/etc/nginx/conf.d/default.conf:ro
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'wget -qO- http://127.0.0.1:8080/api/v1/health/live >/dev/null 2>&1 && wget -qO- http://127.0.0.1:8080/ >/dev/null 2>&1',
+        ]
+      interval: 10s
+      timeout: 6s
+      retries: 12
+      start_period: 10s
+    networks:
+      - aiproj
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+
+volumes:
+  runtime-secrets:
+  sqlite-data:
+  redis-data:
+  storage:
+
+secrets:
+  google-oauth-client:
+    file: ${AIPROJ_GOOGLE_OAUTH_SECRET_FILE:-./fixtures/google-oauth/unconfigured.json}
+
+networks:
+  aiproj:
+    driver: bridge

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- 开项 OpenXiang Logo Mark —— 暗色模式（定稿：方案 C1「开角」） -->
+  <path d="M 70 190 V 70 H 190" fill="none" stroke="#818CF8" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="112" y="112" width="84" height="84" rx="20" fill="#FF6B4A"/>
+</svg>

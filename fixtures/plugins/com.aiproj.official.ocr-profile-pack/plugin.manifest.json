@@ -1,0 +1,38 @@
+{
+  "manifestSchemaVersion": "1.0",
+  "identity": {
+    "pluginId": "com.aiproj.official.ocr-profile-pack",
+    "name": "Aiproj Official OCR Profile Pack",
+    "version": "1.0.0",
+    "publisher": "aiproj-official",
+    "description": "Declarative OCR extraction and review profiles; zero provider authority"
+  },
+  "provenance": {
+    "distribution": "first-party",
+    "sourceRef": "repo:fixtures/plugins/com.aiproj.official.ocr-profile-pack"
+  },
+  "compatibility": {
+    "hostContractVersion": "1.0",
+    "requiredSeams": [{ "seamKey": "ocr-profile.content-bundle", "seamVersion": "1.0.0" }]
+  },
+  "contributions": [
+    {
+      "contributionKey": "official-ocr-profiles",
+      "seamKey": "ocr-profile.content-bundle",
+      "seamVersion": "1.0.0",
+      "entrypoint": { "kind": "json", "path": "ocr-profiles.json" },
+      "permissionRefs": ["com.aiproj.ocr.profile.view"]
+    }
+  ],
+  "permissions": [
+    {
+      "permissionKey": "com.aiproj.ocr.profile.view",
+      "seamKey": "ocr-profile.content-bundle",
+      "scopeKind": "organization",
+      "sideEffect": "read-only",
+      "confirmation": "not-required",
+      "network": "none",
+      "purpose": "Read declarative OCR profiles"
+    }
+  ]
+}

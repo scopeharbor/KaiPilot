@@ -1,0 +1,178 @@
+# 开项 OpenXiang —— Supabase PostgreSQL 栈（生产目标机默认）
+# 目标机只需 Docker，无需 pnpm：
+#   docker compose -f compose.supabase.yaml up -d --build --remove-orphans
+# 数据库连接不再靠宿主机插值：apps/backend/.env 只读挂载进 migrate/backend，
+# 由容器入口的 select-database.mjs 按 direct → session pooler 探测后注入 DB_*（fail closed）。
+# 此栈不建立 postgres service/pgdata；Redis 仍作为限流与缓存服务保留。
+
+x-supabase-env: &supabase-env
+  TZ: UTC
+  NODE_ENV: production
+  LOG_LEVEL: info
+  PORT: '3333'
+  HOST: 0.0.0.0
+  APP_URL: ${AIPROJ_PUBLIC_ORIGIN:-http://localhost}
+  FRONTEND_URL: ${AIPROJ_PUBLIC_ORIGIN:-http://localhost}
+  SESSION_DRIVER: cookie
+  DB_CONNECTION: pg
+  AIPROJ_DB_SELECT: supabase
+  AIPROJ_DB_ENV_FILE: /run/aiproj-db/.env
+  DB_POOL_MIN: ${DB_POOL_MIN:-0}
+  DB_POOL_MAX: ${DB_POOL_MAX:-3}
+  JWT_ACCESS_TTL: 15m
+  JWT_REFRESH_TTL: 8h
+  LIMITER_STORE: redis
+  REDIS_ENABLED: 'true'
+  REDIS_HOST: redis
+  REDIS_PORT: '6379'
+  REDIS_DB: ${AIPROJ_REDIS_DB:-0}
+
+services:
+  init-config:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    image: aiproj-backend:local
+    user: '0:0'
+    command: ['init-config']
+    environment:
+      AIPROJ_INIT_POSTGRES: 'false'
+      AIPROJ_APP_KEY: ${AIPROJ_APP_KEY:-}
+      AIPROJ_JWT_ACCESS_SECRET: ${AIPROJ_JWT_ACCESS_SECRET:-}
+    volumes:
+      - runtime-secrets:/run/aiproj-secrets
+      - storage:/app/storage
+    networks: [aiproj]
+    restart: 'no'
+
+  redis:
+    image: redis:8.10-alpine
+    command: ['redis-server', '--appendonly', 'yes', '--appendfsync', 'everysec']
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 3s
+    networks: [aiproj]
+    restart: unless-stopped
+
+  migrate:
+    image: aiproj-backend:local
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    user: '10001:10001'
+    command: ['migrate']
+    environment:
+      <<: *supabase-env
+      AIPROJ_APP_KEY: ${AIPROJ_APP_KEY:-}
+      AIPROJ_JWT_ACCESS_SECRET: ${AIPROJ_JWT_ACCESS_SECRET:-}
+    volumes:
+      - runtime-secrets:/run/aiproj-secrets:ro
+      - ./apps/backend/.env:/run/aiproj-db/.env:ro
+    networks: [aiproj]
+    restart: 'no'
+    depends_on:
+      init-config:
+        condition: service_completed_successfully
+
+  backend:
+    image: aiproj-backend:local
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    user: '10001:10001'
+    command: ['serve']
+    environment:
+      <<: *supabase-env
+      UPLOAD_ROOT: /app/storage/uploads
+      AI_DSH_IDENTITY_PATH: /app/storage/secrets/dsh-anonymous-user-id
+      GOOGLE_OAUTH_CLIENT_JSON_PATH: ${AIPROJ_GOOGLE_OAUTH_SECRET_FILE:+/run/secrets/google-oauth-client.json}
+      GOOGLE_OAUTH_REDIRECT_URI: ${AIPROJ_GOOGLE_OAUTH_ORIGIN:-http://localhost}/api/v1/auth/google/callback
+      GOOGLE_AUTH_SUCCESS_REDIRECT_URL: ${AIPROJ_GOOGLE_OAUTH_ORIGIN:-http://localhost}/auth/google/callback
+      GOOGLE_AUTH_FAILURE_REDIRECT_URL: ${AIPROJ_GOOGLE_OAUTH_ORIGIN:-http://localhost}/login
+      AIPROJ_APP_KEY: ${AIPROJ_APP_KEY:-}
+      AIPROJ_JWT_ACCESS_SECRET: ${AIPROJ_JWT_ACCESS_SECRET:-}
+    volumes:
+      - runtime-secrets:/run/aiproj-secrets:ro
+      - storage:/app/storage
+      - ./apps/backend/.env:/run/aiproj-db/.env:ro
+    secrets:
+      - source: google-oauth-client
+        target: google-oauth-client.json
+    healthcheck:
+      test: ['CMD', 'node', '/app/docker/healthcheck.mjs']
+      interval: 10s
+      timeout: 6s
+      retries: 12
+      start_period: 20s
+    networks: [aiproj]
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+      args:
+        # 新 UI 组织级灰度门控（构建期内联，改值需 --build）；见 .env.compose.example
+        NEXT_PUBLIC_FF_NEXT_UI: ${AIPROJ_FF_NEXT_UI:-true}
+        NEXT_PUBLIC_FF_NEXT_UI_ORGS: ${AIPROJ_FF_NEXT_UI_ORGS:-}
+        # 「源代码」链接地址（AGPL 第 13 条，构建期内联）；留空不显示
+        NEXT_PUBLIC_AIPROJ_SOURCE_URL: ${AIPROJ_SOURCE_URL:-https://github.com/scopeharbor/OpenXiang}
+    image: aiproj-frontend:local
+    healthcheck:
+      test: ['CMD', 'node', '/app/docker/healthcheck.mjs']
+      interval: 10s
+      timeout: 6s
+      retries: 12
+      start_period: 15s
+    networks: [aiproj]
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  edge:
+    image: nginxinc/nginx-unprivileged:1.31-alpine
+    ports:
+      - '${AIPROJ_BIND_ADDRESS:-0.0.0.0}:${AIPROJ_HTTP_PORT:-80}:8080'
+    volumes:
+      - ./edge/default.conf:/etc/nginx/conf.d/default.conf:ro
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'wget -qO- http://127.0.0.1:8080/api/v1/health/live >/dev/null 2>&1 && wget -qO- http://127.0.0.1:8080/ >/dev/null 2>&1',
+        ]
+      interval: 10s
+      timeout: 6s
+      retries: 12
+      start_period: 10s
+    networks: [aiproj]
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+
+volumes:
+  runtime-secrets:
+  redis-data:
+  storage:
+
+secrets:
+  google-oauth-client:
+    file: ${AIPROJ_GOOGLE_OAUTH_SECRET_FILE:-./fixtures/google-oauth/unconfigured.json}
+
+networks:
+  aiproj:
+    driver: bridge

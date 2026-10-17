@@ -1,0 +1,59 @@
+{
+  "manifestSchemaVersion": "1.0",
+  "identity": {
+    "pluginId": "com.aiproj.official.command-action-pack",
+    "name": "开项官方插件命令包",
+    "version": "1.0.0",
+    "publisher": "aiproj-official",
+    "description": "Command Palette 官方插件命令入口：发现/只读查询/表单/预览（全部宿主持有执行）"
+  },
+  "provenance": {
+    "distribution": "first-party",
+    "sourceRef": "repo:fixtures/plugins/com.aiproj.official.command-action-pack"
+  },
+  "compatibility": {
+    "hostContractVersion": "1.0",
+    "requiredSeams": [{ "seamKey": "ui-command.palette-contribution", "seamVersion": "1.0.0" }]
+  },
+  "contributions": [
+    {
+      "contributionKey": "discover-plugin-capabilities",
+      "seamKey": "ui-command.palette-contribution",
+      "seamVersion": "1.0.0",
+      "entrypoint": { "kind": "json", "path": "commands/discover.json" },
+      "permissionRefs": ["aiproj.plugin.command-entry"]
+    },
+    {
+      "contributionKey": "query-plugin-activity",
+      "seamKey": "ui-command.palette-contribution",
+      "seamVersion": "1.0.0",
+      "entrypoint": { "kind": "json", "path": "commands/query.json" },
+      "permissionRefs": ["aiproj.plugin.command-entry"]
+    },
+    {
+      "contributionKey": "open-ai-project-intent-form",
+      "seamKey": "ui-command.palette-contribution",
+      "seamVersion": "1.0.0",
+      "entrypoint": { "kind": "json", "path": "commands/open-form.json" },
+      "permissionRefs": ["aiproj.plugin.command-entry"]
+    },
+    {
+      "contributionKey": "open-sample-action-preview",
+      "seamKey": "ui-command.palette-contribution",
+      "seamVersion": "1.0.0",
+      "entrypoint": { "kind": "json", "path": "commands/open-preview.json" },
+      "permissionRefs": ["aiproj.plugin.command-entry"]
+    }
+  ],
+  "permissions": [
+    {
+      "permissionKey": "aiproj.plugin.command-entry",
+      "seamKey": "ui-command.palette-contribution",
+      "scopeKind": "organization",
+      "sideEffect": "read-only",
+      "confirmation": "not-required",
+      "network": "none",
+      "purpose": "官方命令包的 Command Palette 入口声明（宿主持有执行，写入只开预览）"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "@aiproj/e2e",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "echo 'E2E 已从默认 test 管道分离。运行 pnpm test:e2e 执行端到端测试。'",
+    "e2e": "playwright test --config=playwright.config.ts",
+    "test:ui": "playwright test --ui --config=playwright.config.ts"
+  },
+  "dependencies": {
+    "@playwright/test": "^1.63.0"
+  },
+  "license": "AGPL-3.0-only"
+}

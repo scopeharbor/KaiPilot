@@ -1,0 +1,175 @@
+---
+id: pmo.decisions
+title: 决策工作台：从议题到结论
+summary: 在组合层面发起决策议题、收集证据、对比候选方案、记录立场并提交人工结论；七态状态机、就绪检查、指纹绑定与「决策 ≠ 执行」边界。
+contentType: how-to
+roles: [system_admin, org_admin, project_manager, member, readonly_observer]
+permissions: [pmo_decision:view, pmo_decision:manage, pmo_decision:decide, pmo_decision:request_ai]
+editions: [free, team, enterprise]
+productVersion: v3
+featureFlags: []
+owner: pmo-team
+updatedAt: 2026-09-01
+reviewAfter: 2026-12-01
+related: [pmo.overview, pmo.traffic-light, pmo.ai-priority-recommendations, reference.permissions]
+screenshots: []
+keywords: [pmo, 决策, 议题, 结论, 工作台, decision, 状态机, 交接]
+contentStatus: complete
+---
+
+# 决策工作台：从议题到结论
+
+决策工作台（`/pmo/decisions`）为组合层面的重大决策（资源倾斜、范围裁减、项目取舍等）提供受控流程：**创建议题 → 刷新证据 → 对比候选方案 → 记录立场 → 人工结论 → 受控交接**。它的核心边界是「决策 ≠ 执行」：结论只会生成指向下游工作台的引用，**不会直接修改任何项目、任务、资源等业务数据**。
+
+## 适用范围
+
+- **适用角色与权限**：
+
+| 能力                         | 所需权限                                           | 授予角色                                                                             |
+| ---------------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| 查看队列与详情               | `pmo_decision:view`                                | org_admin / project_manager / member / readonly_observer（external_collaborator 无） |
+| 创建议题 / 刷新证据          | `pmo_decision:manage`                              | org_admin / project_manager                                                          |
+| 记录结论（批准/否决/延后等） | `pmo_decision:decide`                              | org_admin / project_manager                                                          |
+| 交接 / AI 摘要               | `pmo_decision:handoff` / `pmo_decision:request_ai` | org_admin / project_manager                                                          |
+
+- **适用版本**：free / team / enterprise。决策工作台整体受平台功能开关控制：开关关闭时入口返回「功能未启用」（FEATURE_DISABLED）。
+- **进入路径**：`/pmo` 组合总览点 **「决策工作台」**（仅 `pmo_decision:view` 可见），或直接输入 URL：`https://<你的域名>/pmo/decisions`。组织上下文取自当前登录组织。
+
+## 开始之前
+
+- 你的角色满足上表对应权限；`external_collaborator` 无法查看决策工作台。
+- 议题数据没有种子，全新环境的队列为空态「当前筛选下没有决策议题。」
+- 记住两条红线：**结论只能由当前登录用户显式提交**（AI / 插件 / 后台任务不可代为决定）；**结论不修改业务数据**（决策 ≠ 执行）。
+
+## 状态机（七态）
+
+| 状态                | 中文     | 可流转到                                                    |
+| ------------------- | -------- | ----------------------------------------------------------- |
+| draft               | 草稿     | collecting-evidence                                         |
+| collecting-evidence | 收集证据 | draft / ready-for-review                                    |
+| ready-for-review    | 待审查   | under-review / collecting-evidence                          |
+| under-review        | 审查中   | decided / deferred / ready-for-review / collecting-evidence |
+| decided             | 已决定   | superseded                                                  |
+| deferred            | 已延后   | superseded                                                  |
+| superseded          | 已被取代 | 终态，无后继                                                |
+
+「要求补充证据」动作会把 under-review 回退到 collecting-evidence。终态（decided 后的 superseded 与 deferred 后的 superseded）只读。
+
+## 队列页（/pmo/decisions）
+
+- 标题「决策工作台」+ 副标题「**决策 ≠ 执行：结论仅生成受控下游交接**」；右上「新建议题」按钮（仅 `pmo_decision:manage` 且组织 ID 已解析时可用）。
+- **状态筛选 tab**：全部 / 草稿 / 收集证据 / 待审查 / 审查中 / 已决定 / 已延后 / 已被取代（选中 teal）。
+- **议题卡片**：整张卡片可点击进入详情；卡片含标题 + 状态 pill + 一行截断的决策问题 +「修订 r{N}」+（有截止日时）「截止 {YYYY-MM-DD}」。
+- **分页**：「上一页 / 下一页」「第 p / n 页」，每页默认 20 条；筛选状态写入 URL，刷新后保持。
+- 无权限整页提示「您没有 PMO 决策工作台访问权限。」；加载失败「加载决策议题失败，请稍后重试。」
+
+### 创建议题
+
+1. 点击 **「新建议题」**，在弹出的对话框中填写：
+
+| 字段     | 必填 | 约束                         |
+| -------- | ---- | ---------------------------- |
+| 议题标题 | 是   | ≤ 200 字                     |
+| 决策问题 | 是   | ≤ 500 字，描述需要决策的问题 |
+
+2. 点击 **「创建」**（两个字段都非空才可点击）；成功自动跳转到议题详情 `/pmo/decisions/{id}`；失败时对话框内 Alert 显示后端消息或「创建失败」。
+
+## 详情页（/pmo/decisions/{decisionId}）
+
+区块按 `pmo_decision:view / manage / decide / request_ai` 分别门控；终态显示「终态只读」徽标；被取代议题显示 Alert「本议题已被议题 #{id} 取代。」
+
+### 证据快照（`pmo_decision:manage`，非终态可刷新）
+
+- 空态：「尚无证据快照——请先「刷新证据」。」点击 **「刷新证据」** 拉取最新证据。
+- 快照内容：`hash：{...}`、`整体状态：{readiness}`、`结果按预算截断`；来源状态列表每行 `{source} —— {可用/已过期/权限受限/不可用/已截断}`，必需来源带「（必需）」标记。
+
+### 候选方案（2–5 个）
+
+- 方案卡片：label + `假设：...` / `约束：...`。
+- 确定性对比表：列 = 度量 / 基线值 / 对照值 / Δ / lens；不可比时显示 `—` 与 `not-comparable`。
+- 表格底部说明：「对比仅投影权威事实（lens 版本 ...）；不生成总分或 winner。」——**没有 winner/score 字段**，系统不替你选方案。
+
+### 参与者立场（非终态）
+
+- 点 **「支持」/「反对（异议）」/「弃权」** 记录你的立场（可带备注）。
+- 立场列表：「参与者 #{id}：支持/反对/弃权（{notePreview}…）」；空态「暂无立场记录。」
+
+### 记录人工结论（`pmo_decision:decide` 且非终态）
+
+- 按钮：**批准 / 否决 / 延后 / 由新议题取代 / 要求补充证据**。
+- 点击后先执行 readiness 检查，展示列表：`阻塞：{message}`（红）/ `警告：{message}` / `就绪：指纹 {fingerprint}`。
+- 存在 blocking finding 时弹错误「存在 blocking finding，无法进入结论；请刷新证据或补齐方案。」，不会进入确认对话框。
+- 确认对话框：「确认批准？」+ 强调「**决策 ≠ 执行：结论不会直接修改项目/任务/资源等业务数据。**」+「结论文本（可选，≤2000 字）」+ 取消/确认。
+- 提交结论时绑定证据版本（reviewFingerprint）；证据已过期/指纹不一致会被拒绝（防 TOCTOU 门）。
+
+### 结论历史与受控交接（终态 + `pmo_decision:manage`）
+
+- 历史行：「{时间} —— {批准/否决/延后/由新议题取代/要求补充证据}（方案 #{id}），by #{actor}」；空态「暂无结论。」。
+- 说明：「交接只创建指向既有下游工作台的引用；下游仍需其自身的预览与显式确认。」
+- 点 **「创建导航交接」** 生成回执：「交接回执 #{id}：{targetRef}」；回执列表「回执 #{id} · {target} · 待下游处理/幂等重放/失败」+「打开下游」。幂等键冲突的交接会被拒绝。
+
+### 可选 advisory lens（`pmo_decision:request_ai`）
+
+- 卡标题「可选 advisory lens（草稿性质）」，说明「以下内容由 AI/插件生成，仅作草稿参考；不参与证据摘要、方案排序、readiness 判定、结论或交接，任何失败均局部隔离。」
+- 点 **「请求 AI 对比摘要（草稿）」** 后显示「AI 草稿 · provider：{p} · hash：{h}」（失败时回退确定性摘要）+ 提示 + 正文。
+
+## 操作步骤
+
+1. **创建议题**：队列页点「新建议题」，填标题（≤200）与决策问题（≤500），创建后进入详情页。
+2. **刷新证据**：点「刷新证据」（`pmo_decision:manage`），确认全部必需来源可用；过期/受限来源会以状态列表标出。
+3. **摆出方案**：由有权限的成员维护 2–5 个候选方案（超过 5 个新增会被拒绝），查看确定性对比表确认口径（无 winner）。
+4. **记录立场**：参与评审的成员点「支持/反对/弃权」表态。
+5. **提交结论**：具 `pmo_decision:decide` 者点「批准/否决/延后/由新议题取代/要求补充证据」→ 看 readiness（无 blocking）→ 确认对话框勾选方案并（可选）填结论文本 → 确认。
+6. **受控交接**：终态后（`pmo_decision:manage`）点「创建导航交接」生成回执；下游工作台仍需自身的预览与显式确认。
+7. **（可选）AI 摘要**：具 `pmo_decision:request_ai` 者请求 advisory lens 草稿作为参考，不参与任何判定。
+
+## 验证结果
+
+- 议题创建后队列多一张卡片并跳转详情；状态按七态状态机流转，终态显示「终态只读」。
+- 证据快照刷新后显示 hash 与各来源状态；blocking 时无法提交结论并出现对应错误提示。
+- 结论提交后结论历史出现一条记录（含时间/动作/方案/actor），且**检查不到任何项目/任务数据被修改**（决策 ≠ 执行）。
+- 交接生成「交接回执」；重复提交同一幂等键被拒绝。
+- 跨组织猜测议题 ID 返回 404（与不存在不可区分），不泄露数据存在性。
+
+## 常见问题
+
+**症状：提示「决策议题不存在或无权访问。」**
+可能原因：议题 ID 不属于当前组织，或你没有 `pmo_decision:view`。
+检查：议题 ID 与当前组织；你的角色。
+修复：确认议题属于当前组织；联系组织管理员调整角色。
+
+**症状：点结论按钮后出现 blocking finding。**
+可能原因：readiness 检查未通过（证据过期、必需来源缺失或方案不足）。
+检查：readiness 列表中的「阻塞: {message}」。
+修复：先「刷新证据」或补齐方案，再重新提交。
+
+**症状：提交结论被拒绝（指纹/版本不一致）。**
+可能原因：证据在你操作期间已更新（TOCTOU 门）。
+检查：错误提示中的指纹信息。
+修复：重新刷新证据后再次提交。
+
+**症状：找不到「创建导航交接」。**
+可能原因：议题未到终态，或你没有 `pmo_decision:manage`。
+检查：状态 pill 与「终态只读」徽标。
+修复：先完成结论进入终态；确认角色为 org_admin/project_manager。
+
+**症状：页面显示「功能未启用」。**
+可能原因：决策工作台功能开关关闭（FEATURE_DISABLED）。
+检查：平台功能开关状态。
+修复：联系系统管理员开启后重试。
+
+## 安全与限制
+
+- **决策 ≠ 执行**：结论不写入任何业务数据（没有 apply 端点）；交接只创建引用，下游仍需自身预览与确认。
+- **结论人工唯一**：只能由当前登录用户显式提交；AI / 插件 / 后台任务不可代为决定。
+- **AI 摘要隔离**：advisory lens 为草稿性质，不参与证据、排序、readiness、结论或交接。
+- **数字边界**：标题 ≤200 / 决策问题 ≤500 / 结论文本 ≤2000；候选方案 2–5 个；每页 20 条。
+- **组织隔离**：跨组织猜测 ID 一律返回与不存在相同的 404。
+- **feature flag**：整体能力可被平台开关回滚（关闭时 FEATURE_DISABLED）。
+
+## 下一步
+
+- [PMO 组合总览](/help/articles/pmo.overview)
+- [组合交通灯：识别风险项目并复核](/help/articles/pmo.traffic-light)
+- [PMO AI 优先级推荐](/help/articles/pmo.ai-priority-recommendations)
+- [权限参考](/help/articles/reference.permissions)

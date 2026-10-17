@@ -1,0 +1,18 @@
+# =============================================================================
+# 开项 OpenXiang —— Google OAuth 自定义 secret source 覆盖
+#
+# 两套主 Compose 已直接读取 AIPROJ_GOOGLE_OAUTH_SECRET_FILE（未设置时 Google 登录不启用）。
+# 本 override 用于「必须启用 Google 登录」的部署：变量没设置时直接启动失败，避免误以未配置状态上线：
+#   docker compose --env-file .env.compose -f compose.yaml        -f compose.oauth.yaml up -d --build
+#   docker compose --env-file .env.compose -f compose.sqlite.yaml -f compose.oauth.yaml up -d --build
+#
+# AIPROJ_GOOGLE_OAUTH_SECRET_FILE 必须是 host 上的文件路径。显式使用本 override
+# 却没有提供路径时，Compose 在解析阶段 fail fast；不会静默回落到 tracked 文件。
+# secret 仍仅由主 Compose 的 backend 消费，不会进入 frontend/edge/migrate/db/redis。
+# =============================================================================
+
+services: {}
+
+secrets:
+  google-oauth-client:
+    file: ${AIPROJ_GOOGLE_OAUTH_SECRET_FILE:?请先设置 AIPROJ_GOOGLE_OAUTH_SECRET_FILE（Google OAuth client JSON 的 host 文件路径，见 .env.compose.example）}

@@ -1,0 +1,38 @@
+# 依赖与产物
+node_modules
+dist
+build
+.next
+out
+.turbo
+coverage
+pnpm-lock.yaml
+
+# 框架/工具自动生成产物（codegen 输出，不由 Prettier 接管）
+.adonisjs
+.codebase-memory
+apps/backend/database/schema.ts
+apps/backend/database/schema_rules.ts
+# Next.js 生成文件（每次 build 由 next 重写，内容用双引号+分号，不符合本仓 Prettier 规范）
+apps/frontend/next-env.d.ts
+
+# 规格书与规划文档（不由 Prettier 接管）
+docs
+openspec
+progress
+CLAUDE.md
+
+# 各 AI 工具目录
+.claude
+.agents
+.codex
+.kimi
+.kimi-code
+.opencode
+.impeccable
+.tokensave
+**/.impeccable/**
+**/.tokensave/**
+apps/backend/.impeccable
+apps/backend/.tokensave
+AGENTS.md

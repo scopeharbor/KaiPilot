@@ -1,0 +1,7 @@
+{
+  "name": "com.aiproj.official.bi-report-pack",
+  "version": "1.0.0",
+  "description": "Official BI Report Pack for AiProject — curated governance, risk heatmap and trend analysis templates",
+  "private": true,
+  "license": "UNLICENSED"
+}

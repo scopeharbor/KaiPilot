@@ -1,0 +1,25 @@
+{
+  "extends": "@adonisjs/tsconfig/tsconfig.app.json",
+  "compilerOptions": {
+    "rootDir": "./",
+    "outDir": "./build",
+    "jsx": "react",
+    "ignoreDeprecations": "6.0"
+  },
+  "include": [
+    "types/**/*.d.ts",
+    "app/**/*.ts",
+    "start/**/*.ts",
+    "config/**/*.ts",
+    "database/**/*.ts",
+    "tests/**/*.ts",
+    "providers/**/*.ts",
+    "commands/**/*.ts",
+    "bin/**/*.ts",
+    // adonisrc.ts 与 .adonisjs/server 必须在编译范围内：AdonisJS 各 provider
+    // （vinejs_provider 的 request.validateUsing、lucid 的 testUtils.db 等）
+    // 的 module augmentation 只有在 adonisrc.ts 被 tsc 加载时才会生效。
+    "adonisrc.ts",
+    ".adonisjs/server/**/*.ts"
+  ]
+}

@@ -1,0 +1,126 @@
+# 依赖
+node_modules/
+.pnpm-store/
+
+# 构建产物
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+
+# Turborepo 缓存
+.turbo/
+
+# 本项目统一使用 pnpm，忽略其他包管理器的锁文件
+bun.lock
+bun.lockb
+package-lock.json
+yarn.lock
+
+# 环境变量（私人生产仓库明确版本化 apps/backend/.env；其他环境文件仍忽略）
+.env
+.env.*
+!.env.example
+!.env.compose.example
+!apps/backend/.env
+
+# 数据库（V1 SQLite）
+*.sqlite
+*.sqlite3
+*.db
+*.sqlite.bak
+*.sqlite-journal
+
+# 日志与系统文件
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# 覆盖率
+coverage/
+
+# AI 工具本地配置（机器特定，不入仓库）
+.mcp.json
+.codex/
+.agents/
+.kimi-code/
+
+# impeccable / skills 本地安装物（机器特定，不入仓库）
+.claude/skills/impeccable/
+.opencode/skills/
+skills-lock.json
+.tokensave/
+# impeccable 技能在任意目录下留下的本地缓存（含 openspec/changes/ 下的误落目录）
+**/.impeccable/
+
+# Playwright MCP 本地会话残留（浏览器 profile / 页面 snapshot yml），机器特定
+.playwright-mcp/
+
+# IDE 本地启动配置（机器特定，勿入仓库）
+.claude/launch.json
+
+# Mimocode 本地配置与运行时文件（机器特定）
+mimocode.json
+.mimocode/
+
+# 后端上传的用户文件（非源码）
+apps/backend/storage/uploads/
+apps/backend/storage/secrets/
+
+# 临时测试文件
+.tmp-coverage-test-*
+*.exit
+
+# 性能门禁本地报告输出（design D6：报告只放本地与 progress 摘要）
+.tmp/
+
+# E2E 测试运行产物
+packages/e2e/test-results/
+
+# codebase-memory 知识图谱索引（随私有仓库共享，供团队免重建复用；见 CLAUDE.md §7 第 4 步）
+# 只版本化图谱产物本身，其余运行期文件仍忽略
+.codebase-memory/*
+!.codebase-memory/.gitattributes
+!.codebase-memory/artifact.json
+!.codebase-memory/graph.db.zst
+
+# 临时调试日志（本地运行产物，不入仓库）
+api_*.txt
+e2e_*.txt
+full_run.txt
+mig*.txt
+svc_*.txt
+service_test_*.txt
+
+# 本机个人下载与工具产物（非项目内容，勿入仓库）
+baidu-wangpan-parse/
+李计忠著作PDF/
+fanqie-render/
+fanqie-book-*.html
+fanqie-chapters.json
+ch2-*
+book-cover.png
+control.pdf
+pan168.html
+quark_page.html
+sci-d-book.html
+download-sci-d.ps1
+reader-js.js
+site-lab/
+tmp/
+/110
+/setTimeout(resolve
+.commandcode/
+.dsh-vision-router/
+.workbuddy/
+
+# 临时调试快照与孤立编译映射（正式 TS 源码仍版本化）
+/test_output.txt
+/openspec-validate-out.txt
+/task-detail-ci
+/debug-recorder.test.ts
+/.tmp-*.png
+/packages/types/src/*.js.map
+/packages/types/src/*.d.ts.map

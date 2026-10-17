@@ -1,0 +1,19 @@
+{
+  "manifestSchemaVersion": "1.0",
+  "identity": {
+    "pluginId": "com.aiproj.example.local-dev-demo",
+    "name": "Local Dev Demo Plugin",
+    "version": "1.0.0",
+    "publisher": "aiproj-official",
+    "description": "Minimal first-party demo for local developer kit validate/dry-run"
+  },
+  "provenance": {
+    "distribution": "first-party"
+  },
+  "compatibility": {
+    "hostContractVersion": "1.0",
+    "requiredSeams": []
+  },
+  "contributions": [],
+  "permissions": []
+}

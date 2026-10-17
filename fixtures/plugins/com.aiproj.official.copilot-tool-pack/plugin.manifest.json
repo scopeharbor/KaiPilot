@@ -1,0 +1,65 @@
+{
+  "manifestSchemaVersion": "1.0",
+  "identity": {
+    "pluginId": "com.aiproj.official.copilot-tool-pack",
+    "name": "开项官方 Copilot 工具包",
+    "version": "1.0.0",
+    "publisher": "aiproj-official",
+    "description": "官方第一方四工具包：项目查询 / TRIZ 顾问 / 周报草稿 / 风险解释（只读与建议型，零网络默认）"
+  },
+  "provenance": {
+    "distribution": "first-party",
+    "sourceRef": "repo:fixtures/plugins/com.aiproj.official.copilot-tool-pack"
+  },
+  "compatibility": {
+    "hostContractVersion": "1.0",
+    "requiredSeams": [{ "seamKey": "copilot-tool.declarative-tool", "seamVersion": "1.0.0" }]
+  },
+  "contributions": [
+    {
+      "contributionKey": "official-copilot-tools",
+      "seamKey": "copilot-tool.declarative-tool",
+      "seamVersion": "1.0.0",
+      "entrypoint": { "kind": "json", "path": "contributions/copilot-tools.json" },
+      "permissionRefs": ["project-view", "risk-view", "report-view", "triz-skill-layer-view"]
+    }
+  ],
+  "permissions": [
+    {
+      "permissionKey": "project-view",
+      "seamKey": "copilot-tool.declarative-tool",
+      "scopeKind": "organization",
+      "sideEffect": "read-only",
+      "confirmation": "not-required",
+      "network": "none",
+      "purpose": "读取当前可见项目有界摘要（宿主 RBAC 键 project:view）"
+    },
+    {
+      "permissionKey": "risk-view",
+      "seamKey": "copilot-tool.declarative-tool",
+      "scopeKind": "organization",
+      "sideEffect": "read-only",
+      "confirmation": "not-required",
+      "network": "none",
+      "purpose": "读取当前可见风险并生成解释草稿（宿主 RBAC 键 risk:view）"
+    },
+    {
+      "permissionKey": "report-view",
+      "seamKey": "copilot-tool.declarative-tool",
+      "scopeKind": "organization",
+      "sideEffect": "read-only",
+      "confirmation": "not-required",
+      "network": "none",
+      "purpose": "基于可访问事实生成周报草稿，不写回报表（宿主 RBAC 键 report:view）"
+    },
+    {
+      "permissionKey": "triz-skill-layer-view",
+      "seamKey": "copilot-tool.declarative-tool",
+      "scopeKind": "organization",
+      "sideEffect": "advisory",
+      "confirmation": "not-required",
+      "network": "none",
+      "purpose": "引用 TRIZ 技能层生成建议草稿（宿主 RBAC 键 triz_skill_layer:view）"
+    }
+  ]
+}

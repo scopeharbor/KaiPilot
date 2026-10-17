@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- 开项 OpenXiang Logo Mark —— 亮色模式（定稿：方案 C1「开角」） -->
+  <!-- 概念：中文开引号「——「开始一句话」，形状本身也是「打开」；
+       里面的朱砂方块是被开启的「项」。一句话，开一个项目。 -->
+  <path d="M 70 190 V 70 H 190" fill="none" stroke="#4338CA" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="112" y="112" width="84" height="84" rx="20" fill="#F04E30"/>
+</svg>

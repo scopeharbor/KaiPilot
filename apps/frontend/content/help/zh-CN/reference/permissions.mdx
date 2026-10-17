@@ -1,0 +1,227 @@
+---
+id: reference.permissions
+title: 权限参考：角色模型与权限矩阵
+summary: 六种规范角色 × 能力权限全矩阵、组织成员角色与项目角色映射、权限判定边界，以及五类反直觉权限条目解读。
+contentType: reference
+roles:
+  [
+    system_admin,
+    org_admin,
+    project_manager,
+    member,
+    external_collaborator,
+    readonly_observer,
+    owner,
+    admin,
+    viewer,
+  ]
+permissions:
+  [
+    project:view,
+    task:view,
+    task:update:self,
+    task:assign,
+    task:delete,
+    risk:view,
+    notification:view,
+    report:view,
+    portfolio:view,
+    integration:connect,
+    webhook:manage,
+    outgoing_webhook:manage,
+    copilot:web_search:manage,
+    ai:trigger,
+    ai:confirm,
+    ai:connection:manage,
+    ai:compiler:skill:view,
+    ai:compiler:skill:author,
+    ai:compiler:skill:manage,
+    ai:compiler:routing:view,
+    audit:view,
+    milestone:create,
+  ]
+editions: [free, team, enterprise]
+productVersion: v3
+featureFlags: []
+owner: platform
+updatedAt: 2026-09-01
+reviewAfter: 2026-12-01
+related:
+  [
+    admin.accounts-organizations-and-roles,
+    getting-started.product-overview,
+    reference.ai-capabilities,
+    admin.integrations-and-plugins,
+  ]
+screenshots: []
+keywords: [权限, rbac, 角色, 六角色, 权限矩阵, 隔离, 权限码]
+contentStatus: complete
+---
+
+# 权限参考：角色模型与权限矩阵
+
+本页是权限的字典式参考：六种规范角色分别能做什么、权限在哪里判定、哪些条目违背直觉。权限的最终裁决在服务端 Policy/RBAC，本页的矩阵用于快速核对。
+
+## 适用范围
+
+- **适用角色**：`system_admin`、`org_admin`、`project_manager`、`member`、`external_collaborator`、`readonly_observer` 六种规范角色；组织成员角色 `owner` / `admin` / `member` / `viewer` 与项目角色见下文映射。
+- **所需权限**：无（本页为公开参考，任何登录用户可读）。
+- **适用版本**：v3（free / team / enterprise）。
+
+## 开始之前
+
+- 无需前置条件；本页为参考。
+- 需要先理解一个总原则：**前端隐藏按钮只是用户体验层，不是安全边界**；任何权限的最终判定都发生在服务端。
+- 所有数据查询自动附加组织过滤（`organization_id`），跨组织数据一律不可见。
+
+## 开源版的能力范围
+
+开源版包含项目、任务、WBS、甘特图、看板、报表、基础审计、AI 草案与确认、插件与 Skill 等能力，本页矩阵只列这些能力的权限。企业单点登录、KMS、DLP、合规准备度、多租户治理等企业能力由企业版提供，开源版不包含对应的界面、接口与权限码。
+
+## 角色模型总览
+
+### 六种规范角色
+
+| 角色                               | 定位               | 典型能力范围                                                      | 权限来源                                                    |
+| ---------------------------------- | ------------------ | ----------------------------------------------------------------- | ----------------------------------------------------------- |
+| `system_admin` 系统管理员          | 实例级运维         | 跨组织全局控制面（用户管理、全局审计等）                          | 哨兵权限 `system:admin`，判定链直接放行，事实上拥有全部权限 |
+| `org_admin` 组织管理员             | 本组织管理         | 组织成员、组织设置、AI 连接、Webhook、审计日志等组织级配置        | 组织角色 `owner` / `admin` 映射                             |
+| `project_manager` 项目经理         | 项目计划与执行管理 | 项目内计划、任务、风险、变更、资源；AI 连接与集成管理中的一个特例 | 项目角色 Owner / Project Manager 映射                       |
+| `member` 成员                      | 参与项目执行       | 按分配的任务与项目配置参与协作；AI 草案生成；里程碑维护           | 组织角色 `member` / 项目角色 Member 映射                    |
+| `external_collaborator` 外部协作者 | 受限的外部参与     | 仅受邀范围的内容协作；**无 `report:view`**（六角色中唯一缺失项）  | 项目角色 External Collaborator 映射                         |
+| `readonly_observer` 只读观察者     | 只读查看           | 查看项目数据，不做任何写操作                                      | 组织角色 `viewer` / 项目角色 Readonly Observer 映射         |
+
+### 组织成员角色与项目角色
+
+组织成员表使用 `owner` / `admin` / `member` / `viewer` 四个角色，决定成员在**组织层面**的管理能力；项目成员表使用 Owner / Project Manager / Member / External Collaborator / Readonly Observer 五套模板，决定**项目内**的能力。二者是两个独立坐标，最终权限按「组织级 + 项目级」两级取交集判定。
+
+| 组织成员角色           | 映射为规范角色      | 说明                                   |
+| ---------------------- | ------------------- | -------------------------------------- |
+| `owner` / `admin`      | `org_admin`         | 组织所有者与管理员，拥有组织级管理权限 |
+| `member`               | `member`            | 普通组织成员                           |
+| `viewer`               | `readonly_observer` | 只读访客                               |
+| （`is_super_admin=1`） | `system_admin`      | 系统管理员标记，跨组织放行             |
+
+## 权限判定机制
+
+1. **服务端裁决**：所有写操作与敏感读操作均经后端 Policy/RBAC 校验；前端 `PermissionGuard`、按钮隐藏、置灰只用于引导，把「前端看到按钮」当作有权限是错误理解。
+2. **两级判定取交集**：组织角色与项目角色共同决定你在具体项目上的能力；项目级判定以你在该项目成员表中的角色为准。
+3. **system_admin 通配**：`system_admin` 名义上只列一个 `system:admin` 权限，但后端对超级管理员直接放行、前端将其视为通配——它是事实上的全权限角色。
+4. **组织隔离让「不存在」成为设计**：跨组织的资源访问统一返回 `RESOURCE_NOT_FOUND`（404）而不是「无权限」（403），避免泄露资源存在性。
+5. **显式附加权限**：组织成员与项目角色支持附加额外权限，本文矩阵描述的是默认角色模板。
+
+## 完整权限矩阵
+
+以下矩阵为「权限码 × 六种规范角色」全表，`✓` 表示持有。`system_admin` 列统一为通配放行。
+
+### 基础协作与项目域
+
+| 权限                                                             | system_admin | org_admin | project_manager | member | external_collaborator | readonly_observer |
+| ---------------------------------------------------------------- | ------------ | --------- | --------------- | ------ | --------------------- | ----------------- |
+| `project:view` / `task:view` / `risk:view` / `notification:view` | ✓            | ✓         | ✓               | ✓      | ✓                     | ✓                 |
+| `report:view`（查看报表）                                        | ✓            | ✓         | ✓               | ✓      | **✗**                 | ✓                 |
+| `portfolio:view`（组合视图）                                     | ✓            | ✓         | ✓               | ✓      | ✓                     | ✓                 |
+| `milestone:create` / `milestone:update` / `milestone:delete`     | ✓            | ✓         | ✓               | ✓      | —                     | —                 |
+
+> 说明：`report:view` 是六角色中唯一对 `external_collaborator` 关闭的查看类权限；`portfolio:view` 则六角色全部持有。里程碑写权限对 `member` 开放（与任务写权限不同，见下）。
+
+### 集成、通知与插件域
+
+| 权限                                                                 | system_admin | org_admin | project_manager | member | external_collaborator | readonly_observer |
+| -------------------------------------------------------------------- | ------------ | --------- | --------------- | ------ | --------------------- | ----------------- |
+| `integration:connect`（进入集成设置）                                | ✓            | ✓         | ✓               | ✓      | ✓                     | ✓                 |
+| `webhook:manage`（入站 Webhook 管理 API）                            | ✓            | ✓         | ✓               | ✗      | ✗                     | ✗                 |
+| `outgoing_webhook:manage`（出站 Webhook 订阅/账本/统计管理）         | ✓            | ✓         | ✓               | ✗      | ✗                     | ✗                 |
+| `copilot:web_search:manage`（组织级网页搜索设置）                    | ✓            | ✓         | ✓               | ✗      | ✗                     | ✗                 |
+| `plugin_registry:view`（组织私有插件目录查看）                       | ✓            | ✓         | ✓               | ✓      | ✓                     | ✓                 |
+| `plugin_registry:submit`（提交送审）                                 | ✓            | ✓         | ✓               | ✗      | ✗                     | ✗                 |
+| `plugin_registry:review` / `:manage` / `:rollback`（审批/分发/回滚） | ✓            | ✓         | ✗               | ✗      | ✗                     | ✗                 |
+| `plugin_install:view`（安装视图）                                    | ✓            | ✓         | ✓               | ✓      | ✓                     | ✓                 |
+| `plugin_install:manage`（策略包启用/停用）                           | ✓            | ✓         | ✓               | ✗      | ✗                     | ✗                 |
+
+> 说明：集成设置页**所有角色都能进入**（`integration:connect` 全员持有），但页内的 Webhook 管理面板、投递统计面板、Copilot 网页搜索设置对低角色是只读视图或整体不渲染——入口可见 ≠ 管理能力可用。
+
+### AI 能力域
+
+| 权限                                                        | system_admin | org_admin | project_manager | member | external_collaborator | readonly_observer |
+| ----------------------------------------------------------- | ------------ | --------- | --------------- | ------ | --------------------- | ----------------- |
+| `ai:trigger`（触发 AI 意图分析/草案生成）                   | ✓            | ✓         | ✓               | ✓      | ✗                     | ✗                 |
+| `ai:confirm`（确认导入 AI 草案）                            | ✓            | ✓         | ✓               | ✗      | ✗                     | ✗                 |
+| `project:create`（创建项目，确认导入的另一半条件）          | ✓            | ✓         | ✗               | ✗      | ✗                     | ✗                 |
+| `ai:connection:manage`（AI 模型连接管理）                   | ✓            | ✓         | ✓               | ✗      | ✗                     | ✗                 |
+| `ai:compiler:skill:view`（Skill Registry 查看）             | ✓            | ✓         | **✗**           | ✓      | ✓                     | ✓                 |
+| `ai:compiler:skill:author`（Skill 创建/编辑）               | ✓            | ✓         | ✗               | ✓      | ✗                     | ✗                 |
+| `ai:compiler:skill:manage`（Skill 生命周期管理）            | ✓            | ✓         | ✗               | ✗      | ✗                     | ✗                 |
+| `ai:compiler:routing:view` / `:manage`（Compiler 路由管理） | ✓            | ✓         | ✗               | ✗      | ✗                     | ✗                 |
+
+> 说明：`ai:trigger` 授予组织管理员、项目经理与**成员**（成员可直达 `/ai-create` 生成草案）；`ai:confirm` 授予组织管理员与项目经理；但后端「确认导入」要求 `ai:confirm` **且** `project:create` 两者兼备，而项目经理**没有** `project:create`——因此当前角色矩阵下，实际能确认导入 AI 草案的只有组织管理员（以及 system_admin 通配）。
+
+### 治理与安全域
+
+| 权限                                   | system_admin | org_admin | project_manager | member | external_collaborator | readonly_observer |
+| -------------------------------------- | ------------ | --------- | --------------- | ------ | --------------------- | ----------------- |
+| `audit:view`（本组织审计日志）         | ✓            | ✓         | ✗               | ✗      | ✗                     | ✗                 |
+| 全局控制面（`/admin/users`、全局审计） | ✓            | ✗         | ✗               | ✗      | ✗                     | ✗                 |
+
+> 说明：本组织审计日志只授 `org_admin`；全局控制面（用户管理、跨组织审计日志）只认 `system:admin`，且部分全局页面没有导航入口，只能 URL 直达。
+
+## 反直觉条目解读
+
+以下条目是最容易踩坑、与直觉相反的真实权限事实：
+
+| #   | 反直觉条目                                                                        | 实际行为                                                                                    | 影响                                                                                                                     |
+| --- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| 1   | 项目经理有 `ai:confirm` 但没有 `project:create`                                   | 后端「确认导入」要求两者兼备                                                                | 当前矩阵下只有组织管理员（含 system_admin 通配）能真正把 AI 草案导入为正式项目；项目经理到不了「确认导入」这一步         |
+| 2   | 成员有 `ai:trigger` 但没有 `ai:confirm`                                           | 成员可生成草案、不可导入                                                                    | 侧栏「AI 快速创建」入口要求 `project:create`，成员看不到入口；但**直达 `/ai-create` URL 仍可生成草案**，只是不能确认导入 |
+| 3   | 项目经理默认**没有** `ai:compiler:skill:view`，成员、外部协作者、只读观察者反而有 | Skill Registry 查看权限对项目经理默认关闭                                                   | 项目经理进入 Skill Registry 看到的是「没有查看权限或功能未启用」空态；如需使用，由组织管理员显式附加权限                 |
+| 4   | 集成设置页人人可进（`integration:connect` 全员），但管理面板不是                  | Webhook 管理/统计/网页搜索设置需 `outgoing_webhook:manage`、`copilot:web_search:manage`     | 低角色进入集成页看到的是只读视图（「你无权管理出站 webhook 订阅，以下为只读视图。」），不能创建订阅、不能改设置          |
+| 5   | `report:view` 唯独外部协作者没有；`portfolio:view` 六角色全有                     | 权限矩阵的例外行列                                                                          | 外部协作者看不到报表入口；组合视图则无角色门槛                                                                           |
+| 6   | 成员只有 `task:update:self` 而非全局 `task:update`                                | 批量「变更状态/批量编辑」仅对指派给自己的任务可用；「重新指派」「移入回收站」按钮直接不出现 | 成员无法批量改别人的任务；`task:assign`、`task:delete` 在校验中被明确要求                                                |
+| 7   | 成员反而拥有里程碑写权限                                                          | `milestone:create/update/delete` 对 member 开放                                             | 里程碑维护对项目组成员开放，与任务写权限的策略不同                                                                       |
+| 8   | `system_admin` 只列一个权限码                                                     | 判定链对超级管理员直接放行                                                                  | 事实上全权限；组织级页面亦放行                                                                                           |
+
+## 常用入口需要什么权限
+
+| 入口/页面                                  | 页面级权限                    | 备注                                                                                                           |
+| ------------------------------------------ | ----------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `/settings/integrations` 集成设置          | `integration:connect`（全员） | 子面板：[出站 Webhook 管理] `outgoing_webhook:manage`；[Copilot 网页搜索设置] `copilot:web_search:manage`      |
+| `/settings/compiler-skills` Skill Registry | `ai:compiler:skill:view`      | 新建/编辑 `ai:compiler:skill:author`；生命周期转移 `ai:compiler:skill:manage`（内置 Skill 不可编辑/删除/转移） |
+| `/settings/ai-connections` AI 连接         | `ai:connection:manage`        | 导航同时放行 `ai:trigger`                                                                                      |
+| `/ai-create` AI 快速创建                   | `ai:trigger`                  | **导航入口**另需 `project:create`（与页面门不一致）                                                            |
+| `/settings/audit-logs` 审计日志            | `audit:view`                  | 全局版 `/admin/audit-logs` 需 `system:admin`                                                                   |
+| `/admin/*`（用户/全局审计）                | `system:admin`                | 无导航入口的页面需 URL 直达                                                                                    |
+| `/notifications` 通知中心                  | `notification:view`           | 只能操作自己的通知                                                                                             |
+
+## 验证结果
+
+- 你能说出自己的组织角色与项目角色，以及两者各自对应的菜单与操作范围。
+- 你能举出至少两条反直觉条目（如「项目经理不能确认导入」「项目经理看不到 Skill Registry」），并能解释其成因。
+- 你能说明「前端隐藏按钮 ≠ 后端无能力」「跨组织访问返回 404 而非 403」两条边界。
+- 角色变更后重新登录，界面显示与操作结果符合新角色。
+
+## 常见问题
+
+| 症状                                              | 可能原因                                                                                   | 检查                                                | 处理                                                                      |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------- | ------------------------------------------------------------------------- |
+| 显示「无权访问」但你认为应该有权限                | 组织角色与项目角色不匹配，或登录令牌缓存了旧角色版本                                       | 组织/项目成员列表中你的角色；最近是否发生过角色调整 | 联系管理员调整角色后退出重登；仍失败时记录目标资源、你的角色与 request id |
+| 角色已调整，但旧权限提示仍未消失                  | 前端仍在使用旧角色的本地缓存                                                               | 重新登录后再次访问目标页面                          | 退出并重新登录；仍失败时确认管理员确实保存了变更                          |
+| `external_collaborator` 看不到项目全貌或报表      | 外部协作者只获得受限访问范围，且无 `report:view`，这是设计使然                             | 项目成员列表中该成员的访问范围设置                  | 如需更大范围，由项目经理调整其角色或访问范围                              |
+| 项目经理看不到 Skill Registry                     | `ai:compiler:skill:view` 默认不授予项目经理（成员反而有）                                  | 对照上文 AI 能力域矩阵                              | 由组织管理员为该成员显式附加 `ai:compiler:skill:view`                     |
+| 前端有按钮，提交却返回 `PERMISSION_DENIED`（403） | 前端隐藏只做引导，服务端才是边界                                                           | 响应体中的错误码与 request id                       | 以服务端判定为准；核对令牌对应角色与资源所属组织                          |
+| 访问其他组织的数据返回 404 而不是 403             | 组织隔离设计：跨组织资源一律视为「不存在」                                                 | 确认当前组织上下文与资源归属                        | 无需处理；这是防泄露的安全行为                                            |
+| 角色调整后仍不能确认导入 AI 草案                  | 「确认导入」需要 `ai:confirm` 且 `project:create`，当前仅组织管理员（及 system_admin）具备 | 对照反直觉条目 #1                                   | 由组织管理员操作，或请组织管理员为你显式附加 `project:create`             |
+
+## 安全与限制
+
+- 组织级数据隔离：所有查询自动附加 `organization_id` 过滤；跨组织资源统一 404，不泄露存在性。
+- 判定以服务端 Policy/RBAC 为准；前端可隐藏按钮，但不能作为安全边界。
+- 六种规范角色与组织成员角色（owner/admin/member/viewer）相互独立，不可混用；实际能力按两级取交集。
+- 权限码可经组织成员/项目角色「显式附加权限」扩展，本文矩阵描述的是默认角色模板。
+- AI 相关权限只控制「能否生成/确认」：所有 AI 输出仍需人工确认才落库，与权限无关（见 [AI 能力参考](/help/articles/reference.ai-capabilities)）。
+
+## 下一步
+
+- [账号、组织与角色](/help/articles/admin.accounts-organizations-and-roles)
+- [产品概览](/help/articles/getting-started.product-overview)
+- [AI 能力参考](/help/articles/reference.ai-capabilities)
+- [集成与插件](/help/articles/admin.integrations-and-plugins)

@@ -1,0 +1,912 @@
+﻿/* ============================================================================
+ * 开项 OpenXiang — 设计令牌层（单一样式事实来源）
+ * Tailwind CSS v4（CSS-first）。所有令牌落为 CSS 变量，@theme inline 映射为工具类，
+ * 改变量即改工具类结果，不存在第二处硬编码色值（design.md D1）。
+ * 令牌来源：docs/ai-project-os-spec/stage2a_ui_ux_spec.md 附录 A + DESIGN.md 5 处定稿。
+ * ==========================================================================*/
+
+@import 'tailwindcss';
+
+/* KaTeX 数学公式 CSS（本地打包，禁止 CDN 引用） */
+@import 'katex/dist/katex.min.css';
+
+/* Native controls must be able to shrink inside narrow form grids. */
+input,
+select,
+textarea {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* iOS zooms focused inputs below 16px, pushing drawers and action bars off screen. */
+@media (pointer: coarse) {
+  input:not([type='checkbox']):not([type='radio']),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  [data-next-mobile-settings] button,
+  [data-project-space-toolbar-slot] button,
+  [data-manual-task-form] :is(input, select, button),
+  [data-calendar-toolbar] button,
+  [data-lens-tab] {
+    min-height: 44px;
+  }
+
+  button[aria-label^='关闭'],
+  [role='dialog'] button[aria-label^='关闭'] {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* data-mode="dark" 作为深色变体选择器（与 next-themes attribute="data-mode" 对应）。 */
+@custom-variant dark (&:where([data-mode='dark'], [data-mode='dark'] *));
+
+/* ---------------------------------------------------------------------------
+ * 1. 原始设计令牌（浅色为默认）——运行时可切换的语义值放 :root，主题切换改这里
+ * -------------------------------------------------------------------------*/
+:root {
+  /* 主色 Brand Primary 50–900（stage2a §1.2.1，偏紫调蓝，identity-preservation） */
+  --primary-50: #eff4ff;
+  --primary-100: #d8e4fd;
+  --primary-200: #b6cdfb;
+  --primary-300: #84adf7;
+  --primary-400: #4f84f0;
+  --primary-500: #3b6bef; /* 主按钮、主链接 */
+  --primary-600: #2d52db;
+  --primary-700: #2640c7;
+  --primary-800: #2436a1;
+  --primary-900: #22317f;
+
+  /* 中性色 Neutral 0–900（stage2a §1.2.2） */
+  --gray-0: #ffffff; /* 页面背景 */
+  --gray-50: #f8fafc; /* 卡片背景、hover */
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0; /* 边框、分割线 */
+  --gray-300: #cbd5e1;
+  --gray-400: #94a3b8;
+  --gray-500: #64748b;
+  --gray-600: #475569; /* 正文 */
+  --gray-700: #334155;
+  --gray-800: #1e293b; /* 标题 */
+  --gray-900: #0f172a;
+
+  /* 语义色（前景 + 背景两值，stage2a §1.2.3；AI 卡片底采 DESIGN.md 定稿 ≤6%） */
+  --success: #16a34a;
+  --success-bg: #dcfce7;
+  --warning: #d97706;
+  --warning-bg: #fef3c7;
+  --danger: #dc2626;
+  --danger-bg: #fee2e2;
+  --info: #3b6bef;
+  --info-bg: #eff4ff;
+  --in-progress: #7c3aed;
+  --in-progress-bg: #ede9fe;
+  --ai-accent: #7c3aed; /* AI 专属语义色，仅标识 AI 元素 */
+  --ai-accent-bg: rgba(124, 58, 237, 0.06); /* AI 卡片极浅纯色底 ≤6%（定稿①） */
+
+  /* 语义别名 */
+  --background: var(--gray-0);
+  --surface: var(--gray-50); /* 卡片/面板第二中性层 */
+  --surface-2: var(--gray-100);
+  --foreground: var(--gray-700); /* 默认正文 */
+  --heading: var(--gray-800); /* 标题 */
+  --muted: var(--gray-500); /* 次要文字 */
+  --placeholder: var(--gray-500); /* 占位文字达 4.5:1，不用 gray-400 浅灰（§5 铁律） */
+  --border: var(--gray-200);
+  --border-strong: var(--gray-300);
+  --ring: rgba(59, 107, 239, 0.15);
+  --ai-ring: rgba(124, 58, 237, 0.15);
+  --overlay: rgba(15, 23, 42, 0.3); /* modal 遮罩 */
+
+  /* 数据可视化色板 chart-1…10（stage2a §1.2.5） */
+  --chart-1: #3b6bef;
+  --chart-2: #7c3aed;
+  --chart-3: #16a34a;
+  --chart-4: #d97706;
+  --chart-5: #dc2626;
+  --chart-6: #0891b2;
+  --chart-7: #db2777;
+  --chart-8: #65a30d;
+  --chart-9: #7c2d12;
+  --chart-10: #4338ca;
+
+  /* 字体族（design.md D7：拉丁 Manrope 自托管 + 中文系统黑体兜底，MiSans 待入库） */
+  --font-sans:
+    var(--font-sans-local), 'MiSans', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Noto Sans Mono SC', monospace;
+
+  /* 字阶（固定 rem 字阶，1.25 倍率，stage2a §1.3.2 / DESIGN.md §4） */
+  --fs-xs: 0.75rem; /* 12 */
+  --lh-xs: 1.125rem; /* 18 */
+  --ls-xs: 0.01em;
+  --fs-sm: 0.8125rem; /* 13 */
+  --lh-sm: 1.25rem; /* 20 */
+  --ls-sm: 0.01em;
+  --fs-base: 0.875rem; /* 14 默认正文 */
+  --lh-base: 1.375rem; /* 22 */
+  --ls-base: 0.01em;
+  --fs-md: 0.9375rem; /* 15 */
+  --lh-md: 1.5rem; /* 24 */
+  --ls-md: 0em;
+  --fs-lg: 1.125rem; /* 18 */
+  --lh-lg: 1.75rem; /* 28 */
+  --ls-lg: -0.01em;
+  --fs-xl: 1.375rem; /* 22 */
+  --lh-xl: 2rem; /* 32 */
+  --ls-xl: -0.02em;
+  --fs-2xl: 1.75rem; /* 28 */
+  --lh-2xl: 2.375rem; /* 38 */
+  --ls-2xl: -0.02em;
+  --fs-3xl: 2.25rem; /* 36 */
+  --lh-3xl: 2.875rem; /* 46 */
+  --ls-3xl: -0.03em;
+
+  /* 间距 4px 网格（stage2a §1.6）——与 Tailwind 默认 spacing 网格同基数 */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* 圆角（stage2a §1.4；卡片上限 16px，--radius-2xl 仅 AI hero 输入框，定稿②） */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px; /* 默认卡片 */
+  --radius-xl: 20px;
+  --radius-2xl: 28px; /* 仅 AI hero 输入框 */
+  --radius-full: 9999px;
+
+  /* 阴影（柔和弥散，stage2a §1.5） */
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.1), 0 4px 8px rgba(15, 23, 42, 0.04);
+  --shadow-xl: 0 24px 56px rgba(15, 23, 42, 0.14), 0 8px 16px rgba(15, 23, 42, 0.06);
+  --shadow-focus: 0 0 0 3px var(--ring); /* ??focus ring */
+  --shadow-ai: 0 0 0 3px var(--ai-ring); /* AI focus ring */
+
+  /* z-index 语义分层（DESIGN.md §3，不用魔法值） */
+  --z-dropdown: 1000;
+  --z-sticky: 1010;
+  --z-modal-backdrop: 1020;
+  --z-modal: 1030;
+  /* 传送到 body 的浮层（Select / DropdownMenu / Popover / Combobox）必须高于对话框与抽屉，否则在对话框里打开会被盖住。 */
+  --z-popover: 1035;
+  --z-toast: 1040;
+  --z-tooltip: 1050;
+  --z-command-palette: 1060;
+
+  /* 密度令牌（舒适为默认，与主题正交，[data-density] 切换） */
+  --control-h: 36px; /* 触摸目标 ≥36px */
+  --control-h-sm: 32px;
+  --control-h-lg: 44px;
+  --card-pad: 20px; /* 卡片内边距 */
+  --row-h: 52px; /* 表格行高 */
+  --density-gap: 16px;
+  --icon-size: 20px;
+}
+
+/* ---------------------------------------------------------------------------
+ * 2. 深色令牌（stage2a §1.2.4 映射规则：以边框区分层级、弱化阴影、主按钮更亮蓝）
+ * -------------------------------------------------------------------------*/
+[data-mode='dark'] {
+  --primary-50: #1e293b;
+  --primary-100: #1e3a5f;
+  --primary-200: #254b7a;
+  --primary-300: #2e5e9e;
+  --primary-400: #3b7bd9;
+  --primary-500: #4f8cff; /* 深色主按钮更亮蓝 */
+  --primary-600: #6ba3ff;
+  --primary-700: #8cbbff;
+  --primary-800: #b0d4ff;
+  --primary-900: #d6ebff;
+
+  --gray-0: #0f172a;
+  --gray-50: #1e293b;
+  --gray-100: #273548;
+  --gray-200: #334155;
+  --gray-300: #475569;
+  --gray-400: #64748b;
+  --gray-500: #94a3b8;
+  --gray-600: #b8c4d0;
+  --gray-700: #d1d9e2;
+  --gray-800: #e8edf2;
+  --gray-900: #f1f5f9;
+
+  --success: #4ade80;
+  --success-bg: #14532d;
+  --warning: #fbbf24;
+  --warning-bg: #78350f;
+  --danger: #f87171;
+  --danger-bg: #7f1d1d;
+  --info: #4f8cff;
+  --info-bg: #1e3a5f;
+  --in-progress: #a78bfa;
+  --in-progress-bg: #4c1d95;
+  --ai-accent: #a78bfa;
+  --ai-accent-bg: rgba(167, 139, 250, 0.1);
+
+  --background: var(--gray-0);
+  --surface: var(--gray-50);
+  --surface-2: var(--gray-100);
+  --foreground: var(--gray-700);
+  --heading: var(--gray-800);
+  --muted: var(--gray-500);
+  --placeholder: var(--gray-500);
+  --border: var(--gray-200);
+  --border-strong: var(--gray-300);
+  --ring: rgba(79, 140, 255, 0.35);
+  --ai-ring: rgba(167, 139, 250, 0.35);
+  --overlay: rgba(0, 0, 0, 0.5);
+
+  /* 深色弱化阴影（透明度 20–30%，更多依赖边框，stage2a §1.2.4） */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.24);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.28), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.34), 0 4px 8px rgba(0, 0, 0, 0.22);
+  --shadow-xl: 0 24px 56px rgba(0, 0, 0, 0.4), 0 8px 16px rgba(0, 0, 0, 0.24);
+}
+
+/* ---------------------------------------------------------------------------
+ * 3. 紧凑密度（与主题正交，整体降档：内边距/间距/行高/控件高/图标）
+ * -------------------------------------------------------------------------*/
+[data-density='compact'] {
+  --control-h: 32px;
+  --control-h-sm: 28px;
+  --control-h-lg: 40px;
+  --card-pad: 12px;
+  --row-h: 36px;
+  --density-gap: 8px;
+  --icon-size: 16px;
+}
+
+/* ---------------------------------------------------------------------------
+ * 4. Tailwind 主题映射（@theme inline：工具类引用上面的 CSS 变量，主题随之级联）
+ * -------------------------------------------------------------------------*/
+@theme inline {
+  --color-primary-50: var(--primary-50);
+  --color-primary-100: var(--primary-100);
+  --color-primary-200: var(--primary-200);
+  --color-primary-300: var(--primary-300);
+  --color-primary-400: var(--primary-400);
+  --color-primary-500: var(--primary-500);
+  --color-primary-600: var(--primary-600);
+  --color-primary-700: var(--primary-700);
+  --color-primary-800: var(--primary-800);
+  --color-primary-900: var(--primary-900);
+  --color-primary: var(--primary-500);
+
+  --color-gray-0: var(--gray-0);
+  --color-gray-50: var(--gray-50);
+  --color-gray-100: var(--gray-100);
+  --color-gray-200: var(--gray-200);
+  --color-gray-300: var(--gray-300);
+  --color-gray-400: var(--gray-400);
+  --color-gray-500: var(--gray-500);
+  --color-gray-600: var(--gray-600);
+  --color-gray-700: var(--gray-700);
+  --color-gray-800: var(--gray-800);
+  --color-gray-900: var(--gray-900);
+
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  --color-warning: var(--warning);
+  --color-warning-bg: var(--warning-bg);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
+  --color-in-progress: var(--in-progress);
+  --color-in-progress-bg: var(--in-progress-bg);
+  --color-ai: var(--ai-accent);
+  --color-ai-bg: var(--ai-accent-bg);
+
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-foreground: var(--foreground);
+  --color-heading: var(--heading);
+  --color-muted: var(--muted);
+  --color-placeholder: var(--placeholder);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+  --color-chart-7: var(--chart-7);
+  --color-chart-8: var(--chart-8);
+  --color-chart-9: var(--chart-9);
+  --color-chart-10: var(--chart-10);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  --text-xs: var(--fs-xs);
+  --text-xs--line-height: var(--lh-xs);
+  --text-xs--letter-spacing: var(--ls-xs);
+  --text-sm: var(--fs-sm);
+  --text-sm--line-height: var(--lh-sm);
+  --text-sm--letter-spacing: var(--ls-sm);
+  --text-base: var(--fs-base);
+  --text-base--line-height: var(--lh-base);
+  --text-base--letter-spacing: var(--ls-base);
+  --text-md: var(--fs-md);
+  --text-md--line-height: var(--lh-md);
+  --text-md--letter-spacing: var(--ls-md);
+  --text-lg: var(--fs-lg);
+  --text-lg--line-height: var(--lh-lg);
+  --text-lg--letter-spacing: var(--ls-lg);
+  --text-xl: var(--fs-xl);
+  --text-xl--line-height: var(--lh-xl);
+  --text-xl--letter-spacing: var(--ls-xl);
+  --text-2xl: var(--fs-2xl);
+  --text-2xl--line-height: var(--lh-2xl);
+  --text-2xl--letter-spacing: var(--ls-2xl);
+  --text-3xl: var(--fs-3xl);
+  --text-3xl--line-height: var(--lh-3xl);
+  --text-3xl--letter-spacing: var(--ls-3xl);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-2xl: var(--radius-2xl);
+
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-focus: var(--shadow-focus);
+  --shadow-ai: var(--shadow-ai);
+
+  --z-index-dropdown: var(--z-dropdown);
+  --z-index-sticky: var(--z-sticky);
+  --z-index-modal-backdrop: var(--z-modal-backdrop);
+  --z-index-modal: var(--z-modal);
+  --z-index-popover: var(--z-popover);
+  --z-index-toast: var(--z-toast);
+  --z-index-tooltip: var(--z-tooltip);
+  --z-index-command-palette: var(--z-command-palette);
+
+  --animate-modal-enter: modal-enter 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-drawer-slide-in: drawer-slide-in 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-dropdown-enter: dropdown-enter 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-toast-enter: toast-enter 300ms ease-out;
+  --animate-ai-breathe: ai-breathe 800ms ease-in-out infinite;
+  --animate-shimmer: shimmer 1.5s linear infinite;
+  --animate-shake: shake 300ms ease-in-out;
+  --animate-fade-in: fade-in 200ms ease-out;
+}
+
+/* ---------------------------------------------------------------------------
+ * 5. 关键动画（stage2a §1.7.3；只动 transform/opacity，不用 bounce/elastic）
+ * -------------------------------------------------------------------------*/
+@keyframes modal-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+@keyframes drawer-slide-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes dropdown-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes ai-breathe {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes toast-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+/* 内联错误抖动（DESIGN.md §9：出错字段/按钮 shake 300ms） */
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-4px);
+  }
+  40%,
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * 6. 基础层
+ * -------------------------------------------------------------------------*/
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  html {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font-size: var(--fs-base);
+    line-height: var(--lh-base);
+  }
+  ::placeholder {
+    color: var(--placeholder);
+    opacity: 1;
+  }
+  /* 键盘可见 focus：不依赖颜色单通道（组件另有 focus-visible ring） */
+  :focus-visible {
+    outline: none;
+  }
+}
+
+/* 密度切换时尺寸令牌即时生效，避免动画 padding/height 造成布局抖动；
+ * 仅让颜色、边框与阴影平滑衔接。减弱动画时下方媒体查询归零。 */
+html.density-transition,
+html.density-transition * {
+  transition-property: background-color, border-color, color, box-shadow;
+  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 减弱动画：全局兜底，密度/揭示动画均有瞬时替代（DESIGN.md §11） */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * 代码块语法高亮 CSS Variables（v3-document-code-block-support §4.5）
+ * 使用 CSS Variables 适配浅色/深色主题与舒适/紧凑密度
+ * -------------------------------------------------------------------------*/
+
+/* highlight.js 基础覆盖 */
+.markdown-document-viewer .hljs {
+  @apply bg-transparent text-sm leading-relaxed;
+  font-family: var(--font-mono, 'JetBrains Mono', 'Fira Code', ui-monospace, monospace);
+  white-space: pre;
+  overflow-x: auto;
+}
+
+/* 行内代码 */
+.markdown-document-viewer code:not(.hljs) {
+  @apply rounded bg-gray-100 px-1.5 py-0.5 font-mono text-sm text-pink-700 dark:bg-gray-800 dark:text-pink-400;
+}
+
+/* 浅色/深色主题 — 高亮颜色 */
+:root {
+  --hljs-comment: #6b7280;
+  --hljs-keyword: #7c3aed;
+  --hljs-string: #059669;
+  --hljs-number: #2563eb;
+  --hljs-title: #d97706;
+  --hljs-type: #dc2626;
+  --hljs-attr: #0891b2;
+  --hljs-built_in: #4f46e5;
+  --hljs-literal: #be185d;
+  --hljs-params: #1f2937;
+  --hljs-selector-class: #0d9488;
+  --hljs-selector-tag: #2563eb;
+  --hljs-meta: #9333ea;
+  --hljs-section: #d97706;
+  --hljs-addition: #047857;
+  --hljs-deletion: #dc2626;
+}
+
+.dark {
+  --hljs-comment: #9ca3af;
+  --hljs-keyword: #a78bfa;
+  --hljs-string: #34d399;
+  --hljs-number: #60a5fa;
+  --hljs-title: #fbbf24;
+  --hljs-type: #f87171;
+  --hljs-attr: #22d3ee;
+  --hljs-built_in: #818cf8;
+  --hljs-literal: #f472b6;
+  --hljs-params: #e5e7eb;
+  --hljs-selector-class: #2dd4bf;
+  --hljs-selector-tag: #60a5fa;
+  --hljs-meta: #c084fc;
+  --hljs-section: #fbbf24;
+  --hljs-addition: #6ee7b7;
+  --hljs-deletion: #fca5a5;
+}
+
+/* highlight.js class 映射到 CSS Variables */
+.markdown-document-viewer .hljs-comment {
+  color: var(--hljs-comment);
+}
+.markdown-document-viewer .hljs-keyword {
+  color: var(--hljs-keyword);
+}
+.markdown-document-viewer .hljs-string {
+  color: var(--hljs-string);
+}
+.markdown-document-viewer .hljs-number {
+  color: var(--hljs-number);
+}
+.markdown-document-viewer .hljs-title {
+  color: var(--hljs-title);
+}
+.markdown-document-viewer .hljs-type {
+  color: var(--hljs-type);
+}
+.markdown-document-viewer .hljs-attr {
+  color: var(--hljs-attr);
+}
+.markdown-document-viewer .hljs-built_in {
+  color: var(--hljs-built_in);
+}
+.markdown-document-viewer .hljs-literal {
+  color: var(--hljs-literal);
+}
+.markdown-document-viewer .hljs-params {
+  color: var(--hljs-params);
+}
+.markdown-document-viewer .hljs-selector-class {
+  color: var(--hljs-selector-class);
+}
+.markdown-document-viewer .hljs-selector-tag {
+  color: var(--hljs-selector-tag);
+}
+.markdown-document-viewer .hljs-meta {
+  color: var(--hljs-meta);
+}
+.markdown-document-viewer .hljs-section {
+  color: var(--hljs-section);
+}
+.markdown-document-viewer .hljs-addition {
+  color: var(--hljs-addition);
+}
+.markdown-document-viewer .hljs-deletion {
+  color: var(--hljs-deletion);
+}
+
+/* 紧凑密度 */
+[data-density='compact'] .markdown-document-viewer .hljs {
+  @apply text-xs leading-snug;
+}
+[data-density='compact'] .code-block-container {
+  @apply p-2;
+}
+
+/* 超长行不撑破布局 */
+.code-block-container {
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+
+/* ---------------------------------------------------------------------------
+ * v3-document-formula-support —— KaTeX 公式主题适配
+ * --------------------------------------------------------------------------- */
+
+/* 深浅色：KaTeX 使用 currentColor 继承父容器文字色 */
+.katex {
+  color: currentColor;
+}
+
+/* 深色模式：KaTeX background 元素用暗色 */
+[data-mode='dark'] .katex .katex-html {
+  color: inherit;
+}
+
+/* 紧凑密度：块级公式减小上下边距 */
+[data-density='compact'] .math-block {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+
+/* 窄屏：公式内容开启横向滚动，不撑破布局 */
+@media (max-width: 640px) {
+  .math-block .math-content {
+    font-size: 0.875rem;
+  }
+  .math-block {
+    margin-left: -0.5rem;
+    margin-right: -0.5rem;
+    border-radius: 0;
+  }
+}
+
+/* KaTeX 公式可达性：确保公式容器可被屏幕阅读器识别 */
+.math-block[aria-label],
+.math-inline[aria-label] {
+  cursor: default;
+}
+
+/* 复制按钮响应式：窄屏下缩小 */
+@media (max-width: 640px) {
+  .math-block button[aria-label*='复制'] {
+    font-size: 0.7rem;
+    padding: 0.125rem 0.375rem;
+  }
+}
+
+/* Phone interaction rules include small touchscreens in landscape. */
+@media (max-width: 767px), (pointer: coarse) and (max-width: 1023px) {
+  main {
+    min-width: 0;
+  }
+  main :is(h1, h2, h3, p, dd),
+  [role='dialog'] :is(h1, h2, h3, p, dd) {
+    overflow-wrap: anywhere;
+  }
+  main :is(button:not([role='switch']):not([data-touch-control]), [role='button']),
+  [role='dialog'] :is(button:not([role='switch']):not([data-touch-control]), [role='button']),
+  [data-next-track] :is(button:not([role='switch']):not([data-touch-control]), [role='button']) {
+    min-height: 44px;
+  }
+  [data-touch-control] {
+    position: relative;
+    margin-block: 14px;
+  }
+  [data-touch-control]::before {
+    content: '';
+    position: absolute;
+    inset: -14px;
+  }
+  main :is(input:not([type='checkbox']):not([type='radio']), select),
+  [role='dialog'] :is(input:not([type='checkbox']):not([type='radio']), select) {
+    min-height: 44px;
+  }
+  main :is(input[type='checkbox'], input[type='radio']),
+  [role='dialog'] :is(input[type='checkbox'], input[type='radio']) {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+  main table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+  }
+  main th,
+  main td {
+    min-width: 80px;
+  }
+  [data-chart-viewport-slot] {
+    min-width: 0;
+    overflow-x: auto;
+  }
+  [data-chart-lens-toolbar] {
+    height: auto;
+    padding: 8px;
+  }
+  [data-chart-back-to-catalog] {
+    width: 44px;
+    height: 44px;
+  }
+  [data-ai-colleague-panel] {
+    width: 100%;
+  }
+  [data-ai-colleague-header] > div:first-child > p:last-child {
+    display: none;
+  }
+  [data-ai-colleague-send],
+  [data-ai-colleague-close],
+  [data-task-detail-close] {
+    width: 44px;
+    height: 44px;
+  }
+  [data-ai-colleague-tabs] > button {
+    flex: 1;
+    font-size: 14px;
+  }
+  [data-ai-colleague-conversation-tabs] {
+    flex-shrink: 0;
+  }
+  [data-ai-colleague-timeline] {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+  [data-ai-colleague-timeline] [data-testid='ai-colleague-empty'] {
+    min-height: 0;
+  }
+  [data-ai-colleague-composer] {
+    padding-top: 8px;
+  }
+  [data-ai-colleague-input] {
+    max-height: 88px;
+  }
+  [data-workspace-task-detail-drawer] {
+    max-width: 100%;
+    border-left: 0;
+  }
+  [data-workspace-task-detail-drawer] input[type='range'] {
+    min-height: 44px;
+  }
+  [data-wbs-lens] {
+    height: max(420px, calc(100dvh - 15rem));
+  }
+  [data-wbs-lens] [data-wbs-node-name] {
+    white-space: normal;
+  }
+  [data-list-pagination],
+  [data-list-toolbar] {
+    height: auto;
+  }
+  [data-list-toolbar] > div:first-child {
+    min-height: 44px;
+    width: 100%;
+  }
+  [data-aon-drawer] {
+    position: fixed;
+    inset: auto 0 0;
+    width: 100%;
+    height: 65dvh;
+    border-top: 1px solid var(--nx-border-hairline);
+    border-radius: 16px 16px 0 0;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+  .react-flow__controls-button {
+    width: 44px;
+    height: 44px;
+  }
+  [data-kms-keyring] > div > div {
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 767px), (pointer: coarse) and (max-width: 1023px) {
+  main button:has(> svg:only-child),
+  [role='dialog'] button:has(> svg:only-child) {
+    min-width: 44px;
+  }
+  [data-wbs-toggle] {
+    min-width: 44px;
+  }
+  [data-calendar-columns='week'] {
+    min-width: 560px;
+  }
+  [data-calendar-add] {
+    opacity: 1;
+    min-height: 44px;
+  }
+}
+@media (max-width: 767px), (pointer: coarse) and (max-width: 1023px) {
+  [data-wbs-row],
+  [data-wbs-task-row] {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+  }
+  [data-wbs-row] > div:first-child,
+  [data-wbs-task-row] > div:first-child {
+    flex: 0 0 auto;
+    min-height: 44px;
+    padding-right: 12px;
+  }
+  [data-wbs-row] > div:last-child,
+  [data-wbs-task-row] > div:last-child {
+    justify-content: flex-end;
+    min-width: 0;
+  }
+  [data-wbs-node-name] {
+    min-width: 0;
+    flex: 1;
+    white-space: nowrap !important;
+    font-size: 14px;
+  }
+  [data-mobile-kanban-nav] ~ div [data-card-name] {
+    font-size: 16px;
+    line-height: 24px;
+  }
+  [data-mobile-kanban-nav] ~ div [data-card-priority] {
+    font-size: 12px;
+  }
+  [data-mobile-kanban-nav] ~ div [data-card-progress] {
+    height: 6px;
+  }
+  [data-mobile-kanban-nav] ~ div [data-card-assignee],
+  [data-mobile-kanban-nav] ~ div [data-card-date] {
+    font-size: 12px;
+  }
+}
+@media (max-width: 767px), (pointer: coarse) and (max-width: 1023px) {
+  main .grid,
+  main .grid > * {
+    min-width: 0;
+  }
+  main code {
+    overflow-wrap: anywhere;
+  }
+  [data-ai-connections-list] > div {
+    min-width: 0;
+  }
+  [data-calendar-project-picker] {
+    width: 100%;
+  }
+}
+
+@media (max-width: 767px), (pointer: coarse) and (max-width: 1023px) {
+  [data-quick-create-dates] {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  [data-quick-create-dates] input {
+    width: 100%;
+    min-width: 0;
+  }
+  [data-ai-colleague-suggestions] {
+    min-width: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+  [data-ai-colleague-suggestions] > span {
+    display: none;
+  }
+  [data-ai-colleague-suggestion] {
+    flex-shrink: 0;
+    max-width: 75%;
+  }
+}

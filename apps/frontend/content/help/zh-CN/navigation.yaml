@@ -1,0 +1,177 @@
+# 帮助中心导航清单（v3-help-and-operational-issues-center）
+# 唯一事实来源：网页树、搜索模块筛选、orphan lint 均由此驱动。
+# articleIds 只能引用已存在的文章（文件 id = <area>.<slug>）；新增文章需同步登记。
+
+locale: zh-CN
+productVersion: v3
+
+areas:
+  - id: getting-started
+    label: 快速开始
+    description: 从零认识产品并完成第一个项目。
+    articleIds:
+      - getting-started.product-overview
+      - getting-started.login-and-accounts
+      - getting-started.add-a-quick-tour
+      - getting-started.create-first-project
+      - getting-started.invite-your-team
+
+  - id: ai
+    label: AI 能力
+    description: AI 连接、OCR、快速创建与 Copilot。
+    articleIds:
+      - ai.configure-ai-connections
+      - ai.configure-ocr
+      - ai.ai-quick-create
+      - ai.clarification-cards
+      - ai.generation-progress-and-review
+      - ai.draft-layer-review
+      - ai.copilot-general-and-project-context
+      - ai.optional-web-search
+
+  - id: projects
+    label: 项目与视图
+    description: 项目生命周期与六种视图。
+    articleIds:
+      - projects.projects-list-and-create
+      - projects.views-overview
+      - projects.kanban
+      - projects.list
+      - projects.calendar
+      - projects.timeline
+      - projects.gantt
+      - projects.wbs
+      - projects.milestones
+      - projects.project-members
+      - projects.project-settings
+      - projects.tasks-batch-and-detail
+      - projects.tasks-recycle-bin
+
+  - id: management
+    label: 项目执行
+    description: 资源、风险、变更与报表。
+    articleIds:
+      - management.health-risk-command-center
+      - management.resources
+      - management.issues-and-risks
+      - management.recommendations
+      - management.change-requests
+      - management.reports
+
+  - id: pmo
+    label: 组合与战略
+    description: 跨项目健康、优先级评分、决策与战略执行。
+    articleIds:
+      - pmo.overview
+      - pmo.traffic-light
+      - pmo.priority-scoring
+      - pmo.grouping-views
+      - pmo.bi-risk-heatmap
+      - pmo.okr-alignment
+      - pmo.strategy-execution-cockpit
+      - pmo.decisions
+      - pmo.ai-priority-recommendations
+
+  - id: knowledge
+    label: 知识与 TRIZ
+    description: 文件库、OCR 识别、知识库与 TRIZ 创新工具。
+    articleIds:
+      - knowledge.files-library
+      - knowledge.ocr-documents
+      - knowledge.knowledge-base
+      - knowledge.knowledge-operations
+      - knowledge.triz-workbench
+      - knowledge.triz-contradiction-matrix
+      - knowledge.triz-assistant
+
+  - id: admin
+    label: 组织与管理员
+    description: 账号、角色、权限、集成与安全。
+    articleIds:
+      - admin.accounts-organizations-and-roles
+      - admin.interface-text-variant
+      - admin.skills-and-knowledge
+      - admin.integrations-and-plugins
+      - admin.organization-plugins
+      - admin.security-audit-and-dlp
+
+  - id: deployment
+    label: 部署与运维
+    description: 本机开发、Docker Compose 与备份升级。
+    articleIds:
+      - deployment.local-development
+      - deployment.docker-compose
+
+  - id: reference
+    label: 参考
+    description: 权限、API、错误码与限制。
+    articleIds:
+      - reference.permissions
+      - reference.api-errors
+      - reference.ai-capabilities
+      - reference.limits-and-statuses
+
+  - id: troubleshooting
+    label: 故障排查
+    description: 常见症状 → 原因 → 检查 → 修复。
+    articleIds:
+      - troubleshooting.login
+      - troubleshooting.project-loading
+      - troubleshooting.copilot-unavailable
+      - troubleshooting.ai-generation
+      - troubleshooting.sse-streaming
+      - troubleshooting.ocr
+      - troubleshooting.text-variant-issues
+
+learningPaths:
+  - id: new-user
+    label: 新手入门
+    description: 注册登录后，从创建第一个项目开始。
+    roles: [member, external_collaborator, readonly_observer]
+    articleIds:
+      - getting-started.product-overview
+      - getting-started.login-and-accounts
+      - getting-started.add-a-quick-tour
+      - getting-started.create-first-project
+      - ai.ai-quick-create
+      - projects.views-overview
+      - reference.permissions
+
+  - id: project-manager
+    label: 项目经理
+    description: 计划、执行、风险与变更的全周期操作。
+    roles: [project_manager, owner, admin]
+    articleIds:
+      - getting-started.create-first-project
+      - projects.tasks-batch-and-detail
+      - projects.gantt
+      - projects.milestones
+      - ai.copilot-general-and-project-context
+      - management.health-risk-command-center
+      - management.issues-and-risks
+      - management.change-requests
+
+  - id: org-admin
+    label: 组织管理员
+    description: 组织、成员、权限与安全配置。
+    roles: [org_admin, owner, admin]
+    articleIds:
+      - admin.accounts-organizations-and-roles
+      - reference.permissions
+      - ai.configure-ai-connections
+      - admin.organization-plugins
+      - admin.security-audit-and-dlp
+      - knowledge.knowledge-operations
+
+  - id: developer
+    label: 开发者与集成
+    description: API、部署与故障排查。
+    roles: [system_admin, org_admin]
+    articleIds:
+      - deployment.local-development
+      - deployment.docker-compose
+      - ai.configure-ai-connections
+      - ai.configure-ocr
+      - reference.ai-capabilities
+      - reference.api-errors
+      - troubleshooting.sse-streaming

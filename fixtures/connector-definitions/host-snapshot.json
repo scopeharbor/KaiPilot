@@ -1,0 +1,98 @@
+{
+  "hostContractVersion": "1.0.0",
+  "pluginIdentity": {
+    "pluginId": "demo.plugin",
+    "version": "1.0.0"
+  },
+  "manifestDigest": "sha256:abc123",
+  "seamCatalog": {
+    "server-query": {
+      "seamVersion": "1.0.0",
+      "availability": "host-ready",
+      "requiredPermissions": ["demo.read"],
+      "scopeModes": ["organization", "project"],
+      "sideEffectCeiling": "external-action",
+      "confirmationCeiling": "explicit",
+      "networkCeiling": "host-brokered"
+    },
+    "server-command-proposal": {
+      "seamVersion": "1.0.0",
+      "availability": "host-ready",
+      "requiredPermissions": ["demo.write"],
+      "scopeModes": ["organization", "project"],
+      "sideEffectCeiling": "proposal",
+      "confirmationCeiling": "explicit",
+      "networkCeiling": "host-brokered"
+    },
+    "trigger.webhook": {
+      "seamVersion": "1.0.0",
+      "availability": "host-ready",
+      "requiredPermissions": ["acme.trigger"],
+      "scopeModes": ["project"],
+      "sideEffectCeiling": "read-only",
+      "confirmationCeiling": "not-required",
+      "networkCeiling": "host-brokered"
+    },
+    "auth.oauth2": {
+      "seamVersion": "1.0.0",
+      "availability": "host-ready",
+      "requiredPermissions": ["demo.read"],
+      "scopeModes": ["organization", "project"],
+      "sideEffectCeiling": "external-action",
+      "confirmationCeiling": "explicit",
+      "networkCeiling": "host-brokered"
+    }
+  },
+  "permissionVocabulary": {
+    "demo.read": {
+      "seamKey": "server-query",
+      "maxScopeKind": "organization",
+      "maxSideEffect": "read-only",
+      "maxConfirmation": "not-required",
+      "maxNetwork": "host-brokered"
+    },
+    "demo.write": {
+      "seamKey": "server-command-proposal",
+      "maxScopeKind": "project",
+      "maxSideEffect": "proposal",
+      "maxConfirmation": "explicit",
+      "maxNetwork": "host-brokered"
+    },
+    "acme.read": {
+      "seamKey": "server-query",
+      "maxScopeKind": "organization",
+      "maxSideEffect": "read-only",
+      "maxConfirmation": "not-required",
+      "maxNetwork": "host-brokered"
+    },
+    "acme.write": {
+      "seamKey": "server-command-proposal",
+      "maxScopeKind": "project",
+      "maxSideEffect": "proposal",
+      "maxConfirmation": "explicit",
+      "maxNetwork": "host-brokered"
+    },
+    "acme.trigger": {
+      "seamKey": "trigger.webhook",
+      "maxScopeKind": "project",
+      "maxSideEffect": "read-only",
+      "maxConfirmation": "not-required",
+      "maxNetwork": "host-brokered"
+    }
+  },
+  "authCapabilities": {
+    "auth.oauth2": {
+      "kind": "oauth2",
+      "scopeKeys": ["read:work", "write:work"]
+    },
+    "auth.none": {
+      "kind": "none",
+      "scopeKeys": []
+    },
+    "auth.apikey": {
+      "kind": "apiKey",
+      "scopeKeys": []
+    }
+  },
+  "evidenceFreshness": "fresh"
+}

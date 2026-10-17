@@ -1,0 +1,1362 @@
+{
+  "definitions": [
+    {
+      "definitionSchemaVersion": "2.0",
+      "identity": {
+        "connectorKey": "demo.connector",
+        "displayName": "Demo Connector",
+        "version": "1.0.0",
+        "providerKey": "demo",
+        "category": "other",
+        "provenance": {
+          "sourceRef": "local:fixture",
+          "kind": "local"
+        }
+      },
+      "compatibility": {
+        "hostContractVersion": "1.0.0"
+      },
+      "auth": {
+        "kind": "none"
+      },
+      "schemas": [
+        {
+          "schemaKey": "demo.input",
+          "fields": [
+            {
+              "fieldKey": "title",
+              "type": "string",
+              "required": true,
+              "description": "标题"
+            },
+            {
+              "fieldKey": "count",
+              "type": "integer",
+              "required": false,
+              "description": "数量"
+            }
+          ]
+        },
+        {
+          "schemaKey": "demo.output",
+          "fields": [
+            {
+              "fieldKey": "id",
+              "type": "string",
+              "required": true
+            }
+          ]
+        }
+      ],
+      "operations": [
+        {
+          "operationKey": "demo.query",
+          "kind": "query",
+          "title": "查询示例",
+          "description": "只读查询",
+          "inputSchemaRef": "demo.input",
+          "outputSchemaRef": "demo.output",
+          "hostCapabilityRef": "server-query",
+          "permissionRefs": ["demo.read"],
+          "scopeKind": "organization",
+          "sideEffect": "read-only",
+          "confirmation": "not-required",
+          "idempotency": "idempotent",
+          "networkPolicy": "none"
+        }
+      ],
+      "protocolHints": {
+        "pagination": {
+          "mode": "cursor",
+          "cursorField": "id",
+          "maxPageSize": 100
+        },
+        "rateLimit": {
+          "maxRequestsPerWindow": 100,
+          "windowSeconds": 60,
+          "scope": "per-connector"
+        },
+        "retry": {
+          "retryPolicy": "none",
+          "maxAttempts": 0
+        },
+        "errorTaxonomy": {
+          "categories": ["provider", "validation"],
+          "retryableCategories": ["provider"]
+        }
+      },
+      "extensions": {
+        "icon": "demo-icon",
+        "documentationRef": "docs/demo.md",
+        "tags": ["demo", "fixture"]
+      }
+    },
+    {
+      "definitionSchemaVersion": "1.0",
+      "identity": {
+        "connectorKey": "Bad Key With Space",
+        "displayName": "Demo Connector",
+        "version": "1.0.0",
+        "providerKey": "demo",
+        "category": "other",
+        "provenance": {
+          "sourceRef": "local:fixture",
+          "kind": "local"
+        }
+      },
+      "compatibility": {
+        "hostContractVersion": "1.0.0"
+      },
+      "auth": {
+        "kind": "none"
+      },
+      "schemas": [
+        {
+          "schemaKey": "demo.input",
+          "fields": [
+            {
+              "fieldKey": "title",
+              "type": "string",
+              "required": true,
+              "description": "标题"
+            },
+            {
+              "fieldKey": "count",
+              "type": "integer",
+              "required": false,
+              "description": "数量"
+            }
+          ]
+        },
+        {
+          "schemaKey": "demo.output",
+          "fields": [
+            {
+              "fieldKey": "id",
+              "type": "string",
+              "required": true
+            }
+          ]
+        }
+      ],
+      "operations": [
+        {
+          "operationKey": "demo.query",
+          "kind": "query",
+          "title": "查询示例",
+          "description": "只读查询",
+          "inputSchemaRef": "demo.input",
+          "outputSchemaRef": "demo.output",
+          "hostCapabilityRef": "server-query",
+          "permissionRefs": ["demo.read"],
+          "scopeKind": "organization",
+          "sideEffect": "read-only",
+          "confirmation": "not-required",
+          "idempotency": "idempotent",
+          "networkPolicy": "none"
+        }
+      ],
+      "protocolHints": {
+        "pagination": {
+          "mode": "cursor",
+          "cursorField": "id",
+          "maxPageSize": 100
+        },
+        "rateLimit": {
+          "maxRequestsPerWindow": 100,
+          "windowSeconds": 60,
+          "scope": "per-connector"
+        },
+        "retry": {
+          "retryPolicy": "none",
+          "maxAttempts": 0
+        },
+        "errorTaxonomy": {
+          "categories": ["provider", "validation"],
+          "retryableCategories": ["provider"]
+        }
+      },
+      "extensions": {
+        "icon": "demo-icon",
+        "documentationRef": "docs/demo.md",
+        "tags": ["demo", "fixture"]
+      }
+    },
+    {
+      "definitionSchemaVersion": "1.0",
+      "identity": {
+        "connectorKey": "demo.connector",
+        "displayName": "Demo Connector",
+        "version": "latest",
+        "providerKey": "demo",
+        "category": "other",
+        "provenance": {
+          "sourceRef": "local:fixture",
+          "kind": "local"
+        }
+      },
+      "compatibility": {
+        "hostContractVersion": "1.0.0"
+      },
+      "auth": {
+        "kind": "none"
+      },
+      "schemas": [
+        {
+          "schemaKey": "demo.input",
+          "fields": [
+            {
+              "fieldKey": "title",
+              "type": "string",
+              "required": true,
+              "description": "标题"
+            },
+            {
+              "fieldKey": "count",
+              "type": "integer",
+              "required": false,
+              "description": "数量"
+            }
+          ]
+        },
+        {
+          "schemaKey": "demo.output",
+          "fields": [
+            {
+              "fieldKey": "id",
+              "type": "string",
+              "required": true
+            }
+          ]
+        }
+      ],
+      "operations": [
+        {
+          "operationKey": "demo.query",
+          "kind": "query",
+          "title": "查询示例",
+          "description": "只读查询",
+          "inputSchemaRef": "demo.input",
+          "outputSchemaRef": "demo.output",
+          "hostCapabilityRef": "server-query",
+          "permissionRefs": ["demo.read"],
+          "scopeKind": "organization",
+          "sideEffect": "read-only",
+          "confirmation": "not-required",
+          "idempotency": "idempotent",
+          "networkPolicy": "none"
+        }
+      ],
+      "protocolHints": {
+        "pagination": {
+          "mode": "cursor",
+          "cursorField": "id",
+          "maxPageSize": 100
+        },
+        "rateLimit": {
+          "maxRequestsPerWindow": 100,
+          "windowSeconds": 60,
+          "scope": "per-connector"
+        },
+        "retry": {
+          "retryPolicy": "none",
+          "maxAttempts": 0
+        },
+        "errorTaxonomy": {
+          "categories": ["provider", "validation"],
+          "retryableCategories": ["provider"]
+        }
+      },
+      "extensions": {
+        "icon": "demo-icon",
+        "documentationRef": "docs/demo.md",
+        "tags": ["demo", "fixture"]
+      }
+    },
+    {
+      "definitionSchemaVersion": "1.0",
+      "identity": {
+        "connectorKey": "demo.connector",
+        "displayName": "Demo Connector",
+        "version": "1.0.0",
+        "providerKey": "demo",
+        "category": "other",
+        "provenance": {
+          "sourceRef": "public-marketplace:evil"
+        }
+      },
+      "compatibility": {
+        "hostContractVersion": "1.0.0"
+      },
+      "auth": {
+        "kind": "none"
+      },
+      "schemas": [
+        {
+          "schemaKey": "demo.input",
+          "fields": [
+            {
+              "fieldKey": "title",
+              "type": "string",
+              "required": true,
+              "description": "标题"
+            },
+            {
+              "fieldKey": "count",
+              "type": "integer",
+              "required": false,
+              "description": "数量"
+            }
+          ]
+        },
+        {
+          "schemaKey": "demo.output",
+          "fields": [
+            {
+              "fieldKey": "id",
+              "type": "string",
+              "required": true
+            }
+          ]
+        }
+      ],
+      "operations": [
+        {
+          "operationKey": "demo.query",
+          "kind": "query",
+          "title": "查询示例",
+          "description": "只读查询",
+          "inputSchemaRef": "demo.input",
+          "outputSchemaRef": "demo.output",
+          "hostCapabilityRef": "server-query",
+          "permissionRefs": ["demo.read"],
+          "scopeKind": "organization",
+          "sideEffect": "read-only",
+          "confirmation": "not-required",
+          "idempotency": "idempotent",
+          "networkPolicy": "none"
+        }
+      ],
+      "protocolHints": {
+        "pagination": {
+          "mode": "cursor",
+          "cursorField": "id",
+          "maxPageSize": 100
+        },
+        "rateLimit": {
+          "maxRequestsPerWindow": 100,
+          "windowSeconds": 60,
+          "scope": "per-connector"
+        },
+        "retry": {
+          "retryPolicy": "none",
+          "maxAttempts": 0
+        },
+        "errorTaxonomy": {
+          "categories": ["provider", "validation"],
+          "retryableCategories": ["provider"]
+        }
+      },
+      "extensions": {
+        "icon": "demo-icon",
+        "documentationRef": "docs/demo.md",
+        "tags": ["demo", "fixture"]
+      }
+    },
+    {
+      "definitionSchemaVersion": "1.0",
+      "identity": {
+        "connectorKey": "demo.connector",
+        "displayName": "Demo Connector",
+        "version": "1.0.0",
+        "providerKey": "demo",
+        "category": "other",
+        "provenance": {
+          "sourceRef": "local:fixture",
+          "kind": "local"
+        }
+      },
+      "compatibility": {
+        "hostContractVersion": "1.0.0"
+      },
+      "auth": {
+        "kind": "none"
+      },
+      "schemas": [
+        {
+          "schemaKey": "demo.input",
+          "fields": [
+            {
+              "fieldKey": "title",
+              "type": "string",
+              "required": true,
+              "description": "标题"
+            },
+            {
+              "fieldKey": "count",
+              "type": "integer",
+              "required": false,
+              "description": "数量"
+            }
+          ]
+        },
+        {
+          "schemaKey": "demo.output",
+          "fields": [
+            {
+              "fieldKey": "id",
+              "type": "string",
+              "required": true
+            }
+          ]
+        }
+      ],
+      "operations": [
+        {
+          "operationKey": "dup.key",
+          "kind": "query",
+          "title": "查询示例",
+          "description": "只读查询",
+          "inputSchemaRef": "demo.input",
+          "outputSchemaRef": "demo.output",
+          "hostCapabilityRef": "server-query",
+          "permissionRefs": ["demo.read"],
+          "scopeKind": "organization",
+          "sideEffect": "read-only",
+          "confirmation": "not-required",
+          "idempotency": "idempotent",
+          "networkPolicy": "none"
+        },
+        {
+          "operationKey": "dup.key",
+          "kind": "query",
+          "title": "查询示例",
+          "description": "只读查询",
+          "inputSchemaRef": "demo.input",
+          "outputSchemaRef": "demo.output",
+          "hostCapabilityRef": "server-query",
+          "permissionRefs": ["demo.read"],
+          "scopeKind": "organization",
+          "sideEffect": "read-only",
+          "confirmation": "not-required",
+          "idempotency": "idempotent",
+          "networkPolicy": "none"
+        }
+      ],
+      "protocolHints": {
+        "pagination": {
+          "mode": "cursor",
+          "cursorField": "id",
+          "maxPageSize": 100
+        },
+        "rateLimit": {
+          "maxRequestsPerWindow": 100,
+          "windowSeconds": 60,
+          "scope": "per-connector"
+        },
+        "retry": {
+          "retryPolicy": "none",
+          "maxAttempts": 0
+        },
+        "errorTaxonomy": {
+          "categories": ["provider", "validation"],
+          "retryableCategories": ["provider"]
+        }
+      },
+      "extensions": {
+        "icon": "demo-icon",
+        "documentationRef": "docs/demo.md",
+        "tags": ["demo", "fixture"]
+      }
+    },
+    {
+      "definitionSchemaVersion": "1.0",
+      "identity": {
+        "connectorKey": "demo.connector",
+        "displayName": "Demo Connector",
+        "version": "1.0.0",
+        "providerKey": "demo",
+        "category": "other",
+        "provenance": {
+          "sourceRef": "local:fixture",
+          "kind": "local"
+        }
+      },
+      "compatibility": {
+        "hostContractVersion": "1.0.0"
+      },
+      "auth": {
+        "kind": "apiKey",
+        "hostCapabilityRef": "auth.apikey",
+        "token": "sk_abc123456789012345678",
+        "apiKey": "ghp_abc123456789012345678901234567890"
+      },
+      "schemas": [
+        {
+          "schemaKey": "demo.input",
+          "fields": [
+            {
+              "fieldKey": "title",
+              "type": "string",
+              "required": true,
+              "description": "标题"
+            },
+            {
+              "fieldKey": "count",
+              "type": "integer",
+              "required": false,
+              "description": "数量"
+            }
+          ]
+        },
+        {
+          "schemaKey": "demo.output",
+          "fields": [
+            {
+              "fieldKey": "id",
+              "type": "string",
+              "required": true
+            }
+          ]
+        }
+      ],
+      "operations": [
+        {
+          "operationKey": "demo.query",
+          "kind": "query",
+          "title": "查询示例",
+          "description": "只读查询",
+          "inputSchemaRef": "demo.input",
+          "outputSchemaRef": "demo.output",
+          "hostCapabilityRef": "server-query",
+          "permissionRefs": ["demo.read"],
+          "scopeKind": "organization",
+          "sideEffect": "read-only",
+          "confirmation": "not-required",
+          "idempotency": "idempotent",
+          "networkPolicy": "none"
+        }
+      ],
+      "protocolHints": {
+        "pagination": {
+          "mode": "cursor",
+          "cursorField": "id",
+          "maxPageSize": 100
+        },
+        "rateLimit": {
+          "maxRequestsPerWindow": 100,
+          "windowSeconds": 60,
+          "scope": "per-connector"
+        },
+        "retry": {
+          "retryPolicy": "none",
+          "maxAttempts": 0
+        },
+        "errorTaxonomy": {
+          "categories": ["provider", "validation"],
+          "retryableCategories": ["provider"]
+        }
+      },
+      "extensions": {
+        "icon": "demo-icon",
+        "documentationRef": "docs/demo.md",
+        "tags": ["demo", "fixture"]
+      }
+    },
+    {
+      "definitionSchemaVersion": "1.0",
+      "identity": {
+        "connectorKey": "demo.connector",
+        "displayName": "Demo Connector",
+        "version": "1.0.0",
+        "providerKey": "demo",
+        "category": "other",
+        "provenance": {
+          "sourceRef": "local:fixture",
+          "kind": "local"
+        }
+      },
+      "compatibility": {
+        "hostContractVersion": "1.0.0"
+      },
+      "auth": {
+        "kind": "none"
+      },
+      "schemas": [
+        {
+          "schemaKey": "demo.input",
+          "fields": [
+            {
+              "fieldKey": "title",
+              "type": "string",
+              "required": true,
+              "description": "标题"
+            },
+            {
+              "fieldKey": "count",
+              "type": "integer",
+              "required": false,
+              "description": "数量"
+            }
+          ]
+        },
+        {
+          "schemaKey": "demo.output",
+          "fields": [
+            {
+              "fieldKey": "id",
+              "type": "string",
+              "required": true
+            }
+          ]
+        }
+      ],
+      "operations": [
+        {
+          "operationKey": "demo.query",
+          "kind": "query",
+          "title": "查询示例",
+          "description": "只读查询",
+          "inputSchemaRef": "demo.input",
+          "outputSchemaRef": "demo.output",
+          "hostCapabilityRef": "server-query",
+          "permissionRefs": ["demo.read"],
+          "scopeKind": "organization",
+          "sideEffect": "read-only",
+          "confirmation": "not-required",
+          "idempotency": "idempotent",
+          "networkPolicy": "none"
+        }
+      ],
+      "protocolHints": {
+        "pagination": {
+          "mode": "cursor",
+          "cursorField": "id",
+          "maxPageSize": 100
+        },
+        "rateLimit": {
+          "maxRequestsPerWindow": 100,
+          "windowSeconds": 60,
+          "scope": "per-connector"
+        },
+        "retry": {
+          "retryPolicy": "none",
+          "maxAttempts": 0
+        },
+        "errorTaxonomy": {
+          "categories": ["provider", "validation"],
+          "retryableCategories": ["provider"]
+        }
+      },
+      "extensions": {
+        "documentationRef": "../../escape/file.md"
+      }
+    },
+    {
+      "definitionSchemaVersion": "1.0",
+      "identity": {
+        "connectorKey": "demo.connector",
+        "displayName": "Demo Connector",
+        "version": "1.0.0",
+        "providerKey": "demo",
+        "category": "other",
+        "provenance": {
+          "sourceRef": "local:fixture",
+          "kind": "local"
+        }
+      },
+      "compatibility": {
+        "hostContractVersion": "1.0.0"
+      },
+      "auth": {
+        "kind": "none"
+      },
+      "schemas": [
+        {
+          "schemaKey": "demo.input",
+          "fields": [
+            {
+              "fieldKey": "title",
+              "type": "string",
+              "required": true,
+              "description": "标题"
+            },
+            {
+              "fieldKey": "count",
+              "type": "integer",
+              "required": false,
+              "description": "数量"
+            }
+          ]
+        },
+        {
+          "schemaKey": "demo.output",
+          "fields": [
+            {
+              "fieldKey": "id",
+              "type": "string",
+              "required": true
+            }
+          ]
+        }
+      ],
+      "operations": [
+        {
+          "operationKey": "demo.query",
+          "kind": "query",
+          "title": "查询示例",
+          "description": "只读查询",
+          "inputSchemaRef": "demo.input",
+          "outputSchemaRef": "demo.output",
+          "hostCapabilityRef": "server-query",
+          "permissionRefs": ["demo.read"],
+          "scopeKind": "global",
+          "sideEffect": "read-only",
+          "confirmation": "not-required",
+          "idempotency": "idempotent",
+          "networkPolicy": "none"
+        }
+      ],
+      "protocolHints": {
+        "pagination": {
+          "mode": "cursor",
+          "cursorField": "id",
+          "maxPageSize": 100
+        },
+        "rateLimit": {
+          "maxRequestsPerWindow": 100,
+          "windowSeconds": 60,
+          "scope": "per-connector"
+        },
+        "retry": {
+          "retryPolicy": "none",
+          "maxAttempts": 0
+        },
+        "errorTaxonomy": {
+          "categories": ["provider", "validation"],
+          "retryableCategories": ["provider"]
+        }
+      },
+      "extensions": {
+        "icon": "demo-icon",
+        "documentationRef": "docs/demo.md",
+        "tags": ["demo", "fixture"]
+      }
+    },
+    {
+      "definitionSchemaVersion": "1.0",
+      "identity": {
+        "connectorKey": "demo.connector",
+        "displayName": "Demo Connector",
+        "version": "1.0.0",
+        "providerKey": "demo",
+        "category": "other",
+        "provenance": {
+          "sourceRef": "local:fixture",
+          "kind": "local"
+        }
+      },
+      "compatibility": {
+        "hostContractVersion": "1.0.0"
+      },
+      "auth": {
+        "kind": "none"
+      },
+      "schemas": [
+        {
+          "schemaKey": "demo.input",
+          "fields": [
+            {
+              "fieldKey": "title",
+              "type": "string",
+              "required": true,
+              "description": "标题"
+            },
+            {
+              "fieldKey": "count",
+              "type": "integer",
+              "required": false,
+              "description": "数量"
+            }
+          ]
+        },
+        {
+          "schemaKey": "demo.output",
+          "fields": [
+            {
+              "fieldKey": "id",
+              "type": "string",
+              "required": true
+            }
+          ]
+        }
+      ],
+      "operations": [
+        {
+          "operationKey": "demo.query",
+          "kind": "query",
+          "title": "查询示例",
+          "description": "只读查询",
+          "inputSchemaRef": "demo.input",
+          "outputSchemaRef": "demo.output",
+          "hostCapabilityRef": "server-query",
+          "permissionRefs": ["demo.read"],
+          "scopeKind": "organization",
+          "sideEffect": "external-action",
+          "confirmation": "not-required",
+          "idempotency": "idempotent",
+          "networkPolicy": "direct-allowed"
+        }
+      ],
+      "protocolHints": {
+        "pagination": {
+          "mode": "cursor",
+          "cursorField": "id",
+          "maxPageSize": 100
+        },
+        "rateLimit": {
+          "maxRequestsPerWindow": 100,
+          "windowSeconds": 60,
+          "scope": "per-connector"
+        },
+        "retry": {
+          "retryPolicy": "none",
+          "maxAttempts": 0
+        },
+        "errorTaxonomy": {
+          "categories": ["provider", "validation"],
+          "retryableCategories": ["provider"]
+        }
+      },
+      "extensions": {
+        "icon": "demo-icon",
+        "documentationRef": "docs/demo.md",
+        "tags": ["demo", "fixture"]
+      }
+    },
+    {
+      "definitionSchemaVersion": "1.0",
+      "identity": {
+        "connectorKey": "demo.connector",
+        "displayName": "Demo Connector",
+        "version": "1.0.0",
+        "providerKey": "demo",
+        "category": "other",
+        "provenance": {
+          "sourceRef": "local:fixture",
+          "kind": "local"
+        }
+      },
+      "compatibility": {
+        "hostContractVersion": "1.0.0"
+      },
+      "auth": {
+        "kind": "none"
+      },
+      "schemas": [
+        {
+          "schemaKey": "demo.input",
+          "fields": [
+            {
+              "fieldKey": "title",
+              "type": "string",
+              "required": true,
+              "description": "标题"
+            },
+            {
+              "fieldKey": "count",
+              "type": "integer",
+              "required": false,
+              "description": "数量"
+            }
+          ]
+        },
+        {
+          "schemaKey": "demo.output",
+          "fields": [
+            {
+              "fieldKey": "id",
+              "type": "string",
+              "required": true
+            }
+          ]
+        }
+      ],
+      "operations": [
+        {
+          "operationKey": "demo.formalWrite",
+          "kind": "action",
+          "title": "正式写入示例",
+          "inputSchemaRef": "demo.input",
+          "outputSchemaRef": "demo.output",
+          "hostCapabilityRef": "server-command-proposal",
+          "permissionRefs": ["demo.write"],
+          "scopeKind": "project",
+          "sideEffect": "formal-write",
+          "confirmation": "not-required",
+          "idempotency": "non-idempotent"
+        }
+      ],
+      "protocolHints": {
+        "pagination": {
+          "mode": "cursor",
+          "cursorField": "id",
+          "maxPageSize": 100
+        },
+        "rateLimit": {
+          "maxRequestsPerWindow": 100,
+          "windowSeconds": 60,
+          "scope": "per-connector"
+        },
+        "retry": {
+          "retryPolicy": "none",
+          "maxAttempts": 0
+        },
+        "errorTaxonomy": {
+          "categories": ["provider", "validation"],
+          "retryableCategories": ["provider"]
+        }
+      },
+      "extensions": {
+        "icon": "demo-icon",
+        "documentationRef": "docs/demo.md",
+        "tags": ["demo", "fixture"]
+      }
+    },
+    {
+      "definitionSchemaVersion": "1.0",
+      "identity": {
+        "connectorKey": "demo.connector",
+        "displayName": "Demo Connector",
+        "version": "1.0.0",
+        "providerKey": "demo",
+        "category": "other",
+        "provenance": {
+          "sourceRef": "local:fixture",
+          "kind": "local"
+        }
+      },
+      "compatibility": {
+        "hostContractVersion": "1.0.0"
+      },
+      "auth": {
+        "kind": "none"
+      },
+      "schemas": [
+        {
+          "schemaKey": "demo.input",
+          "fields": [
+            {
+              "fieldKey": "title",
+              "type": "string",
+              "required": true,
+              "description": "标题"
+            },
+            {
+              "fieldKey": "count",
+              "type": "integer",
+              "required": false,
+              "description": "数量"
+            }
+          ]
+        },
+        {
+          "schemaKey": "demo.output",
+          "fields": [
+            {
+              "fieldKey": "id",
+              "type": "string",
+              "required": true
+            }
+          ]
+        }
+      ],
+      "operations": [
+        {
+          "operationKey": "demo.write",
+          "kind": "action",
+          "title": "非幂等写入",
+          "inputSchemaRef": "demo.input",
+          "hostCapabilityRef": "server-command-proposal",
+          "permissionRefs": ["demo.write"],
+          "scopeKind": "project",
+          "sideEffect": "formal-write",
+          "confirmation": "explicit",
+          "idempotency": "non-idempotent"
+        }
+      ],
+      "protocolHints": {
+        "pagination": {
+          "mode": "cursor",
+          "cursorField": "id",
+          "maxPageSize": 100
+        },
+        "rateLimit": {
+          "maxRequestsPerWindow": 100,
+          "windowSeconds": 60,
+          "scope": "per-connector"
+        },
+        "retry": {
+          "retryPolicy": "exponential",
+          "maxAttempts": 3
+        },
+        "errorTaxonomy": {
+          "categories": ["provider", "validation"],
+          "retryableCategories": ["provider"]
+        }
+      },
+      "extensions": {
+        "icon": "demo-icon",
+        "documentationRef": "docs/demo.md",
+        "tags": ["demo", "fixture"]
+      }
+    },
+    {
+      "definitionSchemaVersion": "1.0",
+      "identity": {
+        "connectorKey": "demo.connector",
+        "displayName": "Demo Connector",
+        "version": "1.0.0",
+        "providerKey": "demo",
+        "category": "other",
+        "provenance": {
+          "sourceRef": "local:fixture",
+          "kind": "local"
+        },
+        "description": "包含 token sk_abc123456789012345678 的敏感描述"
+      },
+      "compatibility": {
+        "hostContractVersion": "1.0.0"
+      },
+      "auth": {
+        "kind": "none"
+      },
+      "schemas": [
+        {
+          "schemaKey": "demo.input",
+          "fields": [
+            {
+              "fieldKey": "title",
+              "type": "string",
+              "required": true,
+              "description": "标题"
+            },
+            {
+              "fieldKey": "count",
+              "type": "integer",
+              "required": false,
+              "description": "数量"
+            }
+          ]
+        },
+        {
+          "schemaKey": "demo.output",
+          "fields": [
+            {
+              "fieldKey": "id",
+              "type": "string",
+              "required": true
+            }
+          ]
+        }
+      ],
+      "operations": [
+        {
+          "operationKey": "demo.query",
+          "kind": "query",
+          "title": "查询示例",
+          "description": "只读查询",
+          "inputSchemaRef": "demo.input",
+          "outputSchemaRef": "demo.output",
+          "hostCapabilityRef": "server-query",
+          "permissionRefs": ["demo.read"],
+          "scopeKind": "organization",
+          "sideEffect": "read-only",
+          "confirmation": "not-required",
+          "idempotency": "idempotent",
+          "networkPolicy": "none"
+        }
+      ],
+      "protocolHints": {
+        "pagination": {
+          "mode": "cursor",
+          "cursorField": "id",
+          "maxPageSize": 100
+        },
+        "rateLimit": {
+          "maxRequestsPerWindow": 100,
+          "windowSeconds": 60,
+          "scope": "per-connector"
+        },
+        "retry": {
+          "retryPolicy": "none",
+          "maxAttempts": 0
+        },
+        "errorTaxonomy": {
+          "categories": ["provider", "validation"],
+          "retryableCategories": ["provider"]
+        }
+      },
+      "extensions": {
+        "icon": "demo-icon",
+        "documentationRef": "docs/demo.md",
+        "tags": ["demo", "fixture"]
+      }
+    },
+    {
+      "definitionSchemaVersion": "1.0",
+      "identity": {
+        "connectorKey": "demo.connector",
+        "displayName": "Demo Connector",
+        "version": "1.0.0",
+        "providerKey": "demo",
+        "category": "other",
+        "provenance": {
+          "sourceRef": "local:fixture",
+          "kind": "local"
+        }
+      },
+      "compatibility": {
+        "hostContractVersion": "1.0.0"
+      },
+      "auth": {
+        "kind": "none"
+      },
+      "schemas": [
+        {
+          "schemaKey": "demo.input",
+          "fields": [
+            {
+              "fieldKey": "title",
+              "type": "string",
+              "required": true,
+              "description": "标题"
+            },
+            {
+              "fieldKey": "count",
+              "type": "integer",
+              "required": false,
+              "description": "数量"
+            }
+          ]
+        },
+        {
+          "schemaKey": "demo.output",
+          "fields": [
+            {
+              "fieldKey": "id",
+              "type": "string",
+              "required": true
+            }
+          ]
+        }
+      ],
+      "operations": [
+        {
+          "operationKey": "demo.triggerBad",
+          "kind": "trigger",
+          "title": "非法触发器",
+          "outputSchemaRef": "demo.output",
+          "hostCapabilityRef": "server-query",
+          "permissionRefs": ["demo.read"],
+          "scopeKind": "organization",
+          "sideEffect": "formal-write",
+          "confirmation": "not-required"
+        }
+      ],
+      "protocolHints": {
+        "pagination": {
+          "mode": "cursor",
+          "cursorField": "id",
+          "maxPageSize": 100
+        },
+        "rateLimit": {
+          "maxRequestsPerWindow": 100,
+          "windowSeconds": 60,
+          "scope": "per-connector"
+        },
+        "retry": {
+          "retryPolicy": "none",
+          "maxAttempts": 0
+        },
+        "errorTaxonomy": {
+          "categories": ["provider", "validation"],
+          "retryableCategories": ["provider"]
+        }
+      },
+      "extensions": {
+        "icon": "demo-icon",
+        "documentationRef": "docs/demo.md",
+        "tags": ["demo", "fixture"]
+      }
+    },
+    {
+      "definitionSchemaVersion": "1.0",
+      "identity": {
+        "connectorKey": "demo.connector",
+        "displayName": "Demo Connector",
+        "version": "1.0.0",
+        "providerKey": "demo",
+        "category": "other",
+        "provenance": {
+          "sourceRef": "local:fixture",
+          "kind": "local"
+        }
+      },
+      "compatibility": {
+        "hostContractVersion": "1.0.0"
+      },
+      "auth": {
+        "kind": "unknownKind"
+      },
+      "schemas": [
+        {
+          "schemaKey": "demo.input",
+          "fields": [
+            {
+              "fieldKey": "title",
+              "type": "string",
+              "required": true,
+              "description": "标题"
+            },
+            {
+              "fieldKey": "count",
+              "type": "integer",
+              "required": false,
+              "description": "数量"
+            }
+          ]
+        },
+        {
+          "schemaKey": "demo.output",
+          "fields": [
+            {
+              "fieldKey": "id",
+              "type": "string",
+              "required": true
+            }
+          ]
+        }
+      ],
+      "operations": [
+        {
+          "operationKey": "demo.query",
+          "kind": "query",
+          "title": "查询示例",
+          "description": "只读查询",
+          "inputSchemaRef": "demo.input",
+          "outputSchemaRef": "demo.output",
+          "hostCapabilityRef": "server-query",
+          "permissionRefs": ["demo.read"],
+          "scopeKind": "organization",
+          "sideEffect": "read-only",
+          "confirmation": "not-required",
+          "idempotency": "idempotent",
+          "networkPolicy": "none"
+        }
+      ],
+      "protocolHints": {
+        "pagination": {
+          "mode": "cursor",
+          "cursorField": "id",
+          "maxPageSize": 100
+        },
+        "rateLimit": {
+          "maxRequestsPerWindow": 100,
+          "windowSeconds": 60,
+          "scope": "per-connector"
+        },
+        "retry": {
+          "retryPolicy": "none",
+          "maxAttempts": 0
+        },
+        "errorTaxonomy": {
+          "categories": ["provider", "validation"],
+          "retryableCategories": ["provider"]
+        }
+      },
+      "extensions": {
+        "icon": "demo-icon",
+        "documentationRef": "docs/demo.md",
+        "tags": ["demo", "fixture"]
+      }
+    },
+    {
+      "definitionSchemaVersion": "1.0",
+      "identity": {
+        "connectorKey": "demo.connector",
+        "displayName": "Demo Connector",
+        "version": "1.0.0",
+        "providerKey": "demo",
+        "category": "other",
+        "provenance": {
+          "sourceRef": "local:fixture",
+          "kind": "local"
+        }
+      },
+      "compatibility": {
+        "hostContractVersion": "1.0.0"
+      },
+      "auth": {
+        "kind": "none"
+      },
+      "schemas": [
+        {
+          "schemaKey": "dup.fields",
+          "fields": [
+            {
+              "fieldKey": "dup",
+              "type": "string"
+            },
+            {
+              "fieldKey": "dup",
+              "type": "string"
+            }
+          ]
+        }
+      ],
+      "operations": [
+        {
+          "operationKey": "demo.query",
+          "kind": "query",
+          "title": "查询示例",
+          "description": "只读查询",
+          "inputSchemaRef": "demo.input",
+          "outputSchemaRef": "demo.output",
+          "hostCapabilityRef": "server-query",
+          "permissionRefs": ["demo.read"],
+          "scopeKind": "organization",
+          "sideEffect": "read-only",
+          "confirmation": "not-required",
+          "idempotency": "idempotent",
+          "networkPolicy": "none"
+        }
+      ],
+      "protocolHints": {
+        "pagination": {
+          "mode": "cursor",
+          "cursorField": "id",
+          "maxPageSize": 100
+        },
+        "rateLimit": {
+          "maxRequestsPerWindow": 100,
+          "windowSeconds": 60,
+          "scope": "per-connector"
+        },
+        "retry": {
+          "retryPolicy": "none",
+          "maxAttempts": 0
+        },
+        "errorTaxonomy": {
+          "categories": ["provider", "validation"],
+          "retryableCategories": ["provider"]
+        }
+      },
+      "extensions": {
+        "icon": "demo-icon",
+        "documentationRef": "docs/demo.md",
+        "tags": ["demo", "fixture"]
+      }
+    }
+  ]
+}

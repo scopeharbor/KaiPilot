@@ -1,0 +1,172 @@
+/* 新轨设计令牌底座（v3-ui-next-track-foundation D-e / spec「新轨设计令牌底座」）。
+ *
+ * 仅在新轨路由组 layout（app/(next)/layout.tsx）与新登录页（app/next-login/page.tsx）
+ * 中导入，并通过 [data-next-track] 选择器严格限定作用域：
+ * - 命名空间统一 --nx-*，物理隔离旧轨的 --primary-* / --gray-* / --surface 等变量；
+ * - 新轨组件只消费这些令牌（var(--nx-*) 或映射的 Tailwind 实用类），禁止硬编码色值；
+ * - 对比度满足 WCAG AA（正文对背景 ≥ 4.5:1）。
+ *
+ * 本 change 先落地 D18 风格定案的空间层 C + 工作面 A 色板与暗色基座。
+ */
+[data-next-track] {
+  /* Layer 1 空间层 C（深空沉浸感，方案 C） */
+  --nx-space-bg: #040508;
+  --nx-space-surface: #0a0e17;
+  --nx-space-cyan: #38bdf8;
+  --nx-space-ai: #00f0ff;
+
+  /* Layer 2 工作面 A（暗黑仪器感，方案 A） */
+  --nx-workspace-bg: #0a0b0d;
+  --nx-workspace-surface: #121418;
+  --nx-workspace-blue: #4f75ff;
+  --nx-border-hairline: rgba(255, 255, 255, 0.08);
+  --nx-border-focus: rgba(56, 189, 248, 0.4);
+
+  /* Layer 3 角色层 B（纸光编辑感，方案 B）——
+     高管战略复盘 Role View 使用，本 change 仅落令牌占位，消费方在后续批次接入 */
+  --nx-role-bg: #f5f4ef;
+  --nx-role-surface: #ebe9e1;
+  --nx-role-text: #38342c;
+  --nx-role-accent: #d97706;
+
+  /* 语义与通用工作面基座 */
+  --nx-bg-0: var(--nx-workspace-bg);
+  --nx-bg-1: var(--nx-workspace-surface);
+  /* 第三层抬升面（选中页签 / 悬停行）：此前未定义，组件兜底 #262a33 在浅色主题下变成深底深字 */
+  --nx-bg-2: #232833;
+  --nx-accent: var(--nx-space-cyan);
+  --nx-ai: var(--nx-space-ai);
+  --nx-text-primary: #f1f5f9;
+  --nx-text-secondary: #94a3b8;
+  /* WCAG AA 正文对比度（≥4.5:1，对 --nx-bg-0 / --nx-bg-1 实测 5.66 / 5.30）：
+     旧值 #64748b 仅 4.14:1 / 3.87:1 不达标，调亮至 #7a8ba1。 */
+  --nx-text-muted: #7a8ba1;
+
+  /* 状态色（冷色调适配） */
+  --nx-status-success: #10b981;
+  --nx-status-warning: #f59e0b;
+  --nx-status-danger: #ef4444;
+
+  /* 图表分类色板（1-8，高辨识度与抗疲劳） */
+  --nx-chart-1: #38bdf8;
+  --nx-chart-2: #818cf8;
+  --nx-chart-3: #34d399;
+  --nx-chart-4: #fbbf24;
+  --nx-chart-5: #f87171;
+  --nx-chart-6: #22d3ee;
+  --nx-chart-7: #c084fc;
+  --nx-chart-8: #a3e635;
+}
+
+/* ============================================================
+ * Layer 1 空间层 C：深空渐变光晕背景（v3-ui-next-shell-space-map D7 /
+ * spec「空间层氛围纯 CSS 实现与精确档降级」）。
+ *
+ * - 纯 CSS 径向渐变营造深空感，零 WebGL / 画布节点（RL-15）；
+ * - 消费令牌 --nx-space-bg / --nx-space-cyan(#38bdf8) / --nx-space-ai(#00f0ff)；
+ *   以下 rgba 值为令牌色值的固定透明度展开，与 D18 定案一致（D7 原文）；
+ * - 精确档（precise）或操作系统减弱动画偏好下彻底停用背景光晕与动效，
+ *   降级为纯色暗黑仪器面板。
+ * ============================================================ */
+.nx-space-atmosphere {
+  position: relative;
+  background-color: var(--nx-space-bg);
+}
+
+.nx-space-atmosphere::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% -10%, rgba(56, 189, 248, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 85% 15%, rgba(0, 240, 255, 0.06) 0%, transparent 35%);
+  transition: opacity 0.3s ease;
+  z-index: 0;
+}
+
+/* 精确档降级（design D7：统一定义在 [data-immersion="precise"] 属性选择器下，
+   对光晕层应用 display/background 双 none，杜绝任何图层重绘） */
+[data-immersion='precise'] .nx-space-atmosphere::before {
+  display: none !important;
+  opacity: 0 !important;
+  background: none !important;
+  transition: none !important;
+}
+
+/* 操作系统减弱动画偏好：光晕与动效同步彻底停用 */
+@media (prefers-reduced-motion: reduce) {
+  .nx-space-atmosphere::before {
+    display: none !important;
+    opacity: 0 !important;
+    background: none !important;
+    transition: none !important;
+  }
+}
+/* ============================================================
+ * 浅色主题覆盖（v3-next-cinematic-techniques-completion D5）。
+ *
+ * `:root[data-nx-theme='light'] [data-next-track]` 命中即覆盖同名令牌；
+ * 基座暗色值保持不变（默认 dark 零回归），浅色为纸光白 + 冷青点缀的
+ * 「纸光仪器感」——与 Role View 纸光编辑感同族但面向全部新轨工作面。
+ * 对比度目标 WCAG AA（正文 ≥ 4.5:1）。
+ * ============================================================ */
+:root[data-nx-theme='light'] [data-next-track] {
+  /* Layer 1 空间层：浅空沉浸（亮雾青空；accent 深化以满足浅色底 WCAG AA） */
+  --nx-space-bg: #eef3f8;
+  --nx-space-surface: #f8fafc;
+  --nx-space-cyan: #0369a1;
+  --nx-space-ai: #0e7490;
+
+  /* Layer 2 工作面：纸光仪器 */
+  --nx-workspace-bg: #f6f7f9;
+  --nx-workspace-surface: #ffffff;
+  --nx-workspace-blue: #3b5bfd;
+  --nx-border-hairline: rgba(15, 23, 42, 0.1);
+  --nx-border-focus: rgba(2, 132, 199, 0.55);
+
+  /* 语义与通用工作面 */
+  --nx-bg-0: var(--nx-workspace-bg);
+  --nx-bg-1: var(--nx-workspace-surface);
+  --nx-bg-2: #e6ebf2;
+  --nx-accent: var(--nx-space-cyan);
+  --nx-ai: var(--nx-space-ai);
+  --nx-text-primary: #0f172a;
+  --nx-text-secondary: #475569;
+  --nx-text-muted: #576578;
+
+  /* 状态色（浅色底适配：略加深保对比度） */
+  --nx-status-success: #047857;
+  --nx-status-warning: #b45309;
+  --nx-status-danger: #dc2626;
+
+  /* 图表分类色板（浅色底加深版） */
+  --nx-chart-1: #0284c7;
+  --nx-chart-2: #6366f1;
+  --nx-chart-3: #059669;
+  --nx-chart-4: #d97706;
+  --nx-chart-5: #dc2626;
+  --nx-chart-6: #0891b2;
+  --nx-chart-7: #9333ea;
+  --nx-chart-8: #65a30d;
+}
+
+/* 浅色下空间氛围层：径向冷青光晕减弱到浅底可辨识 */
+:root[data-nx-theme='light'] [data-next-track] .nx-space-atmosphere {
+  background-color: var(--nx-space-bg);
+}
+:root[data-nx-theme='light'] [data-next-track] .nx-space-atmosphere::before {
+  background:
+    radial-gradient(circle at 50% -10%, rgba(2, 132, 199, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 85% 15%, rgba(8, 145, 178, 0.06) 0%, transparent 35%);
+}
+
+/* 精确档剥离前景剪纸装饰层（装饰纯氛围，工作面信息零损失） */
+[data-immersion='precise'] [data-foreground-cutout] {
+  display: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-foreground-cutout] svg {
+    transition: none !important;
+  }
+}

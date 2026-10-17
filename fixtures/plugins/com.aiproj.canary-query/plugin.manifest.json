@@ -1,0 +1,38 @@
+{
+  "manifestSchemaVersion": "1.0",
+  "identity": {
+    "pluginId": "com.aiproj.canary-query",
+    "name": "Canary Query (Read-Only)",
+    "version": "1.0.0",
+    "publisher": "aiproj-official",
+    "description": "Official bounded read-only canary"
+  },
+  "provenance": {
+    "distribution": "first-party",
+    "sourceRef": "repo:fixtures/plugins/com.aiproj.canary-query"
+  },
+  "compatibility": {
+    "hostContractVersion": "1.0",
+    "requiredSeams": [{ "seamKey": "server-query.readonly-provider", "seamVersion": "1.0.0" }]
+  },
+  "contributions": [
+    {
+      "contributionKey": "canary-query-summary",
+      "seamKey": "server-query.readonly-provider",
+      "seamVersion": "1.0.0",
+      "entrypoint": { "kind": "json", "path": "canary/query-summary.json" },
+      "permissionRefs": ["aiproj.project-view"]
+    }
+  ],
+  "permissions": [
+    {
+      "permissionKey": "aiproj.project-view",
+      "seamKey": "server-query.readonly-provider",
+      "scopeKind": "organization",
+      "sideEffect": "read-only",
+      "confirmation": "not-required",
+      "network": "none",
+      "purpose": "Bounded project summary"
+    }
+  ]
+}

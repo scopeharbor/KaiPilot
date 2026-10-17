@@ -1,0 +1,38 @@
+{
+  "manifestSchemaVersion": "1.0",
+  "identity": {
+    "pluginId": "com.aiproj.canary-advisory",
+    "name": "Canary Advisory (Skill)",
+    "version": "1.0.0",
+    "publisher": "aiproj-official",
+    "description": "Official advisory-only Skill canary"
+  },
+  "provenance": {
+    "distribution": "first-party",
+    "sourceRef": "repo:fixtures/plugins/com.aiproj.canary-advisory"
+  },
+  "compatibility": {
+    "hostContractVersion": "1.0",
+    "requiredSeams": [{ "seamKey": "skill-adapter.skill-bundle", "seamVersion": "1.0.0" }]
+  },
+  "contributions": [
+    {
+      "contributionKey": "canary-skill-bundle",
+      "seamKey": "skill-adapter.skill-bundle",
+      "seamVersion": "1.0.0",
+      "entrypoint": { "kind": "json", "path": "canary/skill-bundle.json" },
+      "permissionRefs": ["aiproj.compiler-skill-view"]
+    }
+  ],
+  "permissions": [
+    {
+      "permissionKey": "aiproj.compiler-skill-view",
+      "seamKey": "skill-adapter.skill-bundle",
+      "scopeKind": "organization",
+      "sideEffect": "read-only",
+      "confirmation": "not-required",
+      "network": "none",
+      "purpose": "Reference existing advisory Skill"
+    }
+  ]
+}

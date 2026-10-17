@@ -1,0 +1,6 @@
+{
+  "callbackHandle": "triz-evolution-trend-query",
+  "description": "进化趋势分析只读查询",
+  "requiredPermissions": ["com.aiproj.triz.evolution.analyze"],
+  "visibilityFilter": {}
+}

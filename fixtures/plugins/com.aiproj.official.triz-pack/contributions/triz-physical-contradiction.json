@@ -1,0 +1,7 @@
+{
+  "callbackHandle": "triz-physical-contradiction-proposal",
+  "description": "物理矛盾分析 proposal",
+  "requiredPermissions": ["com.aiproj.triz.physical.analyze"],
+  "visibilityFilter": {},
+  "confirmationRequired": true
+}

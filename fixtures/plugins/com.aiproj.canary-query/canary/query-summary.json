@@ -1,0 +1,5 @@
+{
+  "callbackHandle": "canary-query-summary-callback",
+  "description": "Fixture-only bounded project summary",
+  "requiredPermissions": ["project:view"]
+}

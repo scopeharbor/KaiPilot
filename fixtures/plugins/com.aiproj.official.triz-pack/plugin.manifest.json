@@ -1,0 +1,99 @@
+{
+  "manifestSchemaVersion": "1.0",
+  "identity": {
+    "pluginId": "com.aiproj.official.triz-pack",
+    "name": "TRIZ Pack",
+    "version": "1.0.0",
+    "publisher": "aiproj-official",
+    "description": "官方 TRIZ 顾问、矛盾分析与进化趋势插件包（宿主适配、仅建议、可撤销）"
+  },
+  "provenance": {
+    "distribution": "first-party"
+  },
+  "compatibility": {
+    "hostContractVersion": "1.0",
+    "requiredSeams": [
+      {
+        "seamKey": "skill-adapter.skill-bundle",
+        "seamVersion": "1.0.0"
+      },
+      {
+        "seamKey": "server-command-proposal.proposal-only",
+        "seamVersion": "1.0.0"
+      },
+      {
+        "seamKey": "server-query.readonly-provider",
+        "seamVersion": "1.0.0"
+      },
+      {
+        "seamKey": "compiler-contribution.context-contribution",
+        "seamVersion": "1.0.0"
+      }
+    ]
+  },
+  "contributions": [
+    {
+      "contributionKey": "triz-advisor-skill",
+      "seamKey": "skill-adapter.skill-bundle",
+      "seamVersion": "1.0.0",
+      "entrypoint": {
+        "kind": "json",
+        "path": "contributions/triz-advisor-skill.json"
+      },
+      "permissionRefs": []
+    },
+    {
+      "contributionKey": "triz-technical-contradiction",
+      "seamKey": "server-command-proposal.proposal-only",
+      "seamVersion": "1.0.0",
+      "entrypoint": {
+        "kind": "json",
+        "path": "contributions/triz-technical-contradiction.json"
+      },
+      "permissionRefs": []
+    },
+    {
+      "contributionKey": "triz-physical-contradiction",
+      "seamKey": "server-command-proposal.proposal-only",
+      "seamVersion": "1.0.0",
+      "entrypoint": {
+        "kind": "json",
+        "path": "contributions/triz-physical-contradiction.json"
+      },
+      "permissionRefs": []
+    },
+    {
+      "contributionKey": "triz-evolution-trend",
+      "seamKey": "server-query.readonly-provider",
+      "seamVersion": "1.0.0",
+      "entrypoint": {
+        "kind": "json",
+        "path": "contributions/triz-evolution-trend.json"
+      },
+      "permissionRefs": []
+    },
+    {
+      "contributionKey": "triz-skill-layer-context",
+      "seamKey": "compiler-contribution.context-contribution",
+      "seamVersion": "1.0.0",
+      "entrypoint": {
+        "kind": "json",
+        "path": "contributions/triz-skill-layer-context.json"
+      },
+      "permissionRefs": []
+    }
+  ],
+  "permissions": [
+    {
+      "permissionKey": "com.aiproj.triz.assistant.submit",
+      "seamKey": "server-command-proposal.proposal-only",
+      "scopeKind": "organization",
+      "resourceRef": "project.triz_assistant",
+      "actionRef": "submit",
+      "sideEffect": "proposal",
+      "confirmation": "required",
+      "network": "none",
+      "purpose": "triz-assistant-submit-preview-only"
+    }
+  ]
+}

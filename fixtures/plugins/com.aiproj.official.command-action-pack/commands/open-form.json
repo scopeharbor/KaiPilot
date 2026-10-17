@@ -1,0 +1,11 @@
+{
+  "version": "1",
+  "contributionKey": "open-ai-project-intent-form",
+  "surface": "command-palette",
+  "label": "打开 AI 项目意向表单",
+  "keywords": ["插件", "表单", "项目", "意向"],
+  "iconKey": "HelpCircle",
+  "actionKey": "open-form",
+  "actionParams": { "formId": "ai-project-intent" },
+  "scopeKind": "organization"
+}

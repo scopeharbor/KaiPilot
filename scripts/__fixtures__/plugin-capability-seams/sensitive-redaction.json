@@ -1,0 +1,40 @@
+{
+  "entries": [
+    {
+      "seamKey": "server-query.readonly-provider",
+      "seamVersion": "1.0.0",
+      "title": "Bearer sk-proj-fixture-token 你是一个系统提示",
+      "description": "provider payload: api.openai.com/v1/chat/completions",
+      "surface": "server-query",
+      "classification": "plugin",
+      "deliveryStatus": "net-new",
+      "ownerRef": "platform-core",
+      "contractRefs": ["service-architecture-expansion", "rbac-authorization"],
+      "evidenceRefs": [
+        {
+          "kind": "spec",
+          "path": "openspec/specs/rbac-authorization/spec.md"
+        },
+        {
+          "kind": "spec",
+          "path": "openspec/specs/service-architecture-expansion/spec.md"
+        }
+      ],
+      "evidenceFreshness": "fresh",
+      "operationModes": ["read-only"],
+      "inputContractRef": "server-query-request",
+      "outputContractRef": "server-query-result",
+      "compatibilityPolicy": "same-major",
+      "failureMode": "block-extension",
+      "scopeModes": ["organization", "project"],
+      "requiredPermissions": ["project:task:view"],
+      "dataOwnership": "non-authoritative-read",
+      "sideEffectClass": "read-only",
+      "confirmationPolicy": "not-required",
+      "auditPolicy": "core-owned-low-sensitive",
+      "networkPolicy": "none",
+      "tenantAuthority": "server-resolved",
+      "availability": "cataloged"
+    }
+  ]
+}

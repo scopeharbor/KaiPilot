@@ -1,0 +1,6 @@
+{
+  "name": "@aiproj/official-ocr-profile-pack",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Fixture-only declarative OCR profile package"
+}

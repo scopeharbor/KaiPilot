@@ -1,0 +1,236 @@
+---
+id: deployment.docker-compose
+title: Docker Compose 部署
+summary: 在单机（含自管 GCP VM）用 docker compose 一条命令拉起全套服务：edge、前端、后端、PostgreSQL 或 SQLite、单节点 Redis。
+contentType: how-to
+roles: [system_admin, org_admin]
+permissions: []
+editions: [free, team, enterprise]
+productVersion: v3
+featureFlags: []
+owner: platform
+updatedAt: 2026-09-01
+reviewAfter: 2026-12-01
+related: [reference.permissions, getting-started.login-and-accounts, deployment.local-development]
+screenshots: []
+keywords: [docker, compose, 部署, gcp, vm, 容器, edge, postgresql, redis, sqlite, 运维]
+contentStatus: complete
+---
+
+# Docker Compose 部署
+
+单机容器化部署：`docker compose up -d --build` 一条命令拉起边缘代理（edge）、前端、后端与数据库（PostgreSQL 或 SQLite）及单节点 Redis。本路径面向自管 Docker 主机（兼容 GCP Compute Engine 标准 Linux VM），不含 Kubernetes/Helm 等平台化能力。
+
+## 适用范围
+
+| 维度             | 说明                                                                                                                                                     |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 适用角色         | `system_admin`、`org_admin`（部署与运维属平台级职责；登录后各角色的具体权限见权限参考）                                                                  |
+| 目标主机         | 已装 Docker Engine + Compose 插件的标准 Linux 主机；GCP VM、任意等价 Docker 主机均可，行为一致                                                           |
+| 同仓库另一条路径 | 本机开发走 `pnpm dev`（SQLite，无需 Docker/PostgreSQL/Redis），见[本机开发环境搭建](/help/articles/deployment.local-development)；两条路径并行、互不影响 |
+
+**不在范围**（均为用户侧外部运维责任，本路径不提供）：VM 创建、Docker 安装、仓库拉取凭据、VPC firewall 规则、磁盘/快照、日志平台、自动 DNS/TLS、高可用、托管数据库、镜像 registry 发布、Kubernetes/Helm、容器化 CI/CD、公开镜像发布。
+
+## 开始之前
+
+以下前置条件由用户在目标机自行准备：
+
+| 前置                         | 说明                                                                             |
+| ---------------------------- | -------------------------------------------------------------------------------- |
+| Docker Engine + Compose 插件 | 目标机安装；执行 `docker --version` 与 `docker compose version` 确认均返回版本号 |
+| 仓库源码                     | 自行 `git clone`/复制目标 revision 到目标机并进入仓库根目录                      |
+| 网络/防火墙                  | 自行放行计划发布的 edge 端口（默认 80；改动后为 `AIPROJ_HTTP_PORT`）             |
+| 磁盘                         | 保证足够容量承载镜像与 named volumes（数据库、附件、Redis AOF）                  |
+
+协作/开发主机不需要 Docker；本机开发仍是 `pnpm install` → `pnpm dev`（SQLite），与本手册互不影响。
+
+## 操作步骤
+
+### 1. 获取代码并确认编排文件
+
+把仓库克隆到目标机，进入仓库根目录。你会看到三个 Compose 相关文件：
+
+| 文件                   | 作用                                                     |
+| ---------------------- | -------------------------------------------------------- |
+| `compose.yaml`         | 默认完整栈（PostgreSQL + Redis），**推荐入口**           |
+| `compose.sqlite.yaml`  | SQLite 兼容栈（Redis + 文件型 SQLite），低负载验证环境用 |
+| `.env.compose.example` | 可覆盖项字典（默认启动零配置，一般不需要它）             |
+
+两套栈共用同一份 backend/frontend 镜像、edge 配置、迁移目录与健康检查契约，差异只有数据库。
+
+### 2. 确认默认编排拓扑（PostgreSQL 栈）
+
+`compose.yaml` 包含 6 个组件。启动顺序由 Compose 依赖闸门保证（fail closed），`init-config` → `postgres` 健康 → `migrate` 成功 → `backend` → `frontend` → `edge`：
+
+| 服务          | 镜像/职责                                                                                                                                                        | 健康检查                                       |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| `init-config` | 一次性 job：生成 `APP_KEY` / `JWT_ACCESS_SECRET` / PostgreSQL 密码到 `runtime-secrets` volume（已存在则复用，绝不覆盖）；日志只打印键名/状态/sha256 前 12 位指纹 | 完成即退出（`service_completed_successfully`） |
+| `postgres`    | `postgres:18.6-alpine`；密码只经 runtime-secret volume 文件传递（`POSTGRES_PASSWORD_FILE`），不出现在 compose config 展开结果中                                  | `pg_isready`                                   |
+| `redis`       | `redis:8.10-alpine` 单节点，AOF 持久化（`appendfsync everysec`）；不引入 Cluster/Sentinel                                                                        | `redis-cli ping`                               |
+| `migrate`     | 一次性 job：`migration:run --force`，复用仓库既有 `database/migrations`；失败即非零退出                                                                          | 完成即退出                                     |
+| `backend`     | AdonisJS API + Socket.IO，端口 3333（仅容器内）；依赖 `migrate` 成功 + `redis` healthy                                                                           | `/app/docker/healthcheck.mjs`                  |
+| `frontend`    | Next.js standalone；构建期只含相对同源 `/api/v1`，浏览器始终访问 edge 公开端口                                                                                   | 同上                                           |
+| `edge`        | `nginxinc/nginx-unprivileged:1.31-alpine`，**唯一对外发布宿主端口 80** 的组件                                                                                    | 同时探测 `/` 与代理后的 `/api/v1/health/live`  |
+
+浏览器侧永远看不到 backend/frontend 内部服务名：UI、`/api/v1` REST/SSE、WebSocket（Socket.IO `/socket.io`）全部经 edge 同源转发。
+
+### 3. 一条命令启动（默认 PostgreSQL 栈）
+
+```bash
+cd <仓库根目录>
+docker compose up -d --build
+```
+
+完成后再无需第二条命令。你会看到：先完成镜像构建，随后 `init-config` 输出生成的键名与状态（**绝不包含 secret 值**），然后是数据库健康等待与迁移日志，最后全部容器进入运行态并回到命令行提示符。首次启动因构建镜像需要几分钟。
+
+### 4. 验证部署
+
+```bash
+docker compose ps                 # 期望：全部服务 healthy（migrate/init-config 为 Exited 0）
+curl http://<目标机>/api/v1/health/ready   # 期望：HTTP 200 且 checks.database.status=up
+```
+
+浏览器访问 `http://<目标机>/`（默认 80 端口，或自定义 `AIPROJ_HTTP_PORT`）：你会看到登录页，能在登录页注册/登录完成全流程（首登后创建组织与第一个项目）；配置了 Google 登录后也可以用 Google 账号登录（见第 7 步）。
+
+健康端点契约说明：`/api/v1/health` 为综合健康（数据库不可达时也返回 200 + `degraded`）、`/api/v1/health/ready` 数据库就绪才返回 200、`/api/v1/health/live` 存活探针不探外部依赖；三者均公开且不限流。
+
+### 5. （可选）改为 SQLite 兼容栈
+
+SQLite 栈与默认栈**二选一**：同目录默认 Compose project 名相同，切换即替换；数据库文件持久化在 `sqlite-data` volume（容器内 `/app/data/database.sqlite`），不启动、不依赖 PostgreSQL，`init-config` 也不生成 PG 密码。
+
+```bash
+docker compose -f compose.sqlite.yaml up -d --build
+```
+
+如需两套栈并行对比，加 `-p <唯一项目名>` 且使用不同的 `AIPROJ_HTTP_PORT`。
+
+### 6. 配置覆盖（不修改 tracked 文件）
+
+默认启动零配置。需要覆盖时，**不要编辑** `compose.yaml` / `compose.sqlite.yaml` / Dockerfile：
+
+- **临时**：shell 环境变量，例如 `AIPROJ_HTTP_PORT=8080 docker compose up -d --build`
+- **长期**：复制 `.env.compose.example` 为 `.env.compose`（已 gitignore，不会误提交），之后始终 `docker compose --env-file .env.compose up -d --build`
+
+可覆盖参数：
+
+| 变量                                                                       | 默认               | 作用                                                                         |
+| -------------------------------------------------------------------------- | ------------------ | ---------------------------------------------------------------------------- |
+| `AIPROJ_BIND_ADDRESS`                                                      | `0.0.0.0`          | edge 绑定地址；仅本机访问设 `127.0.0.1`                                      |
+| `AIPROJ_HTTP_PORT`                                                         | `80`               | edge 对外端口                                                                |
+| `AIPROJ_PUBLIC_ORIGIN`                                                     | `http://localhost` | 通用绝对回调 origin；部署到自己的域名时改成对外访问地址                      |
+| `AIPROJ_GOOGLE_OAUTH_ORIGIN`                                               | `http://localhost` | Google 登录专用 origin，优先于通用 public origin                             |
+| `AIPROJ_GOOGLE_OAUTH_SECRET_FILE`                                          | 空                 | 主机上 Google OAuth client JSON 的路径；空 = 不启用 Google 登录（见第 7 步） |
+| `AIPROJ_SOURCE_URL`                                                        | 空                 | 登录页与设置门户底部「源代码」链接的地址（AGPL-3.0 第 13 条，见下方说明）    |
+| `AIPROJ_APP_KEY` / `AIPROJ_JWT_ACCESS_SECRET` / `AIPROJ_POSTGRES_PASSWORD` | 空                 | 自带 secret；空 = 首次启动自动生成并持久化                                   |
+| `AIPROJ_POSTGRES_DB` / `AIPROJ_POSTGRES_USER`                              | `aiproj`           | 仅默认栈                                                                     |
+| `AIPROJ_REDIS_DB`                                                          | `0`                | 单节点逻辑库序号                                                             |
+
+> [!IMPORTANT]
+> 本项目以 AGPL-3.0 授权。如果你修改了代码并通过网络向他人提供服务，必须让用户能拿到你修改后的源码：把 `AIPROJ_SOURCE_URL` 设为你的源码仓库地址，并用 `--build` 重建前端镜像。
+
+### 7. Google 登录（可选）与预检（preflight）
+
+默认不启用 Google 登录，登录页的 Google 按钮显示「未配置」。启用步骤：
+
+1. 在 Google Cloud Console 创建 OAuth 2.0 Web Client，下载 client JSON，放在目标机上（例如 `/etc/aiproj/google-oauth-client.json`，权限 `600`）。
+2. 在 `.env.compose` 设置 `AIPROJ_GOOGLE_OAUTH_SECRET_FILE=<该文件路径>`，以及 `AIPROJ_GOOGLE_OAUTH_ORIGIN=<对外访问地址>`。
+3. 在 Google Console 登记回调地址（见下表），然后 `docker compose --env-file .env.compose up -d` 重建 backend。
+
+该文件只读挂进 backend（`/run/secrets/google-oauth-client.json`），不进入镜像层或其他服务。启动后执行：
+
+```bash
+docker compose ps                                   # 期望：全部 healthy
+curl -s http://<目标机>/api/v1/auth/google/config | jq .data.preflight
+```
+
+返回的 `preflight` 状态含义：
+
+| 状态                                    | 含义                                       | 处理                                                                                |
+| --------------------------------------- | ------------------------------------------ | ----------------------------------------------------------------------------------- |
+| `configured`                            | 凭据就绪                                   | 可直接体验「使用 Google 登录」全流程                                                |
+| `missing_file`                          | 凭据文件路径不对                           | 确认 `.env.compose` 中 `AIPROJ_GOOGLE_OAUTH_SECRET_FILE` 指向目标机上实际存在的文件 |
+| `unreadable_file`                       | 权限问题                                   | `chmod 600`，确保部署用户可读                                                       |
+| `invalid_json` / `invalid_client_shape` | 凭据文件损坏                               | 从 Google Cloud Console 重新下载 OAuth 2.0 Web Client JSON                          |
+| `redirect_not_configured`               | 回调未登记                                 | 核对 Google Console 的 Authorized redirect URIs（见下）                             |
+| `disabled`                              | 没有设置 `AIPROJ_GOOGLE_OAUTH_SECRET_FILE` | 默认状态；需要 Google 登录时按上面三步启用                                          |
+
+Google Console 需**逐一登记**以下回调（`HOST` = 实际部署域名；必须与 `AIPROJ_GOOGLE_OAUTH_ORIGIN` 完全一致——含 https、域名、无尾斜杠，否则 Google 拒绝回调并报 `redirect_uri_mismatch`）：
+
+| 用途                                        | 地址                                                      |
+| ------------------------------------------- | --------------------------------------------------------- |
+| 生产登录回调（必登记）                      | `https://HOST/api/v1/auth/google/callback`                |
+| localhost 开发回调（本机 `pnpm dev`，可选） | `http://localhost:3333/api/v1/auth/google/callback`       |
+| 登录成功跳转（不需登记）                    | `https://HOST/auth/google/callback`（前端消费 hash 会话） |
+| 登录失败跳转（不需登记）                    | `https://HOST/login`（携带 `google_error=<低敏错误码>`）  |
+
+登录失败回跳只带低敏错误码（`invalid_state` / `token_exchange_failed` / `google_api_error` 等），不会把任何 client secret 或 token 打印到日志或响应。如果你的部署必须启用 Google 登录，可以额外合并 `-f compose.oauth.yaml`：没有设置 `AIPROJ_GOOGLE_OAUTH_SECRET_FILE` 时 Compose 解析直接失败，避免以未配置状态上线。
+
+### 8. 常用运维命令
+
+```bash
+docker compose ps                              # 状态与健康
+docker compose logs -f backend                 # 跟随后端日志（低敏）
+docker compose logs migrate                    # 迁移结果
+docker compose restart backend                 # 应用重启（数据/secret 不动）
+docker compose -f compose.sqlite.yaml ps       # SQLite 栈状态
+docker compose down                            # 停止（保留全部 volume）
+```
+
+### 9. 理解数据持久化与重置边界
+
+| Volume（Compose project 名前缀） | 内容                                                    | 所属栈    |
+| -------------------------------- | ------------------------------------------------------- | --------- |
+| `runtime-secrets`                | APP/JWT/PG secret 文件                                  | 两栈      |
+| `pgdata`                         | PostgreSQL 数据目录                                     | 默认栈    |
+| `sqlite-data`                    | SQLite 数据库文件（容器内 `/app/data/database.sqlite`） | SQLite 栈 |
+| `redis-data`                     | Redis AOF                                               | 两栈      |
+| `storage`                        | 附件/报表/plugin 导出（容器内 `/app/storage/uploads`）  | 两栈      |
+
+普通 `docker compose stop`、`down`、重建镜像**不会**删除任何 volume；`down` 后再 `up` 全部资料与 secret 原样恢复。
+
+⚠️ **破坏性操作警告**：`docker compose down -v` 会删除当前 project 的全部容器与 volume（**数据库 + secret 全部不可恢复**），仅应在确认重置时执行：
+
+```bash
+docker compose down -v        # 显式、不可恢复
+docker volume rm <project>_pgdata   # 或精确删除单个 volume
+```
+
+删除 `runtime-secrets` volume 后重建会产生新的 APP/JWT secret，**既有会话全部失效**；若保留 `pgdata` 而换了 `pg_password`，默认栈将无法用旧密码连接——两者必须一起重置。
+
+**Secret 轮换要点**：secret 由 `init-config` 以原子 create-if-absent 写入 `/run/aiproj-secrets/`（权限 `0440 root:10001`），应用容器只读挂载消费；普通 stop/start/down/重建镜像都复用既有 secret。需要轮换时先 `docker compose stop backend migrate`，更新对应 secret 文件后再 `up -d`。注意轮换 `pg_password` 只影响后续连接认证，PostgreSQL 既有数据目录内的角色密码不会随之变更，需按 PostgreSQL 文档另行处理。
+
+## 验证结果
+
+- `docker compose ps` 显示 edge/backend/frontend/postgres/redis 全部 healthy，`migrate`/`init-config` 以退出码 0 结束。
+- `curl http://<目标机>/api/v1/health/ready` 返回 HTTP 200，响应中 `checks.database.status` 为 `up`。
+- 浏览器访问 `http://<目标机>/` 能看到登录页，完整走通登录 → 创建组织 → 创建第一个项目。
+- 启用了 Google 登录时，preflight 返回 `configured`（或按第 7 步表格核对对应状态）；未启用时为 `disabled`。
+- 本机开发路径 `pnpm dev` 不受影响，可并行使用。
+
+## 常见问题
+
+| 症状                                       | 排查                                                                                      | 修复                                                                              |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `migrate` 退出非 0                         | `docker compose logs migrate` 看分类错误（不含密码）                                      | 修复后重新 `up -d` 会重跑迁移（幂等）                                             |
+| `backend` 一直 unhealthy                   | `docker compose logs backend`；确认 `migrate` 已 `Exit 0`、`redis` healthy                | 按依赖顺序检查上一环，再 `docker compose restart backend`                         |
+| 浏览器打不开                               | 确认 `docker compose ps` 中 edge healthy、宿主机防火墙放行 `AIPROJ_HTTP_PORT`             | 放行端口或改用 `AIPROJ_HTTP_PORT=8080`                                            |
+| 端口冲突                                   | 宿主机已有进程占用 edge 端口                                                              | 临时：`AIPROJ_HTTP_PORT=8080 docker compose up -d --build`；长期写 `.env.compose` |
+| Google 登录被拒（`redirect_uri_mismatch`） | 核对 Console 登记的 Authorized redirect URIs 与 `AIPROJ_GOOGLE_OAUTH_ORIGIN` 是否完全一致 | 修正登记或覆盖 origin 后重启 backend                                              |
+| 登录失败但原因不明                         | 查看登录失败跳转 URL 的 `google_error` 参数（低敏错误码）                                 | 按错误码对照 preflight 表格逐项检查                                               |
+
+仍失败时：收集 `docker compose ps`、`docker compose logs` 的输出与浏览器请求的 request id，提供给技术支持。仓库另提供运行时门禁（在目标机执行，输出低敏 JSON 可直接贴回）：`pnpm gate:docker-runtime`（默认 PG + SQLite 全量；退出码 `0` 全过 / `1` 有失败 / `3` 本机无 Docker），静态门禁为 `pnpm check:docker-compose`。
+
+## 安全与限制
+
+- **无 K8s/Helm**：本路径为单机 Docker Compose 部署，不含 Kubernetes/Helm、私有化部署平台、容器化 CI/CD、公开镜像发布。
+- **无自动 TLS**：edge 为 HTTP 同源入口，TLS 由用户在 edge 前自建反向代理终结；本路径不提供自动证书。
+- **单节点拓扑**：数据库与 Redis 均为单节点（Redis 无 Cluster/Sentinel），适合单机部署规模。
+- **Secret 边界**：真实 secret 只经 runtime-secrets volume / Compose secret 传递，禁止写进 Dockerfile、Compose 源码、环境变量正文或构建/运行日志；`.env.compose` 已 gitignore，不要提交。Google OAuth client JSON 只放在目标机上，经 `AIPROJ_GOOGLE_OAUTH_SECRET_FILE` 只读挂进 backend，绝不提交到仓库或进镜像层；一旦误公开，须立即在 Google Console 轮换凭据。
+- **数据安全**：`docker compose down -v` 为破坏性重置（数据库 + secret 不可恢复），执行前确认备份策略；磁盘/快照与备份策略属用户侧运维责任。
+- **前端构建期同源**：VM external IP 变化、换绑域名不需要改任何仓库文件或重新构建（前端只含相对同源 `/api/v1`），但需同步更新 `AIPROJ_PUBLIC_ORIGIN` 与 `AIPROJ_GOOGLE_OAUTH_ORIGIN` 及 Google Console 回调登记。
+
+## 下一步
+
+- [本机开发环境搭建](/help/articles/deployment.local-development)（与容器部署并行的另一条路径）
+- [登录与账号](/help/articles/getting-started.login-and-accounts)（登录方式与排障）
+- [权限参考](/help/articles/reference.permissions)（部署后各角色能做什么）

@@ -1,0 +1,11 @@
+{
+  "version": "1",
+  "contributionKey": "discover-plugin-capabilities",
+  "surface": "command-palette",
+  "label": "浏览插件能力",
+  "keywords": ["插件", "发现", "能力", "plugins"],
+  "iconKey": "Search",
+  "actionKey": "navigate",
+  "actionParams": { "route": "/settings/integrations" },
+  "scopeKind": "organization"
+}

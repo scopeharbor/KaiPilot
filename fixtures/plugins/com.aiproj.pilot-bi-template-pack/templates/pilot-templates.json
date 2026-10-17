@@ -1,0 +1,68 @@
+{
+  "domain": "bi-report-template",
+  "version": "1.0.0",
+  "description": "First-party pilot BI report template pack for delivery governance",
+  "templates": [
+    {
+      "templateId": "ptpl_pilot_delivery_governance",
+      "version": 1,
+      "name": "交付治理全景报告",
+      "description": "面向 PMO 与总监的跨项目交付节奏、里程碑延期压力与资源健康全景分析",
+      "category": "execution",
+      "scenario": "weekly_review",
+      "personDimensionRequiresExtraPermission": false,
+      "composition": {
+        "dataSourceKeys": ["organization_dashboard", "pmo_portfolio_dashboard"],
+        "metricKeys": ["project_progress", "schedule_delay_pressure", "milestone_completion_rate"],
+        "dimensionKeys": ["organization", "project", "time"],
+        "defaultFilters": {
+          "period": "current_quarter"
+        },
+        "charts": [
+          {
+            "chartType": "stat_card",
+            "title": "总体交付进度概览",
+            "metricKeys": ["project_progress", "schedule_delay_pressure"],
+            "dimensionKey": "organization"
+          },
+          {
+            "chartType": "bar",
+            "title": "各项目进度与延期对比",
+            "metricKeys": ["project_progress", "schedule_delay_pressure"],
+            "dimensionKey": "project"
+          },
+          {
+            "chartType": "line",
+            "title": "里程碑完成趋势",
+            "metricKeys": ["milestone_completion_rate"],
+            "dimensionKey": "time",
+            "optional": true
+          }
+        ]
+      }
+    },
+    {
+      "templateId": "ptpl_pilot_risk_heatmap_drilldown",
+      "version": 1,
+      "name": "风险穿透热力分析报告",
+      "description": "多项目高危风险与争用聚集区深度穿透与分布矩阵",
+      "category": "risk",
+      "scenario": "risk_review",
+      "personDimensionRequiresExtraPermission": false,
+      "composition": {
+        "dataSourceKeys": ["bi_risk_heatmap", "organization_dashboard"],
+        "metricKeys": ["risk_pressure"],
+        "dimensionKeys": ["project", "risk_level"],
+        "defaultFilters": {},
+        "charts": [
+          {
+            "chartType": "heatmap",
+            "title": "项目风险等级分布热力图",
+            "metricKeys": ["risk_pressure"],
+            "dimensionKey": "project"
+          }
+        ]
+      }
+    }
+  ]
+}

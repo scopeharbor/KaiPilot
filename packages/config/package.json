@@ -1,0 +1,26 @@
+{
+  "name": "@aiproj/config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "开项 OpenXiang 共享工程配置：TypeScript strict base、ESLint 扁平配置、Prettier 预设",
+  "exports": {
+    "./eslint": "./eslint.config.mjs",
+    "./prettier": "./prettier.config.mjs",
+    "./tsconfig.base.json": "./tsconfig.base.json"
+  },
+  "dependencies": {
+    "@eslint/js": "^10.0.1",
+    "typescript-eslint": "^8.71.0"
+  },
+  "peerDependencies": {
+    "eslint": "^10.0.0",
+    "prettier": "^3.0.0",
+    "typescript": ">=5.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^10.11.0",
+    "eslint-plugin-react-hooks": "^7.1.1"
+  },
+  "license": "AGPL-3.0-only"
+}

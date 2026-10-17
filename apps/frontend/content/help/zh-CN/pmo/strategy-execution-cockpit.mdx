@@ -1,0 +1,142 @@
+---
+id: pmo.strategy-execution-cockpit
+title: 战略执行驾驶舱
+summary: 战略执行驾驶舱的定位与页面构成：状态横幅、KPI、目标→执行矩阵、关注队列与摘要三卡，以及只读边界与数据口径说明。
+contentType: concept
+roles: [system_admin, org_admin, project_manager, member, readonly_observer]
+permissions: [portfolio:view]
+editions: [free, team, enterprise]
+productVersion: v3
+featureFlags: []
+owner: pmo-team
+updatedAt: 2026-09-01
+reviewAfter: 2026-12-01
+related: [pmo.okr-alignment, pmo.traffic-light, pmo.overview, pmo.ai-priority-recommendations]
+screenshots: []
+keywords: [战略, 驾驶舱, 执行, cockpit, 目标, 映射, 只读]
+contentStatus: complete
+---
+
+# 战略执行驾驶舱
+
+战略执行驾驶舱（`/strategy-execution-cockpit`）把组织的 OKR 目标与底层项目执行映射到同一张只读矩阵：每个目标当前的进度、关键结果落后数、支撑它的项目数、覆盖比例与关注原因，一眼可查。它回答的问题是「战略目标到底有没有项目在支撑、进展如何、哪里在脱节」，并**明确不做**「一键执行」——页面按设计不提供 confirm/apply/一键执行能力。
+
+## 适用范围
+
+- **适用角色**：需要 `portfolio:view`（六种规范角色均授予）。
+- **所需权限**：`portfolio:view`。
+- **适用版本**：free / team / enterprise。
+- **进入路径**：从 `/dashboard` 工作台的「战略执行驾驶舱」链接进入，或直接输入 URL：`https://<你的域名>/strategy-execution-cockpit`。
+- **前置数据**：驾驶舱以 OKR 数据为底座（周期/目标/映射）；当前组织没有 OKR 数据时显示 empty 横幅。
+
+## 页面构成
+
+### 状态横幅与头部
+
+- 头部：标题 + `{overallStatus}` 灰色徽标 + 「{cycle 标题}」+「重置筛选」按钮。
+- 状态横幅三档：
+
+| 状态        | 横幅文案                           | 含义                    |
+| ----------- | ---------------------------------- | ----------------------- |
+| empty       | 当前组织暂无可见战略范围。         | 组织内没有可见 OKR 目标 |
+| unavailable | 驾驶舱数据暂不可用。               | 数据源不可用            |
+| degraded    | 部分来源降级，以下结果可能不完整。 | 强制数据源部分过期/降级 |
+
+- 无组织上下文时提示「请先选择组织以查看战略执行驾驶舱。」；加载失败提示「驾驶舱暂不可用，请稍后重试。」
+- 警告列表：`{code}: {message}` 形式逐条展示。
+
+### KPI 条
+
+KPI 卡直接显示**英文指标键**（如目标数、项目数等，产品按设计渲染 raw key）+ 数值（无数据显示 `—`）+ 来源标记——这是产品现状，不是显示异常。
+
+### 目标 → 执行矩阵
+
+表头：**目标 / 进度 / KR / 映射项目 / 覆盖 / 关注**（目标、进度、覆盖、关注列可点击排序，默认按风险降序）。
+
+| 列       | 内容                                                                                                   |
+| -------- | ------------------------------------------------------------------------------------------------------ |
+| 目标     | 目标名链接（仅你有权访问时才能点击）+「优先级 {band}」「投入 {alignment}」「资源/风险 {pressure}」标签 |
+| 进度     | 进度百分比                                                                                             |
+| KR       | `{behindKR}/{totalKR}`：进度低于 50% 的关键结果数 / 总数                                               |
+| 映射项目 | 支撑该目标的项目数                                                                                     |
+| 覆盖     | 覆盖百分比（映射贡献比例均值）                                                                         |
+| 关注     | 关注原因列表（无关注显示 `—`）                                                                         |
+
+- 窄屏下矩阵切换为「目标执行概览（窄屏）」列表。
+
+### 关注队列
+
+按严重度排序的关注项列表：`{severity}` 红色徽标 + `{reasonCode}` + `rule {version}` + message + basis（依据说明）+ **「安全查看详情」**（仅你有权限时显示）。无关注项时显示「当前无关注项。」
+
+### 摘要三卡
+
+| 卡片          | 状态回退                                     |
+| ------------- | -------------------------------------------- |
+| 组合交通灯    | `红 {n} · 黄 {n} · 绿 {n}` / 无权限 / 不可用 |
+| 优先级 / 投入 | `错配 {n}` / 无权限 / 财务不支持 / 不可用    |
+| 资源 / 风险   | `压力 {n}` / 无权限 / 不可用                 |
+
+### 底部元信息
+
+`metricVersion: {...}` 与 `sourceFreshness: {source}:{status}, ...` 以英文 raw 形式展示（产品现状），供核对口径版本。
+
+## 数据口径
+
+- **overallStatus**：组织内无目标时为 empty；否则按三个强制来源（OKR_CYCLE / OKR_OBJECTIVE / OKR_MAPPING）的新鲜度汇总得出 unavailable/degraded/正常。
+- **behindKeyResultCount**：进度 < 50% 的关键结果数量。
+- **coveragePercent**：映射贡献比例的均值。
+- **优先级 band / 投入对齐 / 资源风险压力**：来自目标的 priorityBand、投资错配与资源压力计算。
+- **只看不写**：本页为只读汇总，不提供 confirm/apply/一键执行；对执行的调整需在项目内完成。
+
+## 操作步骤：阅读驾驶舱
+
+1. 从 `/dashboard` 点「战略执行驾驶舱」（或输入 URL）；无组织时按提示先切换到组织视图。
+2. 看状态横幅：确认 empty/unavailable/degraded 哪个状态，再决定是否继续解读数字。
+3. 看 KPI 条与目标→执行矩阵：按「关注」排序，优先处理关注原因最多的目标行；点击你有权访问的目标名进入目标详情。
+4. 看关注队列：按严重度徽标逐个确认 reasonCode 与依据（basis），需要时点「安全查看详情」。
+5. 看摘要三卡：交通灯/优先级投入/资源风险的组合级数字；无权限卡片显示「无权限」回退文案。
+6. 需要调整视图时：点「重置筛选」恢复默认；当前页面不提供其他筛选控件（筛选参数仅支持 URL 传入，属高级用法）。
+
+## 验证结果
+
+- 状态横幅会随组织是否有 OKR 数据在 empty/unavailable/degraded 间变化，文案与本文一致。
+- 矩阵「关注」排序默认按风险降序；有 KR 落后时「KR」列显示 `N/M` 且 N 为进度 <50% 的 KR 数。
+- 摘要三卡对无权限来源显示「无权限」而非报错。
+- 页面上不存在任何「执行」「一键应用」类按钮（只读边界）。
+
+## 常见问题
+
+**症状：页面提示「请先选择组织」。**
+可能原因：当前没有组织上下文。
+检查：是否已切换/进入组织视图。
+修复：切换到组织视图后重进本页。
+
+**症状：矩阵里目标名点不动。**
+可能原因：该目标不在你的可见范围内（权限限制，安全边界）。
+检查：当前角色与目标的可见性。
+修复：由管理员调整可见范围；系统不会给出「无权」之外的更多线索。
+
+**症状：KPI 显示英文键。**
+可能原因：产品按设计渲染 raw 指标键（英文），非显示异常。
+检查：底部 sourceFreshness 与 metricVersion 辅助核对。
+修复：无需处理。
+
+**症状：想按周期/负责人筛选却找不到控件。**
+可能原因：当前页面只提供「重置筛选」，筛选参数需通过 URL 传入（cycleId/scope/ownerId/status/theme/include/freshnessWindowMinutes/attentionLimit/sort/order）。
+检查：地址栏参数。
+修复：按需在 URL 中追加参数，或使用默认视图。
+
+## 安全与限制
+
+- **只读边界**：页面按设计不提供 confirm/apply/一键执行；任何计划/执行修改都需回到项目内完成。
+- **数据依赖**：驾驶舱依赖 OKR 周期/目标/映射三个强制数据源；任一过期都会触发 degraded/unavailable 状态。
+- **权限回退**：目标详情、摘要卡、关注详情均为「安全查看」（仅在有权时显示）；受限数据不泄露。
+- **组织隔离**：按当前组织隔离，跨组织计划不可见。
+- **入口**：当前页面入口为 `/dashboard` 链接与直接 URL。
+
+## 下一步
+
+- [OKR 能力现状与入口](/help/articles/pmo.okr-alignment)
+- [组合交通灯：识别风险项目并复核](/help/articles/pmo.traffic-light)
+- [PMO 组合总览](/help/articles/pmo.overview)
+- [PMO AI 优先级推荐](/help/articles/pmo.ai-priority-recommendations)

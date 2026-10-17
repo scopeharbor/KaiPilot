@@ -1,0 +1,166 @@
+---
+id: reference.api-errors
+title: API 错误格式与错误码参考
+summary: 统一错误响应结构、通用错误码与 HTTP 状态对照、集成域业务码、网页搜索门状态码，以及列表接口格式与排查路径。
+contentType: reference
+roles: [system_admin, org_admin, project_manager, member, external_collaborator, readonly_observer]
+permissions: []
+editions: [free, team, enterprise]
+productVersion: v3
+featureFlags: []
+owner: platform
+updatedAt: 2026-09-01
+reviewAfter: 2026-12-01
+related:
+  [
+    reference.limits-and-statuses,
+    reference.permissions,
+    reference.ai-capabilities,
+    troubleshooting.login,
+  ]
+screenshots: []
+keywords: [api, 错误码, 错误格式, 列表接口, 集成, 状态码]
+contentStatus: complete
+---
+
+# API 错误格式与错误码参考
+
+所有 API 使用 `/api/v1` 前缀与统一错误结构。本页按需查阅错误码：先看错误结构，再按错误码表定位，最后按「处理建议」列行动。
+
+## 适用范围
+
+- **适用角色**：需要对接口或排查 API 问题的集成人员、支持人员与运维（`system_admin`、`org_admin` 为主）。
+- **所需权限**：由各接口自身的 RBAC 门禁决定；错误码表中标注了典型触发场景。
+- **适用版本**：v3。
+
+## 开始之前
+
+- 已具备有效访问令牌（JWT），并了解[权限参考](/help/articles/reference.permissions)（错误码 `PERMISSION_DENIED` / `RESOURCE_NOT_FOUND` 的语义依赖权限模型）。
+- 建议先阅读[限制、状态与概念参考](/help/articles/reference.limits-and-statuses)，确认目标能力是否受功能开关或配额影响——很多「奇怪错误」其实是开关未开。
+
+## 错误响应结构
+
+任何失败响应统一为：
+
+```json
+{ "error": { "code": "…", "message": "…", "details": {} } }
+```
+
+| 字段      | 类型   | 说明                                                                         |
+| --------- | ------ | ---------------------------------------------------------------------------- |
+| `code`    | string | 稳定错误码（见下文各表），用于程序判断；前端解析失败时兜底为 `UNKNOWN`       |
+| `message` | string | 人类可读信息（简体中文）；可能包含业务上下文                                 |
+| `details` | object | 可选，携带字段级或场景级信息（例如 OAuth 缺失的环境变量键 `missingEnvKeys`） |
+
+所有错误响应中都可以在服务端日志与审计里找到本次请求的 **request id**；向支持人员反馈时请附上它。
+
+## 通用错误码
+
+| 错误码                 | HTTP | 含义                                  | 处理建议                                                                        | 典型触发场景                                                                                          |
+| ---------------------- | ---- | ------------------------------------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `AUTH_REQUIRED`        | 401  | 未认证，或令牌无效、过期              | 重新登录获取新令牌；前端会自动单飞刷新一次并重放原请求，重试仍 401 则登出       | 未携带/携带过期 JWT 访问受保护接口                                                                    |
+| `INVALID_CREDENTIALS`  | 401  | 登录凭证错误                          | 重新输入邮箱与密码                                                              | 登录页错误提示「邮箱或密码不正确，请重新检查。」                                                      |
+| `ACCOUNT_LOCKED`       | —    | 账户临时锁定（登录安全策略）          | 等待锁定期结束（30 分钟）后再试；锁定期内即使凭证正确也会被拒绝                 | 同一邮箱+IP 连续登录失败 5 次；提示「登录失败次数过多，账户已临时锁定，请 30 分钟后再试」             |
+| `PERMISSION_DENIED`    | 403  | 已认证但权限不足                      | 核对令牌对应的角色与资源所属组织；必要时由管理员调整组织/项目角色或显式附加权限 | 缺少接口所需权限码；RBAC 中间件会在错误上下文中附带 request id                                        |
+| `WEBHOOK_IP_FORBIDDEN` | 403  | 入站 Webhook 请求来源 IP 未命中白名单 | 将调用方出口 IP 加入白名单                                                      | 入站 Webhook 的 IP 白名单校验未通过                                                                   |
+| `RESOURCE_NOT_FOUND`   | 404  | 资源不存在，或**不属于当前组织**      | 核对资源 id 与当前组织上下文；跨组织访问视为不存在，属设计行为                  | 访问他人/跨组织草案、任务、连接或集成                                                                 |
+| `VALIDATION_ERROR`     | 422  | 参数或字段未通过校验                  | 按 `details` 中的字段信息修正请求                                               | Webhook 未知事件类型、非法任务状态转换「不能从 X 切换到 Y」、项目编码首字符不合法、批量任务 id 超限等 |
+| `AI_SERVICE_ERROR`     | 502  | AI 服务调用失败                       | 稍后重试；检查 AI 连接启停状态与模型可用性                                      | 意图分析、草案生成等 AI 调用链路异常                                                                  |
+| `FEATURE_DISABLED`     | 503  | 功能已被禁用（feature flag 关闭）     | 由管理员在环境配置中开启对应开关后重试                                          | Skill Registry 后端开关未开、出站 Webhook 写操作/投递重试/统计在开关关闭时                            |
+| `FEATURE_NOT_ENABLED`  | 501  | 后端功能未启用（降级空态）            | 联系管理员开启功能后使用；当前以「功能未启用」空态呈现                          | 如 AI 质量与成本控制台在后端 feature-off 时的降级状态                                                 |
+| `UNKNOWN`              | —    | 前端解析失败兜底                      | 收集完整响应与 request id 反馈                                                  | 响应体不符合统一错误结构时                                                                            |
+
+## 集成域业务错误码
+
+以下为集成/Webhook/OAuth 相关接口的业务码（HTTP 状态在 400–502 区间不等，以响应体为准）：
+
+| 错误码                               | 含义                                                | 处理建议                                                     | 典型触发场景                                                                                            |
+| ------------------------------------ | --------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| `not_configured`                     | OAuth 应用配置不完整                                | 在集成设置页点「说明」查看缺失的环境变量清单，配置后重启后端 | 未配置 provider 所需环境变量；响应 `details.missingEnvKeys` 列出缺失键；前端展示「缺少 OAuth 应用配置」 |
+| `token_exchange_not_enabled`         | 当前为预连接模式，不支持真实授权                    | 属于预期行为，无需处理                                       | 对 Outlook/Slack/飞书/钉钉等预连接 provider 点「连接」或「扫码」                                        |
+| `invalid_state`                      | OAuth state 缺失/无效/过期/签名无效/provider 不匹配 | 重新发起连接流程（state 有效期 10 分钟，过期需重试）         | OAuth 回调 state 校验失败，提示「OAuth state 已过期」                                                   |
+| `google_api_error`                   | Google Calendar 连接或 API 调用失败                 | 确认 GCP 侧 Calendar 权限与连接状态后重试                    | 提示「Google Calendar 尚未连接」「目前还未读取到 Google 日历」                                          |
+| `provider_disabled`                  | 不支持的第三方集成 provider                         | 核对 provider 标识拼写                                       | 请求不存在的 provider                                                                                   |
+| `plugin-change-self-approval-denied` | 不能审批自己发起的申请                              | 由另一位管理员审批（maker-checker）                          | 插件目录变更流中自审                                                                                    |
+| `plugin-change-stale`                | 目录条目在发起后已变化                              | 关闭弹窗后重新发起                                           | 插件目录变更流中并发修改                                                                                |
+| `plugin-change-already-decided`      | 该申请已处理完毕                                    | 无需重复确认                                                 | 插件目录变更流重复提交                                                                                  |
+
+> 状态码 `delivery_not_enabled` 不是错误：出站 Webhook 订阅列表横幅「订阅状态为「已配置」并不代表已投递事件——投递功能尚未启用（delivery_not_enabled）」表明当前版本只支持订阅配置，**投递默认使用 fixture，不发起真实外发**。不要把该状态当成故障。
+
+## Copilot 网页搜索门状态码
+
+外部网页搜索在每次提问时都会返回一个「门结果」，用于说明本次是否使用了外部资料。它们不是 HTTP 错误，但会显示在 Copilot 回答的门状态条上：
+
+| 门码                           | 界面含义                                                                 |
+| ------------------------------ | ------------------------------------------------------------------------ |
+| `web_search_disabled`          | 组织尚未启用网页搜索；本次仅使用项目和内部知识                           |
+| `web_search_consent_required`  | 需要开启「允许本次使用网页搜索」才会查询外部资料                         |
+| `web_search_quota_exceeded`    | 今日组织搜索额度已用完；已改用内部资料                                   |
+| `web_search_domain_blocked`    | 结果来自组织禁止的来源，未用于回答                                       |
+| `web_search_timeout`           | 外部搜索超时；已继续使用内部资料                                         |
+| `web_search_content_unsafe`    | 内容安全检查未通过                                                       |
+| `web_search_permission_denied` | 缺少网页搜索使用权限                                                     |
+| `web_search_not_needed`        | 本次问题不需要外部资料                                                   |
+| （成功）                       | 「已使用外部网页搜索（结果带引用来源）。」；外部来源带引用标记，仅供参考 |
+
+## 401 自动刷新与重试行为
+
+- 前端 API 客户端对 401 采用**单飞（single-flight）刷新**：同一时刻只发起一次令牌刷新，其余请求等待；刷新成功后重放原请求。
+- 重试后仍 401 则执行登出。
+- TanStack Query 对 401 / 403 响应**不自动重试**，避免无意义风暴。
+- 集成方自行实现客户端时，建议同样只在 401 时尝试刷新一次，其余错误码直接呈现。
+
+## 列表接口与常用参数
+
+- 列表响应统一为 `{ "data": [...], "meta": { "total", "page", "perPage", "totalPages? } }`；`data` 为条目数组。
+- 常用参数：
+
+| 参数                     | 示例                     | 说明                                          |
+| ------------------------ | ------------------------ | --------------------------------------------- |
+| `?sort=-createdAt,+name` | 排序：`-` 降序、`+` 升序 | 部分列表视图最多支持 3 个排序字段             |
+| `?status=active`         | 过滤                     | 按状态过滤                                    |
+| `?page=2&perPage=50`     | 分页                     | 多数列表 `perPage` 上限 100；日历视图上限 200 |
+| `?include=assignee`      | 关联加载                 | 按接口支持范围使用                            |
+
+## 排查路径
+
+1. **记录**：拿到错误后先记下 `error.code`、响应体 `details`、请求 URL 与 **request id**（进审计与错误上下文）。
+2. **按码分诊**：
+   - 401：重新登录；若登录被拒且提示账户锁定，等待 30 分钟。
+   - 403：核对角色与组织归属，按[权限参考](/help/articles/reference.permissions)对照权限码。
+   - 404：跨组织资源视为不存在——先确认组织上下文，再确认资源 id。
+   - 422：按 `details` 字段修正参数；留意状态机硬约束（非法转换也会报 422）。
+   - 503 `FEATURE_DISABLED`：检查对应功能开关（如 `COMPILER_SKILL_REGISTRY_ENABLED`、`OUTGOING_WEBHOOKS_ENABLED`），由管理员开启后重试。
+   - `AI_SERVICE_ERROR`：稍后重试或更换模型连接，见 [AI 能力参考](/help/articles/reference.ai-capabilities)。
+3. **升级**：仍失败时，保留完整响应头、响应体与 request id 提交支持。
+
+## 验证结果
+
+- 你能用错误码区分未登录（401）、无权限（403）、参数错误（422）、资源不存在/跨组织（404）、AI 故障（`AI_SERVICE_ERROR`）、功能未启用（503/501）六类问题。
+- 你能说出 `FEATURE_DISABLED`（503）与 `FEATURE_NOT_ENABLED`（501）的区别，以及 `WEBHOOK_IP_FORBIDDEN` 的触发条件。
+- 你能解释「跨组织返回 404」的设计原因与「预连接 provider 返回 token_exchange_not_enabled」是否属于故障。
+
+## 常见问题
+
+| 症状                                   | 可能原因                                         | 检查                                                     | 处理                                                                       |
+| -------------------------------------- | ------------------------------------------------ | -------------------------------------------------------- | -------------------------------------------------------------------------- |
+| 收到与本文档不符的错误响应             | 请求打到网关层错误页面、代理改写，或路径前缀不对 | 响应头与完整响应体，确认请求 URL 以 `/api/v1` 开头       | 核对路径前缀；绕过代理直连测试；仍失败时保留完整响应头与 request id        |
+| 同一操作时而成功时而失败               | AI 服务波动或配额限制                            | 错误码是否为 `AI_SERVICE_ERROR` 及 details 内容          | 稍后重试，或更换模型连接；收集两个时间点的 request id 提交支持             |
+| 列表接口返回的条目比预期少             | 分页参数理解偏差或过滤条件生效                   | `meta.total` 与实际返回条数                              | 依据 meta 翻页遍历；核对过滤参数；仍失败时记录请求 URL 与返回 meta 反馈    |
+| 登录被拒绝且提示账户锁定               | 连续失败触发了登录锁定策略                       | 等待 30 分钟；锁定期内正确密码也会被拒                   | 到期后重试；仍失败时见[登录故障排查](/help/articles/troubleshooting.login) |
+| 收到 503 且 code 为 `FEATURE_DISABLED` | 对应功能开关未开启                               | 确认是哪个功能（如 Skill Registry、出站 Webhook）        | 由管理员在环境配置开启开关后重试                                           |
+| 访问集成接口收到 `not_configured`      | OAuth 环境变量未配置                             | 集成设置页该 provider 的状态徽章与「缺少：{环境变量}」行 | 按「说明」弹窗中的申请指引配置环境变量并重启后端                           |
+
+## 安全与限制
+
+- 本页只收录代码实证的错误码；未列出的码以接口实际返回为准，不要假设存在其他码。
+- 集成域业务码的 HTTP 状态在 400–502 区间不等，程序判断应依赖 `error.code` 而非 HTTP 状态。
+- 错误 `message` 可能包含业务上下文，记录日志时注意脱敏；request id 用于安全关联，不要对外暴露完整令牌。
+- 真实外发、真实 OAuth 接入等动作受授权门与功能开关约束，相关错误（如 `delivery_not_enabled`）是当前版本的预期状态。
+
+## 下一步
+
+- [限制、状态与概念参考](/help/articles/reference.limits-and-statuses)
+- [权限参考](/help/articles/reference.permissions)
+- [AI 能力参考](/help/articles/reference.ai-capabilities)
+- [登录故障排查](/help/articles/troubleshooting.login)

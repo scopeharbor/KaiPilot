@@ -1,0 +1,34 @@
+{
+  "manifestSchemaVersion": "1.0",
+  "identity": {
+    "pluginId": "com.aiproj.official.bi-report-pack",
+    "name": "Official BI Report Pack",
+    "version": "1.0.0",
+    "publisher": "aiproj-official",
+    "description": "Official BI report, risk heatmap and trend analysis template pack — curated, versioned, read-only"
+  },
+  "provenance": {
+    "distribution": "first-party"
+  },
+  "compatibility": {
+    "hostContractVersion": "1.0",
+    "requiredSeams": [
+      {
+        "seamKey": "template-pack.content-bundle",
+        "seamVersion": "1.0.0"
+      }
+    ]
+  },
+  "contributions": [
+    {
+      "contributionKey": "official-bi-templates",
+      "seamKey": "template-pack.content-bundle",
+      "seamVersion": "1.0.0",
+      "entrypoint": {
+        "kind": "json",
+        "path": "templates/official-templates.json"
+      }
+    }
+  ],
+  "permissions": []
+}

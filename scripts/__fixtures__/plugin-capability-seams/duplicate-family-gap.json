@@ -1,0 +1,100 @@
+{
+  "entries": [
+    {
+      "seamKey": "skill-adapter.skill-bundle",
+      "seamVersion": "1.0.0",
+      "title": "插件 Skill/KnowledgeBundle 引用接缝",
+      "description": "插件未来声明 Skill bundle 时引用既有 Skill Registry 身份与生命周期、激活规则与知识溯源契约的接缝。",
+      "surface": "skill-adapter",
+      "classification": "hybrid",
+      "deliveryStatus": "incremental-gap",
+      "ownerRef": "compiler-core",
+      "contractRefs": [
+        "compiler-skill-registry",
+        "skill-activation-rules-engine",
+        "compiler-skill-injection",
+        "skill-knowledge-authoring"
+      ],
+      "evidenceRefs": [
+        {
+          "kind": "spec",
+          "path": "openspec/specs/compiler-skill-registry/spec.md"
+        },
+        {
+          "kind": "spec",
+          "path": "openspec/specs/skill-activation-rules-engine/spec.md"
+        },
+        {
+          "kind": "source",
+          "path": "apps/backend/app/services/compiler/skills/skill_registry_service.ts"
+        },
+        {
+          "kind": "source",
+          "path": "packages/types/src/skill-activation.js"
+        }
+      ],
+      "evidenceFreshness": "fresh",
+      "operationModes": ["read-only"],
+      "inputContractRef": "skill-bundle-reference",
+      "outputContractRef": "skill-registry-match-output",
+      "compatibilityPolicy": "same-major",
+      "failureMode": "isolate-drop",
+      "scopeModes": ["organization"],
+      "requiredPermissions": ["compiler:skill:view"],
+      "dataOwnership": "non-authoritative-read",
+      "sideEffectClass": "read-only",
+      "confirmationPolicy": "not-required",
+      "auditPolicy": "core-owned-low-sensitive",
+      "networkPolicy": "none",
+      "availability": "cataloged"
+    },
+    {
+      "seamKey": "skill-adapter.skill-bundle",
+      "seamVersion": "1.0.0",
+      "title": "插件 Skill/KnowledgeBundle 引用接缝",
+      "description": "插件未来声明 Skill bundle 时引用既有 Skill Registry 身份与生命周期、激活规则与知识溯源契约的接缝。",
+      "surface": "skill-adapter",
+      "classification": "hybrid",
+      "deliveryStatus": "incremental-gap",
+      "ownerRef": "compiler-core",
+      "contractRefs": [
+        "compiler-skill-registry",
+        "skill-activation-rules-engine",
+        "compiler-skill-injection",
+        "skill-knowledge-authoring"
+      ],
+      "evidenceRefs": [
+        {
+          "kind": "spec",
+          "path": "openspec/specs/compiler-skill-registry/spec.md"
+        },
+        {
+          "kind": "spec",
+          "path": "openspec/specs/skill-activation-rules-engine/spec.md"
+        },
+        {
+          "kind": "source",
+          "path": "apps/backend/app/services/compiler/skills/skill_registry_service.ts"
+        },
+        {
+          "kind": "source",
+          "path": "packages/types/src/skill-activation.js"
+        }
+      ],
+      "evidenceFreshness": "fresh",
+      "operationModes": ["read-only"],
+      "inputContractRef": "skill-bundle-reference",
+      "outputContractRef": "skill-registry-match-output",
+      "compatibilityPolicy": "same-major",
+      "failureMode": "isolate-drop",
+      "scopeModes": ["organization"],
+      "requiredPermissions": ["compiler:skill:view"],
+      "dataOwnership": "non-authoritative-read",
+      "sideEffectClass": "read-only",
+      "confirmationPolicy": "not-required",
+      "auditPolicy": "core-owned-low-sensitive",
+      "networkPolicy": "none",
+      "availability": "cataloged"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+# 帮助中心 lint 配置（scripts/help-content-lint.ts 读取）
+# 外链 host 白名单：留空 = 不限制外链；配置后非白名单外链报错。
+allowedExternalHosts: []
+
+# updatedAt 早于此天数视为过期警告（staleness）
+staleUpdatedAtDays: 200
+
+# 禁止出现在正文中的词（内部注记/secret 不得进入 Agent 出口）
+forbiddenTerms:
+  - 'internal-note:'
+  - 'BEGIN SECRET'
+  - 'BEGIN TEST SECRET'

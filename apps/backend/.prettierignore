@@ -1,0 +1,7 @@
+# 后端级忽略（prettier 仅从 cwd 读 .prettierignore，不向上查根）
+# AI 工具本地缓存（不入格式化）
+.impeccable
+.tokensave
+# 覆盖率临时产物
+coverage/
+build/

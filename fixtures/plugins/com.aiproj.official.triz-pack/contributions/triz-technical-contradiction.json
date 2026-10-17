@@ -1,0 +1,7 @@
+{
+  "callbackHandle": "triz-technical-contradiction-proposal",
+  "description": "技术矛盾分析 proposal（仅建议，宿主事务）",
+  "requiredPermissions": ["com.aiproj.triz.technical.analyze"],
+  "visibilityFilter": {},
+  "confirmationRequired": true
+}

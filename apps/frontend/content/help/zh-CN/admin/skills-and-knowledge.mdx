@@ -1,0 +1,172 @@
+---
+id: admin.skills-and-knowledge
+title: 技能与知识（Skill Registry）
+summary: 组织级领域知识单元（Skill）的注册、生命周期、知识包创作与权限，以及前后端双开关的启用与排障方法。
+contentType: concept
+roles: [org_admin, owner, admin, system_admin, member, external_collaborator, readonly_observer]
+permissions: [ai:compiler:skill:view, ai:compiler:skill:author, ai:compiler:skill:manage]
+editions: [free, team, enterprise]
+productVersion: v3
+featureFlags: []
+owner: platform
+updatedAt: 2026-09-01
+reviewAfter: 2026-12-01
+related:
+  [
+    admin.integrations-and-plugins,
+    ai.copilot-general-and-project-context,
+    ai.configure-ai-connections,
+  ]
+screenshots: []
+keywords: [技能, 知识, skills, skill registry, compiler, 知识包, 激活规则]
+contentStatus: complete
+---
+
+# 技能与知识（Skill Registry）
+
+Skill Registry（`/settings/compiler-skills`）是**组织级领域知识单元（Skill）**的管理页：把组织沉淀的领域经验做成结构化条目（规则、模式、示例、检查清单等），供 AI 起草与 Copilot 按激活条件引用。本页说明概念、生命周期、权限矩阵，以及「页面能进但列表载入失败」的双开关问题与启用方法。
+
+## 适用范围
+
+- **适用角色**：查看 `ai:compiler:skill:view`（组织管理员、成员、外部协作者、只读观察者；**项目经理默认没有**）；创作 `ai:compiler:skill:author`（组织管理员、成员）；生命周期管理 `ai:compiler:skill:manage`（仅组织管理员）。`system_admin` 通配放行。
+- **适用版本**：free / team / enterprise；Skill 按组织隔离，每个组织独立维护。
+- **前置条件**：后端能力开关开启（见「开始之前」），否则页面能进入但列表会「载入失败」。
+
+## 开始之前
+
+Skill Registry 由**前后端两个独立开关**控制，且默认值不同——这是最常见的「打不开」原因：
+
+| 开关                                  | 位置                       | 默认值                            | 作用                                                         |
+| ------------------------------------- | -------------------------- | --------------------------------- | ------------------------------------------------------------ |
+| `NEXT_PUBLIC_COMPILER_SKILL_REGISTRY` | 前端环境变量（构建时注入） | **开启**（取值不为 `false` 即开） | 决定前端页面/入口是否渲染                                    |
+| `COMPILER_SKILL_REGISTRY_ENABLED`     | 后端环境变量（`.env`）     | **关闭**（`false`）               | 决定 API 是否可用；关闭时列表接口返回 503 `FEATURE_DISABLED` |
+| `COMPILER_SKILL_BUILTIN_SEED_ENABLED` | 后端环境变量               | **关闭**                          | 决定是否注入 8 个内置 Skill（开发/测试组织）                 |
+
+> [!IMPORTANT]
+> 前端开、后端关的典型结果是：**页面能进入，但列表显示「载入失败」「无法获取 Skill 列表，请重试。」**——这不是产品故障，而是后端开关未打开。完整启用方法：在前端构建环境保持 `NEXT_PUBLIC_COMPILER_SKILL_REGISTRY` 不为 `false`；在后端 `.env` 设置 `COMPILER_SKILL_REGISTRY_ENABLED=true`（需要内置技能时同时设置 `COMPILER_SKILL_BUILTIN_SEED_ENABLED=true`），然后重启后端服务。
+
+## 核心概念
+
+- **Skill**：一个带标识（`skillKey`，格式如 `my-domain-skill`，仅字母数字、短横线、下划线、点）、名称、版本、类别与激活条件的领域知识单元。
+- **知识包**：Skill 的结构化知识正文，分六类 section：**规则 / 模式 / 反模式 / 示例 / 检查清单 / 评估标准**。
+- **激活条件**：激活 Stage、激活项目类型、激活领域——决定该 Skill 在哪些场景被 AI 匹配。
+- **内置 Skill**：平台随种子注入的领域模板（软件开发、营销活动、敏捷项目管理、建筑项目、瀑布项目管理、产品研发、DevOps、数据项目 8 个），状态为已激活且 `isBuiltin=true`；**不可编辑、删除或转移状态**，可以复制（duplicate）为组织副本后再自定义。
+
+## 生命周期与状态
+
+状态及迁移（统一由「转移状态」操作触发，需 `ai:compiler:skill:manage`）：
+
+| 状态                      | 含义               | 可迁移到                            |
+| ------------------------- | ------------------ | ----------------------------------- |
+| 草稿（draft）             | 尚未评审           | 评审中                              |
+| 评审中（eval）            | 提交评审           | 已激活 / 草稿（退回）               |
+| 已激活（active）          | 生效，可被匹配引用 | 已废弃 / 质量告警                   |
+| 质量告警（quality_alert） | 质量降级标记       | 已激活 / 已废弃                     |
+| 已废弃（deprecated）      | 不再使用           | **无出口**（终态；内置 Skill 除外） |
+
+- 「匹配预览」：基于当前激活规则模拟匹配结果（输入为当前 Skill 的激活条件），显示命中的 Skill 列表与得分，或「无匹配结果」——只读预览，不改变任何状态。
+- 删除仅对**草稿**状态可用，且有确认弹窗：「确定要删除 Skill 「{name}」({skillKey}) 吗？此操作不可撤销。」
+
+## 权限矩阵
+
+| 操作                                                   | system_admin | org_admin | project_manager | member | external_collaborator | readonly_observer |
+| ------------------------------------------------------ | ------------ | --------- | --------------- | ------ | --------------------- | ----------------- |
+| 查看列表/匹配预览（`ai:compiler:skill:view`）          | ✓（通配）    | ✓         | **✗**           | ✓      | ✓                     | ✓                 |
+| 新建/编辑/删除草稿/复制（`ai:compiler:skill:author`）  | ✓（通配）    | ✓         | ✗               | ✓      | ✗                     | ✗                 |
+| 生命周期转移、编辑知识包（`ai:compiler:skill:manage`） | ✓（通配）    | ✓         | ✗               | ✗      | ✗                     | ✗                 |
+
+> [!NOTE]
+> 与直觉相反：**项目经理默认看不到 Skill Registry**（无 `view` 权限），而普通成员（`member`）可以查看并创作。需要调整时由组织管理员在成员管理中授予对应权限位。
+
+## 操作步骤
+
+### 步骤 1：打开 Skill Registry
+
+1. 打开「设置 → Skill Registry」（`/settings/compiler-skills`）：顶部显示「Skill Registry · 组织级领域知识单元管理 · 共 {total} 个 Skill」。
+2. 无权限或前端开关未开时显示「您没有查看 Skill Registry 的权限，或该功能未启用。」；后端开关未开时列表显示「载入失败」（见「开始之前」）。
+3. 有 `author` 权限时右上角有「**新建 Skill**」按钮（页面按每页 20 条分页）。
+
+### 步骤 2：新建 Skill（表单字段）
+
+点击「新建 Skill」，按以下字段填写（带 \* 为必填）：
+
+| 字段                           | 必填         | 取值/约束                                                                                | 说明                   |
+| ------------------------------ | ------------ | ---------------------------------------------------------------------------------------- | ---------------------- |
+| Skill Key \*                   | 是（仅新建） | `my-domain-skill`（字母数字、短横线、下划线、点）                                        | 唯一标识，创建后不可改 |
+| 名称 \*                        | 是           | 任意文本                                                                                 | 显示名称               |
+| 版本                           | 否           | 默认 `1.0.0`（仅新建）                                                                   | 版本号                 |
+| 描述                           | 否           | 任意文本                                                                                 | 无则显示「（无描述）」 |
+| 类别 \*                        | 是           | 领域 (domain) / 方法论 (methodology) / 工具 (tool) / 法规 (regulation) / 模板 (template) | 主分类                 |
+| 二级分类（可选）               | 否           | 文本                                                                                     | 细分                   |
+| 标签（逗号分隔）               | 否           | 文本                                                                                     | 最多展示前 3 个        |
+| 激活 Stage（逗号分隔，可选）   | 否           | 文本                                                                                     | 激活条件之一           |
+| 激活项目类型（逗号分隔，可选） | 否           | 文本                                                                                     | 激活条件之一           |
+| 激活领域（逗号分隔，可选）     | 否           | 文本                                                                                     | 激活条件之一           |
+| 知识规则（JSON 数组，可选）    | 否           | `[{"rule": "..."}]`                                                                      | 结构化规则             |
+| 基础优先级 (1-10000)           | 否           | 默认 `100`                                                                               | 匹配排序权重           |
+
+点击「**创建**」（编辑态为「**保存**」）；失败信息显示在表单顶部。
+
+### 步骤 3：编辑知识包（六类 section）
+
+1. 在 Skill 卡片点击「**编辑知识包**」（需 `author` 或以上权限）。
+2. 六个 section 按需添加条目：
+
+| Section  | 条目字段         |
+| -------- | ---------------- |
+| 规则     | 摘要、详情       |
+| 模式     | 摘要、详情       |
+| 反模式   | 摘要、详情       |
+| 示例     | 输入、输出、备注 |
+| 检查清单 | 检查项、必填     |
+| 评估标准 | 标准、权重       |
+
+3. 使用「添加条目…」下拉逐类添加，点击「**保存草稿**」随时存档；再次进入可继续编辑。
+
+### 步骤 4：生命周期管理与匹配预览
+
+1. 有 `manage` 权限时点击「**转移状态**」：弹窗显示「生命周期转移」「当前状态：{label}」与目标按钮（如「→ 已激活」「→ 草稿」）。
+2. 有 `view` 权限时点击「**匹配预览**」：查看基于激活规则的匹配结果与得分。
+3. 内置 Skill 只能「编辑知识包」与「复制为组织副本」（duplicate），不能编辑/删除/转移。
+
+## 验证结果
+
+- 有权限的用户能成功创建/编辑 Skill（草稿态）并保存知识包；列表与状态徽章实时反映最新状态。
+- 后端开关开启后列表正常加载（不再「载入失败」）；开启内置种子后可见 8 个内置 Skill（已激活徽章）。
+- 转移状态与匹配预览按权限正确显隐；内置 Skill 的受限操作被正确拦截并提示。
+- AI 快速创建 / Copilot 在对应激活条件下能命中组织 Skill（场景级验证，见 AI 相关文章）。
+
+## 常见问题
+
+**症状：页面能进，但列表「载入失败」。**
+原因：后端 `COMPILER_SKILL_REGISTRY_ENABLED` 默认关闭（接口返回 503 `FEATURE_DISABLED`）。
+处理：在后端 `.env` 设置 `COMPILER_SKILL_REGISTRY_ENABLED=true` 并重启后端；如仍需内置技能，同时设置 `COMPILER_SKILL_BUILTIN_SEED_ENABLED=true`。
+
+**症状：完全没有「Skill Registry」入口/整页提示无权限。**
+可能原因：当前角色无 `ai:compiler:skill:view`（如项目经理），或前端构建时 `NEXT_PUBLIC_COMPILER_SKILL_REGISTRY=false`。
+处理：联系组织管理员核对角色权限位与构建环境变量。
+
+**症状：内置 Skill 无法删除或转移状态。**
+原因：内置 Skill 受保护（`isBuiltin`），编辑/删除/转移会被拒绝。
+处理：用「复制为组织副本」创建副本后自行修改与管理。
+
+**症状：AI 生成内容没有引用组织知识。**
+可能原因：Skill 未激活、激活条件不匹配、或知识包内容与问题不相关。
+处理：检查 Skill 状态与激活条件；用「匹配预览」验证命中；必要时调整条目后重新生成。
+
+**症状：成员反馈引用了过期知识。**
+处理：组织管理员编辑知识包更新内容，或将 Skill 转移为「已废弃」；AI 输出中的新鲜度信息供人工判断。
+
+## 安全与限制
+
+- Skill 与知识包按组织隔离：跨组织不可见、不可引用；权限判定以服务端 RBAC 为准。
+- AI 引用知识只作为生成依据，不自动落库、不自动执行；仍受「只建议、人工确认后落库」红线与反幻觉检查约束。
+- 内置 Skill 种子仅注入开发/测试环境已存在的组织；生产环境默认不注入演示数据。
+- Skill 的创建、修改、状态转移与删除进入审计范围（关键操作覆盖范围内）。
+
+## 下一步
+
+- [集成与插件](/help/articles/admin.integrations-and-plugins)
+- [Copilot 通用问答](/help/articles/ai.copilot-general-and-project-context)
+- [配置 AI 连接](/help/articles/ai.configure-ai-connections)
+- [AI 快速创建项目](/help/articles/ai.ai-quick-create)

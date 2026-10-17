@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 160" role="img" aria-labelledby="title desc">
+  <title id="title">Task empty state illustration</title>
+  <desc id="desc">An ordered task list with checked rows.</desc>
+  <rect x="44" y="28" width="152" height="104" rx="14" fill="#F8FAFC" stroke="#CBD5E1"/>
+  <circle cx="70" cy="58" r="9" fill="#DCFCE7"/>
+  <path d="m65 58 4 4 7-9" fill="none" stroke="#16A34A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="88" y="53" width="72" height="8" rx="4" fill="#334155"/>
+  <circle cx="70" cy="82" r="9" fill="#EFF4FF"/>
+  <rect x="88" y="77" width="88" height="8" rx="4" fill="#CBD5E1"/>
+  <circle cx="70" cy="106" r="9" fill="#EFF4FF"/>
+  <rect x="88" y="101" width="62" height="8" rx="4" fill="#CBD5E1"/>
+</svg>

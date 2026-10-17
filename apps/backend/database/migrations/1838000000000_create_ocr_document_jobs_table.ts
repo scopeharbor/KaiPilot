@@ -1,0 +1,53 @@
+import { BaseSchema } from '@adonisjs/lucid/schema'
+
+export default class extends BaseSchema {
+  protected tableName = 'ocr_document_jobs'
+
+  async up() {
+    this.schema.createTable(this.tableName, (table) => {
+      table.increments('id').primary()
+      table.integer('organization_id').unsigned().notNullable()
+      table.integer('project_id').unsigned().notNullable()
+      table
+        .integer('source_attachment_id')
+        .unsigned()
+        .nullable()
+        .references('id')
+        .inTable('attachments')
+        .onDelete('SET NULL')
+      table.string('source_kind', 20).notNullable() // upload | attachment
+      table.string('source_file_name', 500).nullable()
+      table.string('source_mime_type', 100).nullable()
+      table.string('source_hash', 64).notNullable()
+      table.string('status', 20).notNullable().defaultTo('queued')
+      table.integer('page_count').unsigned().notNullable().defaultTo(0)
+      table.integer('succeeded_pages').unsigned().notNullable().defaultTo(0)
+      table.integer('failed_pages').unsigned().notNullable().defaultTo(0)
+      table.string('idempotency_key_hash', 64).nullable()
+      table.string('input_signature', 64).nullable()
+      table.integer('connection_id').unsigned().nullable()
+      table.integer('model_id').unsigned().nullable()
+      table.string('provider', 100).nullable()
+      table.string('model', 200).nullable()
+      table.text('prompt_hint').nullable()
+      table.json('warning_codes').nullable()
+      table.json('warnings').nullable()
+      table.json('cost_summary').nullable()
+      table.integer('created_by').unsigned().notNullable()
+
+      table.timestamp('created_at').notNullable()
+      table.timestamp('updated_at').notNullable()
+
+      // Indexes
+      table.index(['organization_id', 'project_id'], 'ocr_jobs_org_proj_idx')
+      table.index(['source_attachment_id'], 'ocr_jobs_source_att_idx')
+      table.index(['source_hash'], 'ocr_jobs_source_hash_idx')
+      table.index(['idempotency_key_hash'], 'ocr_jobs_idempotency_key_idx')
+      table.index(['status'], 'ocr_jobs_status_idx')
+    })
+  }
+
+  async down() {
+    this.schema.dropTable(this.tableName)
+  }
+}

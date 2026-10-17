@@ -1,0 +1,122 @@
+{
+  "schemaVersion": "1.0",
+  "tools": [
+    {
+      "toolId": "ctool_aiproj_project_query",
+      "version": "1.0.0",
+      "name": "项目查询",
+      "description": "按组织与项目范围查询当前用户可见的项目有界摘要（名称、编码、状态、优先级、关键计数），只读、不修改任何项目数据。",
+      "sideEffectClass": "query",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "search": { "type": "string", "description": "按项目名称或编码过滤的关键词" },
+          "status": { "type": "string", "description": "项目状态过滤（如 active）" },
+          "limit": { "type": "number", "description": "返回条数上限（1-20，默认 10）" }
+        },
+        "required": []
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "totalVisible": { "type": "number", "description": "当前可见项目总数" },
+          "itemsJson": { "type": "string", "description": "有界项目摘要条目 JSON 文本" },
+          "dataCutoffAt": { "type": "string", "description": "数据截止时间（ISO 8601）" },
+          "scopeNote": { "type": "string", "description": "来源范围与权限说明" }
+        }
+      },
+      "requiredPermissions": [{ "permissionKey": "project:view", "scopeKind": "organization" }],
+      "intentTags": ["项目查询", "项目列表", "项目状态"],
+      "budget": { "maxResultBytes": 8192, "timeoutMs": 8000 },
+      "hostContractVersion": "1.0"
+    },
+    {
+      "toolId": "ctool_aiproj_triz_advisor",
+      "version": "1.0.0",
+      "name": "TRIZ 顾问",
+      "description": "引用既有 TRIZ 技能层给出创新与矛盾化解的建议草稿，标注激活状态与可用目的地；仅建议，不写入任何项目或蓝图数据。",
+      "sideEffectClass": "advisory",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "projectId": { "type": "number", "description": "项目 ID" },
+          "problem": { "type": "string", "description": "待解决的工程或管理问题描述" }
+        },
+        "required": ["projectId", "problem"]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "summary": { "type": "string", "description": "建议草稿中文摘要" },
+          "activationState": { "type": "string", "description": "TRIZ 技能激活状态说明" },
+          "dataCutoffAt": { "type": "string", "description": "数据截止时间（ISO 8601）" }
+        }
+      },
+      "requiredPermissions": [{ "permissionKey": "triz_skill_layer:view", "scopeKind": "project" }],
+      "intentTags": ["triz", "创新", "矛盾"],
+      "budget": { "maxResultBytes": 8192, "timeoutMs": 10000 },
+      "hostContractVersion": "1.0"
+    },
+    {
+      "toolId": "ctool_aiproj_weekly_report_draft",
+      "version": "1.0.0",
+      "name": "周报草稿",
+      "description": "基于可访问项目事实生成有界中文周报草稿，标注数据截止时间、来源范围与一般性缺口；仅草稿，不发布、不外发、不写回正式报表。",
+      "sideEffectClass": "advisory",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "projectId": { "type": "number", "description": "项目 ID" },
+          "weekOffset": { "type": "number", "description": "相对当前周的偏移（0=本周，-1=上周）" }
+        },
+        "required": ["projectId"]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "summary": { "type": "string", "description": "周报草稿中文文本" },
+          "sourceScopeNote": { "type": "string", "description": "来源范围与一般性缺口说明" },
+          "dataCutoffAt": { "type": "string", "description": "数据截止时间（ISO 8601）" }
+        }
+      },
+      "requiredPermissions": [
+        { "permissionKey": "project:view", "scopeKind": "organization" },
+        { "permissionKey": "report:view", "scopeKind": "project" }
+      ],
+      "intentTags": ["周报", "周报草稿", "进展汇报"],
+      "budget": { "maxResultBytes": 16384, "timeoutMs": 10000 },
+      "hostContractVersion": "1.0"
+    },
+    {
+      "toolId": "ctool_aiproj_risk_explainer",
+      "version": "1.0.0",
+      "name": "风险解释",
+      "description": "解释当前可见风险的原因、影响并给出应对建议，附结构化建议动作预览块；不自动新增风险、不改级、不关闭，正式变更需人工流程确认。",
+      "sideEffectClass": "advisory",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "projectId": { "type": "number", "description": "项目 ID" },
+          "keyword": { "type": "string", "description": "风险标题关键词过滤" },
+          "limit": { "type": "number", "description": "返回条数上限（1-10，默认 5）" }
+        },
+        "required": ["projectId"]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "summary": { "type": "string", "description": "风险解释与建议中文摘要" },
+          "suggestedActionPreviewJson": {
+            "type": "string",
+            "description": "建议动作预览块 JSON 文本（applied=false）"
+          },
+          "dataCutoffAt": { "type": "string", "description": "数据截止时间（ISO 8601）" }
+        }
+      },
+      "requiredPermissions": [{ "permissionKey": "risk:view", "scopeKind": "project" }],
+      "intentTags": ["风险解释", "风险分析", "风险应对"],
+      "budget": { "maxResultBytes": 8192, "timeoutMs": 8000 },
+      "hostContractVersion": "1.0"
+    }
+  ]
+}

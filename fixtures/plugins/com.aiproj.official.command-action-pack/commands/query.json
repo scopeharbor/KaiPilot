@@ -1,0 +1,11 @@
+{
+  "version": "1",
+  "contributionKey": "query-plugin-activity",
+  "surface": "command-palette",
+  "label": "查看插件活动记录",
+  "keywords": ["插件", "查询", "活动", "审计"],
+  "iconKey": "FileText",
+  "actionKey": "navigate",
+  "actionParams": { "route": "/settings/audit-logs" },
+  "scopeKind": "organization"
+}

@@ -1,0 +1,159 @@
+// apps/backend/app/policies/bi_aggregation_policy.ts
+// v3-bi-data-aggregation-service §3.5：组织成员身份、聚合查看权限、source permission tags、
+// 维度级脱敏和下钻二次授权所需的低敏判断。
+
+import { inject } from '@adonisjs/core'
+import { PermissionDeniedException, ResourceNotFoundException } from '#exceptions/api_exception'
+import type User from '#models/user'
+import OrganizationPolicy from '#policies/organization_policy'
+import RbacService from '#services/rbac_service'
+import {
+  ORG_VIEW,
+  PORTFOLIO_VIEW,
+  RESOURCE_VIEW,
+  RISK_VIEW,
+  type Permission,
+} from '#start/rbac/permissions'
+
+/**
+ * BI 聚合策略 —— 组织级维度权限与脱敏决策。
+ *
+ * 分层：
+ *   1. **组织隔离**：非成员按 RESOURCE_NOT_FOUND 拒绝。
+ *   2. **入口权限**：org:view 或 portfolio:view。
+ *   3. **来源权限**：每个 source adapter 需独立权限检查。
+ *   4. **维度权限**：按 metric 权限标签做低敏脱敏。
+ */
+@inject()
+export default class BiAggregationPolicy {
+  constructor(
+    private readonly rbac: RbacService,
+    private readonly organizationPolicy: OrganizationPolicy,
+  ) {}
+
+  /** 组织隔离断言 */
+  async assertOrganizationVisible(user: User, organizationId: number): Promise<void> {
+    if (user.isSuperAdmin) return
+
+    const { default: OrganizationModel } = await import('#models/organization')
+    const organization = await OrganizationModel.find(organizationId)
+    if (!organization) throw new ResourceNotFoundException('组织不存在')
+
+    if (Number(organization.ownerId) === Number(user.id)) return
+
+    const { default: OrganizationMemberModel } = await import('#models/organization_member')
+    const membership = await OrganizationMemberModel.query()
+      .where('organization_id', organizationId)
+      .where('user_id', user.id)
+      .first()
+    if (!membership) throw new ResourceNotFoundException('组织不存在')
+  }
+
+  /** 是否可查看 BI 聚合（入口权限） */
+  async canView(user: User, organizationId: number): Promise<boolean> {
+    if (user.isSuperAdmin) return true
+    if (await this.organizationPolicy.view(user, organizationId)) return true
+    return this.check(user, PORTFOLIO_VIEW, organizationId)
+  }
+
+  /** 断言 BI 聚合查看权限 */
+  async authorizeView(user: User, organizationId: number): Promise<void> {
+    if (!(await this.canView(user, organizationId))) {
+      throw new PermissionDeniedException('无权查看 BI 数据聚合')
+    }
+  }
+
+  /** 检查 source 权限标签 */
+  async canAccessSource(
+    user: User,
+    organizationId: number,
+    permissionTags: string[],
+  ): Promise<boolean> {
+    if (user.isSuperAdmin) return true
+    if (permissionTags.length === 0) return true
+
+    for (const tag of permissionTags) {
+      const perm = this.resolvePermissionTag(tag)
+      if (perm) {
+        const result = await this.check(user, perm, organizationId)
+        if (result) return true
+      }
+    }
+    return false
+  }
+
+  /**
+   * 解析维度级权限，供 Service 做脱敏。
+   * 支持 BI 聚合的六类权限维度。
+   */
+  async resolveBiAggregationDimensionAccess(
+    user: User,
+    organizationId: number,
+  ): Promise<BiAggregationDimensionAccess> {
+    const [orgView, portfolioView, resourceView, riskView] = await Promise.all([
+      this.check(user, ORG_VIEW, organizationId).catch(() => false),
+      this.check(user, PORTFOLIO_VIEW, organizationId).catch(() => false),
+      this.check(user, RESOURCE_VIEW, organizationId).catch(() => false),
+      this.check(user, RISK_VIEW, organizationId).catch(() => false),
+    ])
+
+    return { orgView, portfolioView, resourceView, riskView }
+  }
+
+  /**
+   * 根据 metric 的 permission tags 判断是否可读。
+   */
+  async canAccessMetric(
+    user: User,
+    organizationId: number,
+    permissionTags: string[],
+    dimAccess?: BiAggregationDimensionAccess,
+  ): Promise<boolean> {
+    if (user.isSuperAdmin) return true
+    if (permissionTags.length === 0) return true
+
+    if (dimAccess) {
+      for (const tag of permissionTags) {
+        if (tag === 'org:view' && dimAccess.orgView) return true
+        if (tag === 'portfolio:view' && dimAccess.portfolioView) return true
+        if (tag === 'resource:view' && dimAccess.resourceView) return true
+        if (tag === 'risk:view' && dimAccess.riskView) return true
+      }
+    }
+
+    return this.canAccessSource(user, organizationId, permissionTags)
+  }
+
+  private resolvePermissionTag(tag: string): Permission | null {
+    switch (tag) {
+      case 'org:view':
+        return ORG_VIEW
+      case 'portfolio:view':
+        return PORTFOLIO_VIEW
+      case 'resource:view':
+        return RESOURCE_VIEW
+      case 'risk:view':
+        return RISK_VIEW
+      default:
+        return null
+    }
+  }
+
+  private async check(
+    user: User,
+    permission: Permission,
+    organizationId: number,
+  ): Promise<boolean> {
+    if (user.isSuperAdmin) return true
+    const result = await this.rbac.check(user, permission, organizationId)
+    return result.allowed
+  }
+}
+
+/** 聚合维度权限结构 */
+export interface BiAggregationDimensionAccess {
+  orgView: boolean
+  portfolioView: boolean
+  resourceView: boolean
+  riskView: boolean
+}

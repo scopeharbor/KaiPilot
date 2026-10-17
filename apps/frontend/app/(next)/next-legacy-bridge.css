@@ -1,0 +1,43 @@
+/*
+ * 新轨内嵌旧版组件的主题桥接（与 next-tokens.css 分开：令牌文件只定义 --nx-* 令牌，见「令牌隔离」）。
+ *
+ * 只作用于主动加了 data-next-legacy-ui 的旧版面板及其弹出层（NextLegacyThemeScope /
+ * useNextLegacyThemeScope），把旧版颜色变量映射到新版明暗令牌；不影响旧版页面的 :root，
+ * 旧版 data-mode 也不会染到新版任务详情。
+ */
+[data-next-track][data-next-legacy-ui] {
+  --gray-0: var(--nx-bg-1);
+  --gray-50: var(--nx-bg-0);
+  --gray-100: var(--nx-bg-2);
+  --gray-200: var(--nx-border-hairline);
+  --gray-300: var(--nx-border-focus);
+  --gray-400: var(--nx-text-muted);
+  --gray-500: var(--nx-text-secondary);
+  --gray-600: var(--nx-text-secondary);
+  --gray-700: var(--nx-text-primary);
+  --gray-800: var(--nx-text-primary);
+  --gray-900: var(--nx-text-primary);
+  --primary-50: color-mix(in srgb, var(--nx-accent) 10%, var(--nx-bg-1));
+  --primary-100: color-mix(in srgb, var(--nx-accent) 15%, var(--nx-bg-1));
+  --primary-500: var(--nx-workspace-blue);
+  --primary-600: var(--nx-workspace-blue);
+  --primary-700: var(--nx-accent);
+  --border: var(--nx-border-hairline);
+  --border-strong: var(--nx-border-focus);
+  --background: var(--nx-bg-1);
+  --surface: var(--nx-bg-0);
+  --surface-2: var(--nx-bg-2);
+  --foreground: var(--nx-text-primary);
+  --heading: var(--nx-text-primary);
+  --muted: var(--nx-text-secondary);
+  --placeholder: var(--nx-text-secondary);
+  --ring: var(--nx-border-focus);
+  --success: var(--nx-status-success);
+  --success-bg: color-mix(in srgb, var(--nx-status-success) 10%, var(--nx-bg-1));
+  --warning: var(--nx-status-warning);
+  --warning-bg: color-mix(in srgb, var(--nx-status-warning) 10%, var(--nx-bg-1));
+  --danger: var(--nx-status-danger);
+  --danger-bg: color-mix(in srgb, var(--nx-status-danger) 10%, var(--nx-bg-1));
+  --info: var(--nx-accent);
+  --info-bg: var(--primary-50);
+}

@@ -1,0 +1,11 @@
+{
+  "version": "1",
+  "contributionKey": "open-sample-action-preview",
+  "surface": "command-palette",
+  "label": "预览插件建议操作",
+  "keywords": ["插件", "预览", "建议", "preview"],
+  "iconKey": "Shield",
+  "actionKey": "open-plugin-action-preview",
+  "actionParams": { "actionRef": "official-command-action-pack/sample-proposal@1.0.0" },
+  "scopeKind": "organization"
+}

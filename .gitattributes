@@ -1,0 +1,13 @@
+# 统一以 LF 作为行结束符，避免跨平台 CRLF 抖动（与 .editorconfig 一致）。
+* text=auto eol=lf
+
+# 二进制文件不做行结束符转换。
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
+*.docx binary

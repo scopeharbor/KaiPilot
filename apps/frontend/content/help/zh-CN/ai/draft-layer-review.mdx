@@ -1,0 +1,127 @@
+---
+id: ai.draft-layer-review
+title: AI 草案层（Draft Layer）交互审查
+summary: Draft Layer 是 Compiler 编排产物的人工审查层：来源与 PDM Hash 溯源、摘要/Preview/Diff 三种视图、逐项接受或拒绝变更、Dry-run 校验与人工确认应用。
+contentType: how-to
+roles: [system_admin, org_admin, project_manager, member]
+permissions: [project:view, ai:confirm, project:create]
+editions: [free, team, enterprise]
+productVersion: v3
+featureFlags: []
+owner: ai-experience
+updatedAt: 2026-09-01
+reviewAfter: 2026-12-01
+related:
+  [ai.ai-quick-create, ai.generation-progress-and-review, ai.copilot-general-and-project-context]
+screenshots: []
+keywords: [draft layer, 草案层, 编译, compiler, 预览, diff, dry-run, 确认应用, 变更项, pdm]
+contentStatus: complete
+---
+
+# AI 草案层（Draft Layer）交互审查
+
+Draft Layer（草案层）是 Compiler 编排产物的**人工审查安全层**：Compiler Run 产出的变更先投影为草案会话，你在这里核对来源、逐项接受或拒绝变更、执行 Dry-run 校验，最后**人工「确认应用」**才写入正式业务数据。它比 AI 快速创建的内嵌草案审查更接近底层：面向基于 PDM 投影的结构化变更清单。
+
+## 适用范围
+
+| 项目                  | 说明                                                                      |
+| --------------------- | ------------------------------------------------------------------------- |
+| **页面**              | `/draft-layer/[sessionId]`（无导航项，由上游入口携带 sessionId 进入）     |
+| **查看权限**          | `project:view`                                                            |
+| **dry-run / 放弃**    | `ai:trigger`                                                              |
+| **确认应用（apply）** | `ai:confirm` **且** `project:create`（当前矩阵下为组织管理员/系统管理员） |
+| **适用版本**          | free / team / enterprise                                                  |
+
+> [!IMPORTANT]
+> 入口边界必须知晓：Draft Layer 目前**没有独立导航入口**。会话由后端从 Compiler Run 创建，产品内唯一 UI 入口是 TRIZ 工作台的「打开草案」链接；sessionId 无效（非数字）时页面显示「无效的草案 ID」。
+
+## 开始之前
+
+- 已有一个由 Compiler Run 产生的草案会话（通过 TRIZ 工作台「打开草案」进入）。
+- 理解两个概念：
+  - **PDM（草案数据模型）投影**：Preview 是「PDM 到正式业务实体的投影」，只读，不写入正式项目；
+  - **变更项（Change）**：待审的最小变更单元，每种变更独立接受或拒绝。
+
+## 操作步骤
+
+### 步骤 1：核对会话摘要与状态
+
+进入页面后先看头部与摘要卡：
+
+- **状态徽章**：`已应用`（success）/ `已过期`（danger）/ 会话状态原文（`active / previewing / reviewing / applying / applied / discarded / expired`）。
+- **摘要卡**：来源（`Compiler PDM`，对应 `v2_compiler_pdm`）、`版本：v{N}`、`Compiler Run：#{id}`、`PDM Hash：{12 位}...`。
+
+### 步骤 2：查看统计与三种视图
+
+1. **统计行**：`变更：N 项 / 已接受：N / 已拒绝：N / 待处理：N`，先看整体待办。
+2. 切换视图（**摘要 / Preview / Diff**）：
+   - **Preview**：「Preview 预览（只读）」，说明「PDM 到正式业务实体的投影。以下数据尚未写入正式项目。」，附 Preview Hash / Version / Changes N 项；
+   - **Diff**：「Diff 差异」，每个实体行展示 `entityType / tempId / operation（add | modify | delete）` 与字段级 diff，存在冲突时带「存在冲突」徽章；无差异时显示「无差异。」。
+
+### 步骤 3：逐项处理变更项
+
+1. 在「变更项（N）」卡中逐行查看：`entityType / entityId / operation / confidence%`。
+2. 对每项点 **「接受」** 或 **「拒绝」**（已接受/已拒绝/已过期状态下按钮禁用）；也可以点 **「全部接受」** 一次处理全部。
+3. 空态说明：无变更项时显示「暂无变更项。请先生成 Preview。」——先执行 Preview 再回来处理。
+
+### 步骤 4：处理冲突与过期阻断
+
+- **过期**：「草案已过期」「该草案已过期，无法执行 apply 或变更操作。」——过期会话所有操作禁用，需重新生成会话。
+- **未解决冲突**：「存在未解决的冲突」「草案中还有 N 项更新变更未处理。 请在接受、拒绝或编辑所有冲突项后执行 dry-run。」——冲突项未处理完之前，Dry-run 与应用都会被阻断。
+
+### 步骤 5：Dry-run 与校验
+
+1. 点击 **「Dry-run & 校验」**：系统先模拟应用，检查冲突与一致性。
+2. 存在 blocking 问题时弹窗提示 `Dry-run 阻断：...`——按提示处理后重新 Dry-run，直到通过。
+
+### 步骤 6：确认应用或放弃
+
+1. 全部冲突处理后，点击 **「确认应用」**（执行中显示「正在应用...」；有冲突/已应用/已过期时按钮禁用）。
+2. 应用成功：会话状态变为 `applied`，头部徽章变为「已应用」。
+3. 不采纳本草案：点击 **「放弃草案」**，会话状态变为 `discarded`。
+4. 长操作期间页面覆盖层显示「正在生成 Preview... / 正在计算 Diff... / 正在应用变更... / 正在放弃草案...」，期间请勿重复操作。
+
+## 验证结果
+
+- 摘要卡显示来源 `Compiler PDM`、Compiler Run 编号与 PDM Hash，可追溯到上游运行。
+- 变更统计（总/已接受/已拒绝/待处理）与你的操作一致；接受/拒绝后按钮进入禁用态。
+- Dry-run 通过前无法 apply；存在冲突或过期时按钮明确禁用并有说明。
+- 「确认应用」成功后状态徽章变为「已应用」；应用前正式业务数据无变化。
+
+## 限制与安全边界
+
+| 边界         | 说明                                                                                                       |
+| ------------ | ---------------------------------------------------------------------------------------------------------- |
+| **人工确认** | apply 是唯一写入动作，且仅 `ai:confirm` + `project:create` 双权限角色（当前为组织管理员/系统管理员）可执行 |
+| **只读投影** | Preview 只读，任何数据在 apply 前均未写入正式项目                                                          |
+| **过期锁死** | expired 会话全部操作禁用，需重新生成会话                                                                   |
+| **冲突阻断** | 未解决的冲突阻断 dry-run 与应用；冲突严重级为 none / soft / hard                                           |
+| **组织隔离** | 会话按组织隔离，跨组织访问返回资源不存在                                                                   |
+| **入口受限** | 当前仅 TRIZ 工作台「打开草案」可进入；会话创建在产品 UI 无独立按钮                                         |
+
+## 与 AI 快速创建内嵌审查的区别
+
+| 维度       | AI 快速创建内嵌审查                 | Draft Layer                            |
+| ---------- | ----------------------------------- | -------------------------------------- |
+| 草案来源   | AI 意图 → 澄清 → 草案生成           | Compiler Run（PDM 投影）               |
+| 审查对象   | 章程/WBS/任务/风险/里程碑等固定章节 | entityType 变更项（add/modify/delete） |
+| 关键视图   | 章节行内编辑 + 校验结果             | 摘要 / Preview / Diff                  |
+| 落库动作   | 「确认导入（全部/所选）」           | 「确认应用」（apply）                  |
+| 反幻觉校验 | HL-001~HL-010 + VE-001~VE-012       | Dry-run & 校验 + 冲突检查              |
+
+## 常见问题
+
+| 症状                            | 可能原因                           | 检查与修复                                                                              |
+| ------------------------------- | ---------------------------------- | --------------------------------------------------------------------------------------- |
+| 页面显示「无效的草案 ID」       | sessionId 非法                     | 从 TRIZ 工作台「打开草案」重新进入                                                      |
+| 变更项为空                      | 尚未生成 Preview                   | 点「Dry-run & 校验」前先确认 Preview 已生成；空态提示「暂无变更项。请先生成 Preview。」 |
+| 「确认应用」不可用              | 存在未解决冲突、会话已应用或已过期 | 处理全部冲突项（接受/拒绝/编辑）后重试；过期则重新生成会话                              |
+| Dry-run 弹「Dry-run 阻断：...」 | blocking 校验失败                  | 按提示处理冲突后重试                                                                    |
+| 状态显示「已过期」              | 会话超过有效期                     | 全部操作禁用，重新创建会话                                                              |
+| apply 被拒绝                    | 无 `ai:confirm` + `project:create` | 由组织管理员/系统管理员执行确认应用                                                     |
+
+## 下一步
+
+- [使用 AI 快速创建项目（完整教程）](/help/articles/ai.ai-quick-create)
+- [查看生成进度与审查 AI 草案](/help/articles/ai.generation-progress-and-review)
+- [Copilot 通用问答与项目上下文](/help/articles/ai.copilot-general-and-project-context)

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 160" role="img" aria-labelledby="title desc">
+  <title id="title">Project empty state illustration</title>
+  <desc id="desc">A project dashboard frame with a first plan block.</desc>
+  <rect x="34" y="28" width="172" height="104" rx="14" fill="#FFFFFF" stroke="#CBD5E1"/>
+  <rect x="52" y="48" width="58" height="54" rx="10" fill="#EFF4FF"/>
+  <rect x="124" y="50" width="48" height="8" rx="4" fill="#3B6BEF"/>
+  <rect x="124" y="70" width="58" height="8" rx="4" fill="#CBD5E1"/>
+  <rect x="124" y="90" width="42" height="8" rx="4" fill="#E2E8F0"/>
+  <path d="M68 78h14l10-18 12 34H70l-2-16Z" fill="#3B6BEF"/>
+  <circle cx="184" cy="44" r="8" fill="#7C3AED"/>
+</svg>

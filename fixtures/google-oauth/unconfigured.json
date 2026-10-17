@@ -1,0 +1,3 @@
+{
+  "_comment": "占位文件：没有配置 Google 登录时，Compose 用它满足 secret 挂载；后端不会读取它（未设置 AIPROJ_GOOGLE_OAUTH_SECRET_FILE 时不传 JSON 路径），登录页的 Google 按钮显示「未配置」。启用方法见 .env.compose.example。"
+}

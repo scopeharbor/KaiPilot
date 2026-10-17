@@ -1,0 +1,8 @@
+{
+  "descriptor": "triz-skill-layer-context",
+  "scope": "project",
+  "targetStages": ["requirements_parsing", "contradiction_detection"],
+  "advisory": true,
+  "contextScope": "project",
+  "description": "TRIZ Skill Layer 上下文贡献（advisory 只读）"
+}
