@@ -118,6 +118,26 @@ async function resetTestDb() {
 }
 
 /**
+ * 测试不连真实模型目录（models.dev）。保存 AI 连接后会在后台自动预填定价并拉取目录；
+ * 能联网的 CI 上，上一个用例的后台拉取会在下一个用例截断并写入自己的目录快照之后才落库，
+ * 较新的真实目录盖过用例数据，用例就随网络状况时过时不过。这里让这类请求一律按离线失败，
+ * 与无网环境一致；需要目录的用例照旧自己写入快照或注入 fetchCatalog。返回值在全部用例结束后还原 fetch。
+ */
+function blockModelCatalogNetwork() {
+  const originalFetch = globalThis.fetch
+  globalThis.fetch = (async (input: Parameters<typeof fetch>[0], init?: RequestInit) => {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+    if (new URL(url).hostname === 'models.dev') {
+      throw new TypeError('fetch failed（测试环境不连接 models.dev）')
+    }
+    return originalFetch(input, init)
+  }) as typeof fetch
+  return () => {
+    globalThis.fetch = originalFetch
+  }
+}
+
+/**
  * Configure lifecycle function to run before and after all the
  * tests.
  *
@@ -136,6 +156,7 @@ export const runnerHooks: Required<Pick<Config, 'setup' | 'teardown'>> = {
       await resetTestDb()
       return testUtils.db().migrate()
     },
+    () => blockModelCatalogNetwork(),
   ],
   teardown: [],
 }

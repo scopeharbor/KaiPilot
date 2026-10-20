@@ -4,7 +4,8 @@
  * 随机密钥（每次运行都不同，只用于本机试用、测试或本次 CI，不要用于对外部署）。
  *
  * 用法：node scripts/prepare-backend-env.mjs [--if-missing] [--root <仓库根目录>]
- *   --if-missing  已有 apps/backend/.env 时什么都不做（CI 使用，不覆盖已有的环境文件）
+ *   --if-missing  已有 apps/backend/.env 时什么都不做（本机想保留自己的环境文件时用；
+ *                 CI 不加它，测试只用这次生成的环境文件，绝不读取检出里现成的 .env）
  */
 import { randomBytes } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'

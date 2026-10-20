@@ -96,8 +96,9 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Prepare backend env
-        # 公开仓库不带 apps/backend/.env：按示例生成（本机 SQLite、随机密钥），与个人版导出门禁一致；已有 .env 时不改动
-        run: node scripts/prepare-backend-env.mjs --if-missing
+        # 测试一律用按示例生成的环境文件（本机 SQLite、随机密钥），与个人版导出门禁一致。
+        # 不加 --if-missing：检出里即使已有 .env 也覆盖，CI 测试绝不读取任何现成的环境文件（只改 runner 上的检出，不会提交）
+        run: node scripts/prepare-backend-env.mjs
 
       - name: Test
         run: pnpm test
@@ -125,8 +126,9 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Prepare backend env
-        # 公开仓库不带 apps/backend/.env：按示例生成（本机 SQLite、随机密钥），与个人版导出门禁一致；已有 .env 时不改动
-        run: node scripts/prepare-backend-env.mjs --if-missing
+        # 测试一律用按示例生成的环境文件（本机 SQLite、随机密钥），与个人版导出门禁一致。
+        # 不加 --if-missing：检出里即使已有 .env 也覆盖，CI 测试绝不读取任何现成的环境文件（只改 runner 上的检出，不会提交）
+        run: node scripts/prepare-backend-env.mjs
 
       - name: Backend coverage
         run: pnpm --filter @aiproj/backend run test:coverage
@@ -166,8 +168,9 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Prepare backend env
-        # 公开仓库不带 apps/backend/.env：按示例生成（本机 SQLite、随机密钥），与个人版导出门禁一致；已有 .env 时不改动
-        run: node scripts/prepare-backend-env.mjs --if-missing
+        # 测试一律用按示例生成的环境文件（本机 SQLite、随机密钥），与个人版导出门禁一致。
+        # 不加 --if-missing：检出里即使已有 .env 也覆盖，CI 测试绝不读取任何现成的环境文件（只改 runner 上的检出，不会提交）
+        run: node scripts/prepare-backend-env.mjs
 
       - name: Install Playwright browsers
         run: pnpm --filter @aiproj/e2e exec playwright install --with-deps
