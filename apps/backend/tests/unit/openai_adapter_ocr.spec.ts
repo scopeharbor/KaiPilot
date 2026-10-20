@@ -58,7 +58,7 @@ test.group('OpenAiAdapter DeepSeek OCR', () => {
           create: async (request: unknown) => {
             payload = request
             return {
-              choices: [{ message: { content: '开项 OpenXiang' } }],
+              choices: [{ message: { content: '开项 Kaiplan' } }],
               usage: { prompt_tokens: 10, completion_tokens: 4, total_tokens: 14 },
             }
           },
@@ -72,7 +72,7 @@ test.group('OpenAiAdapter DeepSeek OCR', () => {
     })
 
     assert.isTrue(result.ok)
-    assert.equal(result.extractedText, '开项 OpenXiang')
+    assert.equal(result.extractedText, '开项 Kaiplan')
     assert.lengthOf(payload.messages, 2)
     assert.deepEqual(payload.messages[0], { role: 'system', content: DSH_MINIMAL_SYSTEM_PROMPT })
     assert.equal(payload.messages[1].role, 'user')

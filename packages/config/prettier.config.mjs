@@ -1,4 +1,4 @@
-// 开项 OpenXiang 共享 Prettier 配置。
+// 开项 Kaiplan 共享 Prettier 配置。
 /** @type {import("prettier").Config} */
 export default {
   semi: false,

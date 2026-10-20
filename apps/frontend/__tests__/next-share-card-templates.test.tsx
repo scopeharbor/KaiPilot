@@ -71,7 +71,7 @@ describe('ShareCardCanvas（1200×630 通用画布外壳）', () => {
     expect(screen.getByText('智能车载系统研发')).toBeInTheDocument()
     expect(screen.getByText('看板工作面')).toBeInTheDocument()
     expect(screen.getByText('租户物理隔离 · 内部凭证')).toBeInTheDocument()
-    expect(screen.getByText('开项 OpenXiang · Evidence Console')).toBeInTheDocument()
+    expect(screen.getByText('开项 Kaiplan · Evidence Console')).toBeInTheDocument()
     expect(screen.getByText('导出时间：2026-09-09 15:30:00')).toBeInTheDocument()
     expect(screen.getByText('数据区')).toBeInTheDocument()
   })

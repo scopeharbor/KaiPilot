@@ -180,14 +180,14 @@ describe('otpauth URI', () => {
     const uri = buildOtpauthUri({
       secret: 'JBSWY3DPEHPK3PXP',
       accountName: 'ada@example.com',
-      issuer: '开项 OpenXiang',
+      issuer: '开项 Kaiplan',
     })
     const parsed = new URL(uri)
     expect(parsed.protocol).toBe('otpauth:')
     expect(uri.startsWith('otpauth://totp/')).toBe(true)
-    expect(decodeURIComponent(parsed.pathname)).toContain('开项 OpenXiang:ada@example.com')
+    expect(decodeURIComponent(parsed.pathname)).toContain('开项 Kaiplan:ada@example.com')
     expect(parsed.searchParams.get('secret')).toBe('JBSWY3DPEHPK3PXP')
-    expect(parsed.searchParams.get('issuer')).toBe('开项 OpenXiang')
+    expect(parsed.searchParams.get('issuer')).toBe('开项 Kaiplan')
     expect(parsed.searchParams.get('algorithm')).toBe('SHA1')
     expect(parsed.searchParams.get('digits')).toBe('6')
     expect(parsed.searchParams.get('period')).toBe('30')

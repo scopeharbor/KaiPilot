@@ -159,7 +159,7 @@ export function NextOfflineFallback({
             </div>
           ) : null}
 
-          <p className="text-xs text-[var(--nx-text-muted)]">开项 OpenXiang — 离线模式</p>
+          <p className="text-xs text-[var(--nx-text-muted)]">开项 Kaiplan — 离线模式</p>
         </div>
       </div>
     </main>

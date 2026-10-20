@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "开项 OpenXiang 跨端共享类型入口（占位，后续 change 填充领域类型）",
+  "description": "开项 Kaiplan 跨端共享类型入口（占位，后续 change 填充领域类型）",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {

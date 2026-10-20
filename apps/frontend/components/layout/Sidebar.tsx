@@ -142,7 +142,7 @@ export function Sidebar({ forceCollapsed, hideCollapseToggle = false, onNavigate
                 collapsed && 'mx-auto',
                 focusRing,
               )}
-              aria-label="开项 OpenXiang 首页"
+              aria-label="开项 Kaiplan 首页"
             >
               <BrandLogo size={32} showName={!collapsed} imageClassName="h-8 w-8" />
             </Link>

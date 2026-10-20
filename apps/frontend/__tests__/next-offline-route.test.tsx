@@ -66,7 +66,7 @@ describe('/offline 路由装配与静态零写网络回归测试 (W3 / task 3.3 
     // 核心文本在主树中正常呈现
     expect(screen.getByText('当前处于离线状态')).toBeInTheDocument()
     expect(screen.getByText(/网络连接已断开，部分功能暂时不可用/)).toBeInTheDocument()
-    expect(screen.getByText('开项 OpenXiang — 离线模式')).toBeInTheDocument()
+    expect(screen.getByText('开项 Kaiplan — 离线模式')).toBeInTheDocument()
 
     // 1px 发丝线暗黑仪器卡片
     const card = container.querySelector('[data-offline-card]')

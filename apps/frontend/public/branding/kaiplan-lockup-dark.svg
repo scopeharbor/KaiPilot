@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 256" width="600" height="256" role="img" aria-labelledby="title">
-  <title id="title">开项 OpenXiang</title>
-  <!-- 开项 OpenXiang 文字组合 —— 暗色。「开项」为手绘圆头笔画路径，不依赖字体。 -->
+  <title id="title">开项 Kaiplan</title>
+  <!-- 开项 Kaiplan 文字组合 —— 暗色。「开项」为手绘圆头笔画路径，不依赖字体。 -->
   <g>
     <path d="M 70 190 V 70 H 190" fill="none" stroke="#818CF8" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>
     <rect x="112" y="112" width="84" height="84" rx="20" fill="#FF6B4A"/>

@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "开项 OpenXiang 后端（AdonisJS 7）",
+  "description": "开项 Kaiplan 后端（AdonisJS 7）",
   "scripts": {
     "start": "node --import tsx build/bin/server.js",
     "build": "node ace build",

@@ -1,4 +1,4 @@
-// 开项 OpenXiang 前端 ESLint 配置：继承共享扁平配置。
+// 开项 Kaiplan 前端 ESLint 配置：继承共享扁平配置。
 import sharedConfig from '@aiproj/config/eslint'
 
 export default [

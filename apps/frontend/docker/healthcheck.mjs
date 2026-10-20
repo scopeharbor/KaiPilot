@@ -1,5 +1,5 @@
 /**
- * 开项 OpenXiang —— frontend 容器内健康探针（v3-docker-compose-runtime-foundation, design D8）
+ * 开项 Kaiplan —— frontend 容器内健康探针（v3-docker-compose-runtime-foundation, design D8）
  *
  * 请求 standalone server 的根页面：200/3xx → exit 0，其余/超时 → exit 1。
  * 只用 Node 自带 fetch，不为探针引入 curl/wget。输出仅状态行（低敏）。

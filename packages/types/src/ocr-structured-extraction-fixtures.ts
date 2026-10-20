@@ -753,7 +753,7 @@ export function actionItemsAcceptedText(): string {
 /** 模拟已接受提取文本——里程碑清单 */
 export function milestoneListAcceptedText(): string {
   return `
-项目名称：开项OpenXiang V3
+项目名称：开项Kaiplan V3
 
 里程碑清单：
 1. M1 - 需求评审完成：2025-07-01（已完成）

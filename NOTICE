@@ -1,5 +1,5 @@
-开项 OpenXiang
-Copyright (C) 2026 开项 OpenXiang 的作者们
+开项 Kaiplan
+Copyright (C) 2026 开项 Kaiplan 的作者们
 
 维护者：evil9369
 
@@ -18,5 +18,5 @@ Copyright (C) 2026 开项 OpenXiang 的作者们
 本程序使用的第三方开源组件及其许可证，以各依赖包随附的声明为准
 （见 pnpm-lock.yaml 列出的依赖与 node_modules 中各包的 LICENSE 文件）。
 
-「智项」与「开项 OpenXiang」名称及标志不随 AGPL-3.0 授权；修改后对外发布的版本
+「智项」与「开项 Kaiplan」名称及标志不随 AGPL-3.0 授权；修改后对外发布的版本
 请使用不同的名称，避免与本项目混淆。

@@ -25,7 +25,7 @@ describe('BrandLogo and BrandLoader', () => {
     const image = container.querySelector('img')
 
     expect(image?.getAttribute('src')).toBe(BRAND_LOGO_LIGHT_SRC)
-    expect(screen.getByText('开项 AI')).toBeInTheDocument()
+    expect(screen.getByText('开项 Kaiplan')).toBeInTheDocument()
   })
 
   test('BrandLogo switches to the dark mark when resolved theme is dark', () => {
@@ -34,7 +34,7 @@ describe('BrandLogo and BrandLoader', () => {
     const image = container.querySelector('img')
 
     expect(image?.getAttribute('src')).toBe(BRAND_LOGO_DARK_SRC)
-    expect(screen.queryByText('开项 AI')).not.toBeInTheDocument()
+    expect(screen.queryByText('开项 Kaiplan')).not.toBeInTheDocument()
   })
 
   test('BrandLoader exposes status semantics and light loader asset', () => {

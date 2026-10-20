@@ -904,11 +904,12 @@ export function checkFrontendDockerfile(): GateCheck[] {
       'frontend 探针不符合契约',
     ),
   )
-  // 禁止把内部 DNS/绝对地址烘焙给浏览器
+  // 禁止把内部 DNS/绝对 API 地址烘焙给浏览器；「源代码」链接（AGPL 第 13 条）指向公开仓库，
+  // 本来就是给浏览器的外部地址，个人版发布时会带默认值，不在此列
   checks.push(
     check(
       'frontenddf.no-internal-dns-baked',
-      !/http:\/\/backend/.test(src) && !/NEXT_PUBLIC_\S*=http/m.test(src),
+      !/http:\/\/backend/.test(src) && !/NEXT_PUBLIC_(?!AIPROJ_SOURCE_URL=)\S*=http/m.test(src),
       '前端构建不烘焙 backend 内部 DNS 或绝对 API URL',
       '前端构建烘焙了内部/绝对地址',
     ),

@@ -10,7 +10,7 @@ import type { MetadataRoute } from 'next'
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: '开项 OpenXiang',
+    name: '开项 Kaiplan',
     short_name: '开项',
     description: 'AI 驅動的專案管理平台，協助規劃專案、管理任務與追蹤進度。',
     start_url: '/dashboard',

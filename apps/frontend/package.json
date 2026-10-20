@@ -2,7 +2,7 @@
   "name": "@aiproj/frontend",
   "version": "0.0.0",
   "private": true,
-  "description": "开项 OpenXiang 前端（Next.js App Router）",
+  "description": "开项 Kaiplan 前端（Next.js App Router）",
   "scripts": {
     "dev": "next dev --webpack",
     "build": "next build --webpack",

@@ -12,7 +12,7 @@ describe('PWA manifest', () => {
   const m = manifest()
 
   test('包含产品名称', () => {
-    expect(m.name).toBe('开项 OpenXiang')
+    expect(m.name).toBe('开项 Kaiplan')
     expect(m.short_name).toBe('开项')
   })
 

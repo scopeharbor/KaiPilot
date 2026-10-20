@@ -1,5 +1,5 @@
 ﻿/* ============================================================================
- * 开项 OpenXiang — 设计令牌层（单一样式事实来源）
+ * 开项 Kaiplan — 设计令牌层（单一样式事实来源）
  * Tailwind CSS v4（CSS-first）。所有令牌落为 CSS 变量，@theme inline 映射为工具类，
  * 改变量即改工具类结果，不存在第二处硬编码色值（design.md D1）。
  * 令牌来源：docs/ai-project-os-spec/stage2a_ui_ux_spec.md 附录 A + DESIGN.md 5 处定稿。

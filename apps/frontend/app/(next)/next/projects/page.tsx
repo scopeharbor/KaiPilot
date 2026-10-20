@@ -33,9 +33,7 @@ export default function NextProjectsPage() {
     >
       <SpaceMapOverlay open={open} defaultLens="projects" onOpenChange={handleOpenChange} />
       <div className="flex flex-col items-center gap-2 text-center text-xs text-[var(--nx-text-muted)]">
-        <p className="text-sm font-medium text-[var(--nx-text-primary)]">
-          开项 OpenXiang · 项目清单
-        </p>
+        <p className="text-sm font-medium text-[var(--nx-text-primary)]">开项 Kaiplan · 项目清单</p>
         <p>
           已定向唤起空间地图清单镜头。若浮层未弹出，请按{' '}
           <kbd className="rounded border border-[var(--nx-border-hairline)] bg-[var(--nx-bg-1)] px-1.5 py-0.5 font-mono text-[11px] text-[var(--nx-text-secondary)]">

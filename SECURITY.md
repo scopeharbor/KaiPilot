@@ -4,7 +4,7 @@
 
 如果你发现了安全漏洞，**请不要公开提 Issue 或 Pull Request**，请通过 GitHub 私密漏洞报告提交：
 
-[Report a vulnerability](https://github.com/scopeharbor/OpenXiang/security/advisories/new)
+[Report a vulnerability](https://github.com/scopeharbor/Kaiplan/security/advisories/new)
 
 报告里请尽量写明：
 

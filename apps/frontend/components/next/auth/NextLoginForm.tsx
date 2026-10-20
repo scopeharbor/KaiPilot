@@ -296,7 +296,7 @@ export function NextLoginForm({
         className="pointer-events-none fixed left-6 top-6 z-10 select-none sm:left-10 sm:top-8"
       >
         <p className="font-mono text-[11px] uppercase tracking-[0.32em] text-[var(--nx-space-cyan)]">
-          OPENXIANG
+          KAIPLAN
         </p>
         <h1 className="mt-1 text-xl font-semibold tracking-[0.06em] text-[var(--nx-text-primary)]">
           开项

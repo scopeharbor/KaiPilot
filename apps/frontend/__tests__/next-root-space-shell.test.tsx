@@ -95,7 +95,7 @@ describe('根路径深空外壳与无障碍/视觉红线测试（tasks 1.3 / 1.4
 
       // 验证 BrandLoader 状态与文案
       const statusRole = screen.getByRole('status')
-      expect(statusRole).toHaveTextContent('正在进入开项 OpenXiang…')
+      expect(statusRole).toHaveTextContent('正在进入开项 Kaiplan…')
 
       // 水合等待期禁止触发重定向
       expect(replaceMock).not.toHaveBeenCalled()
@@ -127,7 +127,7 @@ describe('根路径深空外壳与无障碍/视觉红线测试（tasks 1.3 / 1.4
 
       const status = screen.getByRole('status')
       expect(status).toHaveAttribute('aria-live', 'polite')
-      expect(status).toHaveTextContent('正在进入开项 OpenXiang…')
+      expect(status).toHaveTextContent('正在进入开项 Kaiplan…')
     })
 
     test('默认/沉浸档位下挂载 .nx-space-atmosphere 空间氛围渐变', () => {

@@ -306,7 +306,7 @@ describe('next-batch2-dual-track-guard（批 2 双轨门控护栏与旧轨零污
 
       expect(replaceMock).not.toHaveBeenCalled()
       expect(pushMock).not.toHaveBeenCalled()
-      expect(screen.getByText('正在进入开项 OpenXiang…')).toBeInTheDocument()
+      expect(screen.getByText('正在进入开项 Kaiplan…')).toBeInTheDocument()
       expect(document.querySelector('[data-root-space-loading]')).not.toBeNull()
     })
   })

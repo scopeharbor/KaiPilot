@@ -204,7 +204,7 @@ export function ShareCardCanvas({
           data-share-card-watermark
           style={{ fontSize: 11, color: 'var(--nx-text-muted)', fontFamily: MONO_FONT_STACK }}
         >
-          开项 OpenXiang · Evidence Console
+          开项 Kaiplan · Evidence Console
         </span>
       </footer>
     </div>

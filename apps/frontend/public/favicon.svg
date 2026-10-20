@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <!-- 开项 OpenXiang favicon：浅靛蓝圆角底 + 「开角」标志（为 16/32px 加粗笔画） -->
+  <!-- 开项 Kaiplan favicon：浅靛蓝圆角底 + 「开角」标志（为 16/32px 加粗笔画） -->
   <rect width="64" height="64" rx="14" fill="#EEF0FF"/>
   <path d="M 15 49 V 15 H 49" fill="none" stroke="#4338CA" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
   <rect x="28" y="28" width="23" height="23" rx="5.5" fill="#F04E30"/>

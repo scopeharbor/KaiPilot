@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="加载中">
-  <!-- 开项 OpenXiang 载入动画 —— 亮色模式 -->
+  <!-- 开项 Kaiplan 载入动画 —— 亮色模式 -->
   <!-- 动画语义：「开引号」一笔画出 = 一句话开始；朱砂方块弹出 = 项目被开启；随后淡出、循环。
        已内置 prefers-reduced-motion 降级：用户关闭动效时静止显示 logo 本身。 -->
   <style>

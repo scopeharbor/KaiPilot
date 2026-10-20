@@ -149,7 +149,7 @@ self.addEventListener('push', (event) => {
     // 解析失败时忽略，使用默认通知
   }
 
-  const title = payload?.title ?? '开项 OpenXiang'
+  const title = payload?.title ?? '开项 Kaiplan'
   const options = {
     body: payload?.body ?? '有新通知',
     icon: '/branding/app-icon-192.png',
