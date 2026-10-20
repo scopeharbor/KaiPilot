@@ -149,7 +149,7 @@ self.addEventListener('push', (event) => {
     // 解析失败时忽略，使用默认通知
   }
 
-  const title = payload?.title ?? '开项 Kaiplan'
+  const title = payload?.title ?? '开项 KaiPilot'
   const options = {
     body: payload?.body ?? '有新通知',
     icon: '/branding/app-icon-192.png',
@@ -251,7 +251,7 @@ async function networkFirstWithFallback(request) {
     }
     // 离线 fallback 不在缓存中时返回简单的离线响应
     return new Response(
-      '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>离线</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;background:#f9fafb;color:#111827;text-align:center;padding:1rem}h1{font-size:1.5rem;margin-bottom:0.5rem}p{color:#6b7280}a{color:#4338CA;text-decoration:underline}</style></head><body><div><h1>离线</h1><p>网络连接已断开</p><a href="/dashboard">重试连接</a></div></body></html>',
+      '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>离线</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;background:#f9fafb;color:#111827;text-align:center;padding:1rem}h1{font-size:1.5rem;margin-bottom:0.5rem}p{color:#6b7280}a{color:#C2410C;text-decoration:underline}</style></head><body><div><h1>离线</h1><p>网络连接已断开</p><a href="/dashboard">重试连接</a></div></body></html>',
       { headers: { 'Content-Type': 'text/html; charset=utf-8' } },
     )
   }

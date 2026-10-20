@@ -53,7 +53,7 @@ export function AuthSessionProvider({ children }: { children: ReactNode }) {
         className="flex min-h-screen items-center justify-center bg-background px-8"
         aria-busy="true"
       >
-        <BrandLoader size={72} label="正在载入开项 Kaiplan…" />
+        <BrandLoader size={72} label="正在载入开项 KaiPilot…" />
       </main>
     )
   }

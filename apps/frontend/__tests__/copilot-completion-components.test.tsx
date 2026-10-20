@@ -40,7 +40,7 @@ const mockMentionCandidates: CompletionMentionCandidate[] = [
     kind: 'mention',
     entityType: 'project',
     entityId: 200,
-    label: '开项 Kaiplan',
+    label: '开项 KaiPilot',
     summary: 'AI-first 项目管理平台',
     sortKey: {
       relevanceTier: 'high',
@@ -169,7 +169,7 @@ describe('MentionCompletion', () => {
       expect(screen.getByText('首页设计（T-1042）')).toBeDefined()
     })
 
-    expect(screen.getByText('开项 Kaiplan')).toBeDefined()
+    expect(screen.getByText('开项 KaiPilot')).toBeDefined()
   })
 
   it('空结果时显示"未找到匹配的实体"', async () => {

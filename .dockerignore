@@ -1,5 +1,5 @@
 # =============================================================================
-# 开项 Kaiplan —— Docker 构建上下文排除清单（v3-docker-compose-runtime-foundation）
+# 开项 KaiPilot —— Docker 构建上下文排除清单（v3-docker-compose-runtime-foundation）
 #
 # 目标：构建上下文只携带复现镜像所需内容，绝不携带本机敏感/大体积产物。
 # 约定：排除后如需保留某个 example/config 文件，用 `!` 显式放行（见 env 段）。

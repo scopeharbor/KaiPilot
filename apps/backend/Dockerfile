@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # =============================================================================
-# 开项 Kaiplan —— backend 生产式镜像（v3-docker-compose-runtime-foundation, design D3）
+# 开项 KaiPilot —— backend 生产式镜像（v3-docker-compose-runtime-foundation, design D3）
 #
 # 基线决策（task 2.3，evidence 见 observation-and-inventory.md §2.3）：
 # - Node 26.10.0 bookworm-slim（当前最新 Current 稳定版，精确到 patch）：仓库

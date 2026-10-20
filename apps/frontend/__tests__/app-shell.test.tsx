@@ -171,7 +171,7 @@ describe('AppShell 布局', () => {
     expect(collapseBtn.getAttribute('aria-expanded')).toBe('true')
     // 展开态：品牌链接与折叠按钮同属 h-14 头部这一行。
     expect(collapseBtn.closest('div')).toBe(
-      screen.getByRole('link', { name: /开项 Kaiplan 首页/ }).parentElement,
+      screen.getByRole('link', { name: /开项 KaiPilot 首页/ }).parentElement,
     )
 
     fireEvent.click(collapseBtn)
@@ -180,7 +180,7 @@ describe('AppShell 布局', () => {
     expect(useUiStore.getState().sidebarCollapsed).toBe(true)
     const expandBtn = screen.getByRole('button', { name: '展开侧栏' })
     expect(expandBtn.getAttribute('aria-expanded')).toBe('false')
-    expect(screen.queryByRole('link', { name: /开项 Kaiplan 首页/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /开项 KaiPilot 首页/ })).not.toBeInTheDocument()
 
     act(() => useUiStore.getState().setSidebarCollapsed(false))
   })
@@ -191,7 +191,7 @@ describe('AppShell 布局', () => {
     renderWithProviders(<Sidebar forceCollapsed hideCollapseToggle />)
     expect(screen.queryByRole('button', { name: /侧栏/ })).not.toBeInTheDocument()
     // 强制折叠时 logo 仍是首页链接（换手行为只属于用户可切换的桌面态）。
-    expect(screen.getByRole('link', { name: /开项 Kaiplan 首页/ })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /开项 KaiPilot 首页/ })).toBeInTheDocument()
   })
 
   test('侧栏折叠命令已注册且快捷键不占用保留和弦', async () => {

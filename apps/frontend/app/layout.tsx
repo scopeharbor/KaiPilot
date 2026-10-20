@@ -11,7 +11,7 @@ import VariantRuntime from '@/components/locale/variant-runtime'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: '开项 Kaiplan',
+  title: '开项 KaiPilot',
   description: 'AI 驅動的專案管理平台，協助規劃專案、管理任務與追蹤進度。',
   manifest: '/manifest.webmanifest',
   icons: {

@@ -31,7 +31,7 @@ describe('OfflineFallbackPage', () => {
 
   test('渲染离线模式标识', () => {
     render(<OfflineFallbackPage />)
-    expect(screen.getByText('开项 Kaiplan — 离线模式')).toBeInTheDocument()
+    expect(screen.getByText('开项 KaiPilot — 离线模式')).toBeInTheDocument()
   })
 
   test('不包含任何可编辑业务控件', () => {

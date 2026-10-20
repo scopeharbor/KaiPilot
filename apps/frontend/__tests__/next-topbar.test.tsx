@@ -59,7 +59,7 @@ describe('components/next/layout/NextTopbar（v3-ui-next-shell-space-map tasks 1
   test('左侧品牌与空间坐标动态回显（等宽弱对比度文本）', () => {
     const view = renderTopbar()
 
-    expect(screen.getByText('开项 Kaiplan')).toBeInTheDocument()
+    expect(screen.getByText('开项 KaiPilot')).toBeInTheDocument()
     const coordinate = document.querySelector('[data-next-coordinate]') as HTMLElement
     expect(coordinate.textContent).toBe('/next · 角色首页')
     expect(coordinate.className).toContain('font-mono')

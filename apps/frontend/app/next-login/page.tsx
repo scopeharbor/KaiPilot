@@ -4,7 +4,7 @@ import { safeNextPath } from '@/lib/auth/safe-next-path'
 import '../(next)/next-tokens.css'
 
 export const metadata: Metadata = {
-  title: '登录 · 开项 Kaiplan',
+  title: '登录 · 开项 KaiPilot',
   robots: { index: false, follow: false },
 }
 

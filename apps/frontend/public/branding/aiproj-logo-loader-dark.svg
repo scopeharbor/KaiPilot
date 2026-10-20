@@ -1,26 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="加载中">
-  <!-- 开项 Kaiplan 载入动画 —— 暗色模式 -->
-  <!-- 动画语义：「开引号」一笔画出 = 一句话开始；朱砂方块弹出 = 项目被开启；随后淡出、循环。
-       已内置 prefers-reduced-motion 降级：用户关闭动效时静止显示 logo 本身。 -->
+  <!-- 开项 KaiPilot 载入动画（暗色）：先画出任务条（计划成形），再写出 K、P、I；循环。
+       已内置 prefers-reduced-motion 降级：用户关闭动效时静止显示完整字形。 -->
   <style>
-    .corner { stroke-dasharray: 240; animation: ox-draw 2.2s cubic-bezier(.65,0,.35,1) infinite; }
-    .item { transform-origin: 154px 154px; transform-box: view-box; animation: ox-pop 2.2s cubic-bezier(.34,1.56,.64,1) infinite; }
-    @keyframes ox-draw {
-      0%   { stroke-dashoffset: 240; opacity: 1; }
-      40%  { stroke-dashoffset: 0;   opacity: 1; }
-      85%  { stroke-dashoffset: 0;   opacity: 1; }
-      100% { stroke-dashoffset: 0;   opacity: 0; }
-    }
-    @keyframes ox-pop {
-      0%, 35% { transform: scale(0); opacity: 0; }
-      55%     { transform: scale(1); opacity: 1; }
-      85%     { transform: scale(1); opacity: 1; }
-      100%    { transform: scale(1); opacity: 0; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .corner, .item { animation: none; stroke-dashoffset: 0; opacity: 1; transform: none; }
-    }
+    .bar { stroke-dasharray: 100; animation: kp-bar 2.4s cubic-bezier(.65,0,.35,1) infinite; }
+    .ltr { stroke-dasharray: 100; animation: kp-ltr 2.4s cubic-bezier(.65,0,.35,1) infinite; }
+    @keyframes kp-bar { 0% { stroke-dashoffset: 100; opacity: 1; } 30% { stroke-dashoffset: 0; } 85% { stroke-dashoffset: 0; opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+    @keyframes kp-ltr { 0%, 25% { stroke-dashoffset: 100; opacity: 1; } 60% { stroke-dashoffset: 0; } 85% { stroke-dashoffset: 0; opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) { .bar, .ltr { animation: none; stroke-dasharray: none; } }
   </style>
-  <path class="corner" d="M 70 190 V 70 H 190" fill="none" stroke="#818CF8" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>
-  <rect class="item" x="112" y="112" width="84" height="84" rx="20" fill="#FF6B4A"/>
+  <g transform="translate(16 66) scale(0.46)" fill="none" stroke-width="26.087" stroke-linecap="round" stroke-linejoin="round"><path class="bar" pathLength="100" d="M 60 72 H 158" stroke="#F5F5F4"/><path class="bar" pathLength="100" d="M 36 136 H 196" stroke="#F5F5F4"/><path class="ltr" pathLength="100" d="M 96 72 V 218" stroke="#FBBF24"/><path class="ltr" pathLength="100" d="M 134 164 L 102 191 L 134 218" stroke="#FBBF24"/><path class="ltr" pathLength="100" d="M 164 72 V 218" stroke="#FBBF24"/><path class="ltr" pathLength="100" d="M 164 72 H 184 A 27 27 0 0 1 184 126 H 164" stroke="#FBBF24"/></g><g transform="translate(128 64) scale(0.46)" fill="none" stroke-width="26.087" stroke-linecap="round" stroke-linejoin="round"><path class="ltr" pathLength="100" d="M 18 78 H 78" stroke="#FBBF24"/><path class="ltr" pathLength="100" d="M 48 78 V 184" stroke="#FBBF24"/><path class="ltr" pathLength="100" d="M 16 186 H 80" stroke="#FBBF24"/><path class="bar" pathLength="100" d="M 104 62 H 242" stroke="#F5F5F4"/><path class="bar" pathLength="100" d="M 176 64 L 164 92" stroke="#F5F5F4"/><path class="bar" pathLength="100" d="M 122 186 V 102 H 226 V 186" stroke="#F5F5F4"/><path class="bar" pathLength="100" d="M 174 124 V 182 C 169 206 150 222 116 234" stroke="#F5F5F4"/><path class="bar" pathLength="100" d="M 188 204 L 236 232" stroke="#F5F5F4"/></g>
 </svg>

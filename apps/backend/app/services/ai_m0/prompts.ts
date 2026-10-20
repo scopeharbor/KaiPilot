@@ -18,7 +18,7 @@ export interface PromptSet {
   userPrompt: string
 }
 
-const SYSTEM_PROMPT = `你是「开项 Kaiplan」的项目规划助手。收到一句话简体中文项目描述后，请生成一份完整草案，包含 4 大块：
+const SYSTEM_PROMPT = `你是「开项 KaiPilot」的项目规划助手。收到一句话简体中文项目描述后，请生成一份完整草案，包含 4 大块：
 1) charter（项目章程）：title / vision / scope / successCriteria(数组) / startDate / endDate；
 2) wbs（工作分解结构）：至少 1 个顶层节点，节点带 outlineCode 与递归 children；
 3) tasks（任务）：至少 1 条，与 wbs 叶子节点关联；

@@ -38,7 +38,7 @@ export function BrandLogo({
         aria-hidden="true"
         className={cn('shrink-0 object-contain', imageClassName)}
       />
-      {showName ? <span className="truncate">开项 Kaiplan</span> : null}
+      {showName ? <span className="truncate">开项 KaiPilot</span> : null}
     </span>
   )
 }

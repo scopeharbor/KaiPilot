@@ -1,5 +1,5 @@
 # =============================================================================
-# 开项 Kaiplan —— SQLite 兼容完整栈（Redis + 文件型 SQLite）
+# 开项 KaiPilot —— SQLite 兼容完整栈（Redis + 文件型 SQLite）
 # （v3-docker-compose-runtime-foundation, design D1/D5/D7）
 #
 # 入口（与默认 PG 栈二选一）：
@@ -169,7 +169,7 @@ services:
         NEXT_PUBLIC_FF_NEXT_UI: ${AIPROJ_FF_NEXT_UI:-true}
         NEXT_PUBLIC_FF_NEXT_UI_ORGS: ${AIPROJ_FF_NEXT_UI_ORGS:-}
         # 「源代码」链接地址（AGPL 第 13 条，构建期内联）；留空不显示
-        NEXT_PUBLIC_AIPROJ_SOURCE_URL: ${AIPROJ_SOURCE_URL:-https://github.com/scopeharbor/Kaiplan}
+        NEXT_PUBLIC_AIPROJ_SOURCE_URL: ${AIPROJ_SOURCE_URL:-https://github.com/scopeharbor/KaiPilot}
     image: aiproj-frontend:local
     healthcheck:
       test: ['CMD', 'node', '/app/docker/healthcheck.mjs']

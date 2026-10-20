@@ -1,4 +1,4 @@
-// 开项 Kaiplan 后端 ESLint 配置。
+// 开项 KaiPilot 后端 ESLint 配置。
 // 使用 AdonisJS 官方 flat config；共享配置由根级 @aiproj/config 在 CI/根 lint 时统一兜底。
 import { configApp } from '@adonisjs/eslint-config'
 

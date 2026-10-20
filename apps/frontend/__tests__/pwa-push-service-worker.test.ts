@@ -25,9 +25,9 @@ describe('Service Worker push 事件（8.2）', () => {
 
   it('无效 payload 应使用默认通知', () => {
     // 解析失败时使用默认值
-    const defaultTitle = '开项 Kaiplan'
+    const defaultTitle = '开项 KaiPilot'
     const defaultBody = '有新通知'
-    expect(defaultTitle).toBe('开项 Kaiplan')
+    expect(defaultTitle).toBe('开项 KaiPilot')
     expect(defaultBody).toBe('有新通知')
   })
 
@@ -44,9 +44,9 @@ describe('Service Worker push 事件（8.2）', () => {
 
   it('空 payload 应使用默认值', () => {
     const payload: { title?: string; body?: string } = {}
-    const title = payload?.title ?? '开项 Kaiplan'
+    const title = payload?.title ?? '开项 KaiPilot'
     const body = payload?.body ?? '有新通知'
-    expect(title).toBe('开项 Kaiplan')
+    expect(title).toBe('开项 KaiPilot')
     expect(body).toBe('有新通知')
   })
 

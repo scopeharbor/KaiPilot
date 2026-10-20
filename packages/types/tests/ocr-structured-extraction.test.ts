@@ -743,7 +743,7 @@ describe('accepted extraction text fixtures', () => {
 
   it('milestoneListAcceptedText contains milestones', () => {
     const text = milestoneListAcceptedText()
-    expect(text).toContain('开项Kaiplan V3')
+    expect(text).toContain('开项KaiPilot V3')
     expect(text).toContain('M1 - 需求评审完成')
     expect(text).toContain('M5 - GA发布')
   })

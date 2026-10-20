@@ -1,6 +1,6 @@
 # @aiproj/sdk
 
-开项 Kaiplan workspace 内 TypeScript SDK，覆盖 parity-verified `/api/v1` endpoint registry。
+开项 KaiPilot workspace 内 TypeScript SDK，覆盖 parity-verified `/api/v1` endpoint registry。
 
 > **非公开发布**：本包为 `private: true`，仅面向本 monorepo 内的 TypeScript 消费者。
 > 公开 npm 发布需独立授权；coverage 通过不等于允许发布。

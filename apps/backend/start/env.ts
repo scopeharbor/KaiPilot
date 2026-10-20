@@ -92,7 +92,7 @@ export default await Env.create(new URL('../', import.meta.url), {
   // 两步验证（TOTP）密钥的静态加密 key。缺失时回退派生自 APP_KEY 并告警；
   // 建议生产设置独立 key，使 2FA 密钥泄露的爆炸半径止于 2FA。
   TWO_FACTOR_ENCRYPTION_KEY: Env.schema.string.optional(),
-  /** 认证器 App 里显示的签发方名称；缺省「开项 Kaiplan」。改动会让已绑定的条目改名，不影响验证。 */
+  /** 认证器 App 里显示的签发方名称；缺省「开项 KaiPilot」。改动会让已绑定的条目改名，不影响验证。 */
   TWO_FACTOR_ISSUER: Env.schema.string.optional(),
   /**
    * 登录期绑定策略（enrollment-at-login）：`off` | `optional`（默认）| `required`。

@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # =============================================================================
-# 开项 Kaiplan —— frontend 生产式镜像（v3-docker-compose-runtime-foundation, design D3/D4）
+# 开项 KaiPilot —— frontend 生产式镜像（v3-docker-compose-runtime-foundation, design D3/D4）
 #
 # - 与 backend 同一 Node 26.10.0 bookworm-slim / Corepack 0.36.0 / pnpm 12.8.1 基线。
 # - Next.js standalone 输出 + monorepo file-tracing root（next.config.mjs），
@@ -45,7 +45,7 @@ ARG NEXT_PUBLIC_FF_NEXT_UI_ORGS=
 ENV NEXT_PUBLIC_FF_NEXT_UI=${NEXT_PUBLIC_FF_NEXT_UI}
 ENV NEXT_PUBLIC_FF_NEXT_UI_ORGS=${NEXT_PUBLIC_FF_NEXT_UI_ORGS}
 # 「源代码」链接地址（AGPL 第 13 条，components/edition/SourceCodeLink.tsx）；留空不显示
-ARG NEXT_PUBLIC_AIPROJ_SOURCE_URL=https://github.com/scopeharbor/Kaiplan
+ARG NEXT_PUBLIC_AIPROJ_SOURCE_URL=https://github.com/scopeharbor/KaiPilot
 ENV NEXT_PUBLIC_AIPROJ_SOURCE_URL=${NEXT_PUBLIC_AIPROJ_SOURCE_URL}
 # 容器构建期启用 Next standalone 输出（Windows 本机无符号链接权限，默认关闭）
 ENV NEXT_STANDALONE=1

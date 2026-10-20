@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "开项 Kaiplan 共享工程配置：TypeScript strict base、ESLint 扁平配置、Prettier 预设",
+  "description": "开项 KaiPilot 共享工程配置：TypeScript strict base、ESLint 扁平配置、Prettier 预设",
   "exports": {
     "./eslint": "./eslint.config.mjs",
     "./prettier": "./prettier.config.mjs",

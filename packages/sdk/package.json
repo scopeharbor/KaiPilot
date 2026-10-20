@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "开项 Kaiplan TypeScript SDK — 类型化 /api/v1 客户端（项目/任务/域 client + escape hatch）",
+  "description": "开项 KaiPilot TypeScript SDK — 类型化 /api/v1 客户端（项目/任务/域 client + escape hatch）",
   "license": "AGPL-3.0-only",
   "sideEffects": false,
   "engines": {

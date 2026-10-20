@@ -4,7 +4,7 @@ import { TextVariantSwitcher } from '@/components/locale/text-variant-switcher'
 import { safeNextPath } from '@/lib/auth/safe-next-path'
 
 export const metadata: Metadata = {
-  title: '登录 · 开项 Kaiplan',
+  title: '登录 · 开项 KaiPilot',
   robots: { index: false, follow: false },
 }
 
