@@ -13,7 +13,7 @@
  * - 精确档（precise）紧凑行高降级（32px），功能等价。
  *
  * 虚拟化 jsdom 策略：为滚动容器注入 offsetHeight/offsetWidth 几何
- * （virtual-core 经 `elementResizeObserver` 读取元素 offset 尺寸计算视口），
+ * （virtual-core 经 `elementResizeObserver` 读取元素 offset / client 尺寸计算视口），
  * 行高恒为 estimateSize（未挂 measureElement ref，不触发真实行测量）。
  */
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -29,18 +29,21 @@ const PROJECT_ID = 101
 
 const VIEWPORT_HEIGHT = 600
 
-/** 虚拟滚动视口几何：jsdom 缺省 offsetHeight/offsetWidth 恒 0，注入后 virtualizer 才能裁剪。 */
+/**
+ * 虚拟滚动视口几何：jsdom 缺省 offset 与 client 尺寸恒 0，注入后 virtualizer 才能裁剪。
+ * virtual-core 3.17 读 offsetWidth/offsetHeight，3.19 起改读 clientWidth/clientHeight，两组都注入。
+ */
 function installScrollMetrics() {
-  vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockImplementation(function (
-    this: HTMLElement,
-  ) {
-    return this.hasAttribute('data-wbs-scroll-viewport') ? VIEWPORT_HEIGHT : 0
-  })
-  vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(function (
-    this: HTMLElement,
-  ) {
-    return this.hasAttribute('data-wbs-scroll-viewport') ? 900 : 0
-  })
+  for (const prop of ['offsetHeight', 'clientHeight'] as const) {
+    vi.spyOn(HTMLElement.prototype, prop, 'get').mockImplementation(function (this: HTMLElement) {
+      return this.hasAttribute('data-wbs-scroll-viewport') ? VIEWPORT_HEIGHT : 0
+    })
+  }
+  for (const prop of ['offsetWidth', 'clientWidth'] as const) {
+    vi.spyOn(HTMLElement.prototype, prop, 'get').mockImplementation(function (this: HTMLElement) {
+      return this.hasAttribute('data-wbs-scroll-viewport') ? 900 : 0
+    })
+  }
 }
 
 function makeNode(overrides: Partial<WbsNode> & { id: number; name: string }): WbsNode {
