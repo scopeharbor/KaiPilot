@@ -12,7 +12,9 @@ test.group('PriorityScoring — performance', () => {
     const items = makeLargePortfolioItems(1000)
     const elapsed = performance.now() - start
     assert.equal(items.length, 1000)
-    assert.isBelow(elapsed, 50, `1000 项 fixture 生成耗时 ${elapsed}ms，预期 < 50ms`)
+    // c8 收集覆盖率时（设置 NODE_V8_COVERAGE）插桩会让执行慢 2～3 倍，预算相应放宽；普通测试仍是 50ms
+    const budgetMs = process.env.NODE_V8_COVERAGE ? 150 : 50
+    assert.isBelow(elapsed, budgetMs, `1000 项 fixture 生成耗时 ${elapsed}ms，预期 < ${budgetMs}ms`)
   })
 
   test('1000 项目摘要生成正确', ({ assert }) => {
