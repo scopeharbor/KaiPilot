@@ -233,9 +233,16 @@ export function AllocationWorkspace() {
     },
   })
 
+  // 新建草案后会切到该草案；这条「已创建」通知属于新草案，切换时不能被下面的清理抹掉。
+  const keepNoticeForDraftRef = React.useRef<number | null>(null)
+
   // 切换草案时清理预览摘要与通知（防跨草案串场）。
   React.useEffect(() => {
     setPreviewResult((current) => (current && current.draftId === draftId ? current : null))
+    if (keepNoticeForDraftRef.current !== null && keepNoticeForDraftRef.current === draftId) {
+      keepNoticeForDraftRef.current = null
+      return
+    }
     setNotice(null)
   }, [draftId])
 
@@ -255,6 +262,7 @@ export function AllocationWorkspace() {
         dateWindow: window,
       })
       const createdId = Number(result.id)
+      keepNoticeForDraftRef.current = createdId
       selectDraft(createdId)
       setNotice({
         tone: 'success',
