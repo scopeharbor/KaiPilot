@@ -15,8 +15,10 @@ export default defineConfig({
   webServer: [
     {
       command: 'pnpm --filter @aiproj/backend dev',
-      // 端到端流程用 Mock 模型联调（没有 AI 连接时后端默认提示添加连接，见 AI_ALLOW_MOCK）
-      env: { AI_ALLOW_MOCK: 'true' },
+      // 端到端流程用 Mock 模型联调（没有 AI 连接时后端默认提示添加连接，见 AI_ALLOW_MOCK）；
+      // 登录期两步验证绑定默认 optional，会在密码通过后先给绑定挑战而不签发令牌，
+      // 端到端账号不绑定认证器，这里关掉（两步验证本身另有后端与前端用例覆盖）
+      env: { AI_ALLOW_MOCK: 'true', TWO_FACTOR_LOGIN_ENROLLMENT: 'off' },
       url: 'http://localhost:3333',
       reuseExistingServer: !process.env.CI,
       timeout: 30000,
