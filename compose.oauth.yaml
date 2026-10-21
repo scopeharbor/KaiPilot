@@ -1,5 +1,5 @@
 # =============================================================================
-# 开项 OpenXiang —— Google OAuth 自定义 secret source 覆盖
+# 开项 KaiPilot —— Google OAuth 自定义 secret source 覆盖
 #
 # 两套主 Compose 已直接读取 AIPROJ_GOOGLE_OAUTH_SECRET_FILE（未设置时 Google 登录不启用）。
 # 本 override 用于「必须启用 Google 登录」的部署：变量没设置时直接启动失败，避免误以未配置状态上线：

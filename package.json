@@ -2,7 +2,7 @@
   "name": "aiproj",
   "version": "0.0.0",
   "private": true,
-  "description": "开项 OpenXiang — AI-first 简体中文原生专业项目管理平台（monorepo 根）",
+  "description": "开项 KaiPilot — AI-first 简体中文原生专业项目管理平台（monorepo 根）",
   "packageManager": "pnpm@12.8.1",
   "engines": {
     "node": ">=26"

@@ -27,10 +27,10 @@ describe('SourceCodeLink（AGPL 第 13 条源码入口）', () => {
   })
 
   test('有值时渲染源代码链接，新窗口打开并带 noopener', () => {
-    vi.stubEnv('NEXT_PUBLIC_AIPROJ_SOURCE_URL', 'https://example.com/openxiang')
+    vi.stubEnv('NEXT_PUBLIC_AIPROJ_SOURCE_URL', 'https://example.com/kaipilot')
     render(<SourceCodeLink />)
     const link = screen.getByRole('link', { name: '源代码' })
-    expect(link).toHaveAttribute('href', 'https://example.com/openxiang')
+    expect(link).toHaveAttribute('href', 'https://example.com/kaipilot')
     expect(link).toHaveAttribute('target', '_blank')
     expect(link.getAttribute('rel')).toContain('noopener')
   })

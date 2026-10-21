@@ -119,7 +119,7 @@ export default class TwoFactorService {
 
   /** 认证器 App 中显示的签发方名称。 */
   private issuer(): string {
-    return env.get('TWO_FACTOR_ISSUER') || '开项 OpenXiang'
+    return env.get('TWO_FACTOR_ISSUER') || '开项 KaiPilot'
   }
 
   /**

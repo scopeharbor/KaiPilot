@@ -12,7 +12,7 @@ describe('PWA manifest', () => {
   const m = manifest()
 
   test('包含产品名称', () => {
-    expect(m.name).toBe('开项 OpenXiang')
+    expect(m.name).toBe('开项 KaiPilot')
     expect(m.short_name).toBe('开项')
   })
 
@@ -39,7 +39,7 @@ describe('PWA manifest', () => {
 
   test('包含背景色和主题色', () => {
     expect(m.background_color).toBe('#FFFFFF')
-    expect(m.theme_color).toBe('#4338CA')
+    expect(m.theme_color).toBe('#C2410C')
   })
 
   test('语言为 zh-CN', () => {

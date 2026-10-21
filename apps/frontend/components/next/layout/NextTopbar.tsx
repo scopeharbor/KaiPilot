@@ -151,7 +151,7 @@ export function NextTopbar({
         {/* 品牌 + 空间坐标回显 */}
         <div className="flex min-w-0 items-center gap-2">
           <Sparkles className="h-4 w-4 shrink-0 text-[var(--nx-ai)]" aria-hidden />
-          <span className="truncate text-sm font-semibold tracking-[0.02em]">开项 OpenXiang</span>
+          <span className="truncate text-sm font-semibold tracking-[0.02em]">开项 KaiPilot</span>
           <span
             data-next-coordinate
             className="hidden truncate font-mono text-xs text-[var(--nx-text-muted)] xl:inline-block"

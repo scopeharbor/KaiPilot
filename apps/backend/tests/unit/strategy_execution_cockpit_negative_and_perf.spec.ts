@@ -213,7 +213,12 @@ test.group('有界性能门（6.5）', () => {
       summary.kpis.find((m) => m.key === COCKPIT_METRIC_KEYS.TOTAL_MAPPED_PROJECTS)?.value,
       count,
     )
-    assert.ok(elapsed < 5000, 'aggregation elapsed ' + elapsed + 'ms')
+    // c8 收集覆盖率时（设置 NODE_V8_COVERAGE）插桩会让执行慢 2～3 倍，预算相应放宽；普通测试仍是 5 秒
+    const budgetMs = process.env.NODE_V8_COVERAGE ? 15_000 : 5000
+    assert.ok(
+      elapsed < budgetMs,
+      'aggregation elapsed ' + elapsed + 'ms (budget ' + budgetMs + 'ms)',
+    )
     const payloadBytes = Buffer.byteLength(JSON.stringify(summary))
     assert.ok(payloadBytes < 1_000_000, 'payload ' + payloadBytes + ' bytes')
   })

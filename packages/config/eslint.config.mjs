@@ -1,4 +1,4 @@
-// 开项 OpenXiang 共享 ESLint 扁平配置（flat config）。
+// 开项 KaiPilot 共享 ESLint 扁平配置（flat config）。
 // 各 app / package 通过 @aiproj/config/eslint 复用，确保全仓规范一致。
 import js from '@eslint/js'
 import tseslint from 'typescript-eslint'

@@ -34,7 +34,7 @@ export default function NextProjectsPage() {
       <SpaceMapOverlay open={open} defaultLens="projects" onOpenChange={handleOpenChange} />
       <div className="flex flex-col items-center gap-2 text-center text-xs text-[var(--nx-text-muted)]">
         <p className="text-sm font-medium text-[var(--nx-text-primary)]">
-          开项 OpenXiang · 项目清单
+          开项 KaiPilot · 项目清单
         </p>
         <p>
           已定向唤起空间地图清单镜头。若浮层未弹出，请按{' '}

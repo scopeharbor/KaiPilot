@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
-  <!-- 开项 OpenXiang Logo Mark —— 暗色模式（定稿：方案 C1「开角」） -->
-  <path d="M 70 190 V 70 H 190" fill="none" stroke="#818CF8" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>
-  <rect x="112" y="112" width="84" height="84" rx="20" fill="#FF6B4A"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="开项 KaiPilot">
+  <title>开项 KaiPilot</title>
+  <!-- 开项 KaiPilot 标志（暗色）：朱砂圆角方块 +「开」——两横是甘特任务条，两条腿是 K 和 P（金色）。小尺寸也清楚。 -->
+  <rect width="256" height="256" rx="58" fill="#C2410C"/><g transform="translate(22 8) scale(0.84)" fill="none" stroke-width="28.571" stroke-linecap="round" stroke-linejoin="round"><path d="M 60 72 H 158" stroke="#FFF7ED"/><path d="M 36 136 H 196" stroke="#FFF7ED"/><path d="M 96 72 V 218" stroke="#FBBF24"/><path d="M 134 164 L 102 191 L 134 218" stroke="#FBBF24"/><path d="M 164 72 V 218" stroke="#FBBF24"/><path d="M 164 72 H 184 A 27 27 0 0 1 184 126 H 164" stroke="#FBBF24"/></g>
 </svg>

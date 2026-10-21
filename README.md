@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="apps/frontend/public/branding/openxiang-lockup-light.svg" alt="开项 OpenXiang" width="360" />
+  <img src="apps/frontend/public/branding/kaipilot-lockup-light.svg" alt="开项 KaiPilot" width="360" />
 </p>
 
-# 开项 OpenXiang
+# 开项 KaiPilot
 
 **一句话启动项目，AI 生成完整计划——专业项目经理可控，新手也能用。**
 
@@ -78,7 +78,7 @@ docker compose --env-file .env.compose up -d --build
 
 ## 开源协议与源代码入口
 
-本项目以 [GNU Affero 通用公共许可证第 3 版（AGPL-3.0）](LICENSE) 授权，官方源码仓库：<https://github.com/scopeharbor/OpenXiang>。
+本项目以 [GNU Affero 通用公共许可证第 3 版（AGPL-3.0）](LICENSE) 授权，官方源码仓库：<https://github.com/scopeharbor/KaiPilot>。
 
 AGPL 第 13 条要求：**如果你修改了代码，并通过网络向他人提供服务，必须让这些用户能拿到你修改后的完整源代码。** 为此，开项在登录页与设置门户底部提供「源代码」链接，地址由构建期变量 `NEXT_PUBLIC_AIPROJ_SOURCE_URL` 决定：
 

@@ -10,14 +10,14 @@ import type { MetadataRoute } from 'next'
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: '开项 OpenXiang',
+    name: '开项 KaiPilot',
     short_name: '开项',
     description: 'AI 驅動的專案管理平台，協助規劃專案、管理任務與追蹤進度。',
     start_url: '/dashboard',
     scope: '/',
     display: 'standalone',
     background_color: '#FFFFFF',
-    theme_color: '#4338CA',
+    theme_color: '#C2410C',
     lang: 'zh-CN',
     prefer_related_applications: false,
     icons: [

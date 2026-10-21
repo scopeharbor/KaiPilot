@@ -112,7 +112,7 @@ export class ContextCompilerService {
       requestedTokens: 0,
       includedTokens: 0,
       content: {
-        role: '你是开项 OpenXiang 项目管理助手',
+        role: '你是开项 KaiPilot 项目管理助手',
         rules: [
           '始终以简体中文回复',
           '输出必须符合 JSON Schema',

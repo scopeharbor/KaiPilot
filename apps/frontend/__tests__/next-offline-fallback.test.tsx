@@ -60,7 +60,7 @@ describe('NextOfflineFallback 离线深空兜底展示组件 (W3 / task 3.1 & 3.
 
     expect(screen.getByText('当前处于离线状态')).toBeInTheDocument()
     expect(screen.getByText(/网络连接已断开，部分功能暂时不可用/)).toBeInTheDocument()
-    expect(screen.getByText('开项 OpenXiang — 离线模式')).toBeInTheDocument()
+    expect(screen.getByText('开项 KaiPilot — 离线模式')).toBeInTheDocument()
 
     const icon = container.querySelector('svg.lucide-wifi-off')
     expect(icon).toBeInTheDocument()

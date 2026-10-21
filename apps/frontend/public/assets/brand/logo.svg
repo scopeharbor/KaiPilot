@@ -1,24 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 176 64" role="img" aria-labelledby="title desc">
-  <title id="title">开项 OpenXiang</title>
-  <desc id="desc">开项 OpenXiang 的产品标志。</desc>
-  <g transform="translate(-0.5 -0.5) scale(0.25)">
-    <path d="M 70 190 V 70 H 190" fill="none" stroke="#4338CA" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>
-    <rect x="112" y="112" width="84" height="84" rx="20" fill="#F04E30"/>
-  </g>
-  <g transform="translate(70 8) scale(0.19)" fill="none" stroke="#1E1B4B" stroke-width="26" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M 62 70 H 170"/>
-    <path d="M 38 134 H 218"/>
-    <path d="M 106 70 C 106 142 100 186 56 214"/>
-    <path d="M 162 70 V 216"/>
-  </g>
-  <g transform="translate(120 8) scale(0.19)" fill="none" stroke="#1E1B4B" stroke-width="26" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M 16 76 H 76"/>
-    <path d="M 46 76 V 178"/>
-    <path d="M 12 196 L 84 168"/>
-    <path d="M 104 60 H 244"/>
-    <path d="M 178 62 L 164 92"/>
-    <path d="M 122 186 V 100 H 228 V 186"/>
-    <path d="M 175 122 V 182 C 170 206 150 222 114 234"/>
-    <path d="M 190 204 L 238 232"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="开项 KaiPilot">
+  <title>开项 KaiPilot</title>
+  <!-- 开项 KaiPilot 产品标志：「开项」融合字形，K、P、I 为金色 -->
+  <rect width="256" height="256" rx="58" fill="#C2410C"/><g transform="translate(16 66) scale(0.46)" fill="none" stroke-width="26.087" stroke-linecap="round" stroke-linejoin="round"><path d="M 60 72 H 158" stroke="#FFF7ED"/><path d="M 36 136 H 196" stroke="#FFF7ED"/><path d="M 96 72 V 218" stroke="#FBBF24"/><path d="M 134 164 L 102 191 L 134 218" stroke="#FBBF24"/><path d="M 164 72 V 218" stroke="#FBBF24"/><path d="M 164 72 H 184 A 27 27 0 0 1 184 126 H 164" stroke="#FBBF24"/></g><g transform="translate(128 64) scale(0.46)" fill="none" stroke-width="26.087" stroke-linecap="round" stroke-linejoin="round"><path d="M 18 78 H 78" stroke="#FBBF24"/><path d="M 48 78 V 184" stroke="#FBBF24"/><path d="M 16 186 H 80" stroke="#FBBF24"/><path d="M 104 62 H 242" stroke="#FFF7ED"/><path d="M 176 64 L 164 92" stroke="#FFF7ED"/><path d="M 122 186 V 102 H 226 V 186" stroke="#FFF7ED"/><path d="M 174 124 V 182 C 169 206 150 222 116 234" stroke="#FFF7ED"/><path d="M 188 204 L 236 232" stroke="#FFF7ED"/></g>
 </svg>

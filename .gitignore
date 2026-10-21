@@ -18,12 +18,11 @@ bun.lockb
 package-lock.json
 yarn.lock
 
-# 环境变量（私人生产仓库明确版本化 apps/backend/.env；其他环境文件仍忽略）
+# 环境变量：只提交示例文件，任何真实环境文件（含 apps/backend/.env）都不提交
 .env
 .env.*
 !.env.example
 !.env.compose.example
-!apps/backend/.env
 
 # 数据库（V1 SQLite）
 *.sqlite

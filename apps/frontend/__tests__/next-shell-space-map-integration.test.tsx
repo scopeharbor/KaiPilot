@@ -73,7 +73,7 @@ describe('NextAppShell 装配集成（v3-ui-next-shell-space-map tasks 4.1/4.2�
   test('常驻顶栏：品牌 + 坐标回显 + 四入口齐备，首页角色化容器联通，令牌作用域单个', () => {
     renderShell()
 
-    expect(screen.getByText('开项 OpenXiang')).toBeInTheDocument()
+    expect(screen.getByText('开项 KaiPilot')).toBeInTheDocument()
     expect(document.querySelector('[data-next-coordinate]')?.textContent).toBe('/next · 角色首页')
 
     expect(screen.getByRole('heading', { name: '开项项目空间' })).toBeInTheDocument()

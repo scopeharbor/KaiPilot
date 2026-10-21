@@ -1,6 +1,6 @@
 # Frontend Design Assets
 
-This directory contains production UI assets for 开项 OpenXiang.
+This directory contains production UI assets for 开项 KaiPilot.
 
 ## Source And License
 

@@ -1,4 +1,4 @@
-# 开项 OpenXiang —— Supabase PostgreSQL 栈（生产目标机默认）
+# 开项 KaiPilot —— Supabase PostgreSQL 栈（生产目标机默认）
 # 目标机只需 Docker，无需 pnpm：
 #   docker compose -f compose.supabase.yaml up -d --build --remove-orphans
 # 数据库连接不再靠宿主机插值：apps/backend/.env 只读挂载进 migrate/backend，
@@ -126,7 +126,7 @@ services:
         NEXT_PUBLIC_FF_NEXT_UI: ${AIPROJ_FF_NEXT_UI:-true}
         NEXT_PUBLIC_FF_NEXT_UI_ORGS: ${AIPROJ_FF_NEXT_UI_ORGS:-}
         # 「源代码」链接地址（AGPL 第 13 条，构建期内联）；留空不显示
-        NEXT_PUBLIC_AIPROJ_SOURCE_URL: ${AIPROJ_SOURCE_URL:-https://github.com/scopeharbor/OpenXiang}
+        NEXT_PUBLIC_AIPROJ_SOURCE_URL: ${AIPROJ_SOURCE_URL:-https://github.com/scopeharbor/KaiPilot}
     image: aiproj-frontend:local
     healthcheck:
       test: ['CMD', 'node', '/app/docker/healthcheck.mjs']

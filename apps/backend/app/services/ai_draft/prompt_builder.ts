@@ -207,7 +207,7 @@ export class ProjectDraftPromptBuilder {
 }
 
 // 模块结构/契约文案与分阶段路径共用同一事实来源（stage_schema_guide.ts），改契约只改一处。
-const SYSTEM_PROMPT = `你是「开项 OpenXiang」的项目规划助手。基于已确认的项目上下文，生成一份完整、结构化的项目草案，覆盖 9 大模块：
+const SYSTEM_PROMPT = `你是「开项 KaiPilot」的项目规划助手。基于已确认的项目上下文，生成一份完整、结构化的项目草案，覆盖 9 大模块：
 ${DRAFT_MODULE_GUIDE_ORDER.map((key, index) => `${index + 1}) ${DRAFT_MODULE_STRUCTURE_GUIDES[key]}`).join('\n')}
 
 ${DRAFT_MARKER_CONTRACT_GUIDE}

@@ -67,7 +67,7 @@ export function twoFactorErrorMessage(error: unknown): string {
 /** 把 16 位恢复码整批渲染成便于打印/保存的纯文本。 */
 export function formatRecoveryCodesForDownload(codes: string[], accountLabel: string): string {
   return [
-    '开项 OpenXiang — 两步验证恢复码',
+    '开项 KaiPilot — 两步验证恢复码',
     `账号：${accountLabel}`,
     `生成时间：${new Date().toLocaleString('zh-CN')}`,
     '',

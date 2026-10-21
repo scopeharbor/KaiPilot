@@ -118,5 +118,5 @@ export function fixtureEntityRefTask(): CopilotPaletteEntityRef {
 }
 
 export function fixtureEntityRefProject(): CopilotPaletteEntityRef {
-  return { entityType: 'project', entityId: '1', label: '开项 OpenXiang' }
+  return { entityType: 'project', entityId: '1', label: '开项 KaiPilot' }
 }

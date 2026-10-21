@@ -38,7 +38,7 @@ describe('components/next/layout/NextAppShell（v3-ui-next-track-foundation task
     expect(shell?.getAttribute('data-immersion')).toBe('immersive')
 
     // 极简顶栏框架与内容区
-    expect(screen.getByText('开项 OpenXiang')).toBeInTheDocument()
+    expect(screen.getByText('开项 KaiPilot')).toBeInTheDocument()
     expect(screen.getByTestId('shell-content')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /回到旧版/ })).toBeInTheDocument()
   })

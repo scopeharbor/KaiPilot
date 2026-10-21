@@ -1,6 +1,6 @@
 # @aiproj/config
 
-开项 OpenXiang 的共享工程配置，供所有 app / package 复用，保证全仓规范一致。
+开项 KaiPilot 的共享工程配置，供所有 app / package 复用，保证全仓规范一致。
 
 ## 导出
 

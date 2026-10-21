@@ -1,5 +1,5 @@
 /**
- * 开项 OpenXiang —— backend 容器内健康探针（v3-docker-compose-runtime-foundation, design D8）
+ * 开项 KaiPilot —— backend 容器内健康探针（v3-docker-compose-runtime-foundation, design D8）
  *
  * 在容器内部请求就绪端点 `/api/v1/health/ready`：
  * - 200 → exit 0（DB 探活通过；Redis 为可选可见性字段，见 health_controller D6）

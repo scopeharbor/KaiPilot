@@ -308,18 +308,21 @@ function installMatchMediaMock() {
   })) as unknown as typeof window.matchMedia
 }
 
-/** 虚拟滚动（WBS）+ 甘特拖拽几何注入：jsdom 缺省全 0。 */
+/**
+ * 虚拟滚动（WBS）+ 甘特拖拽几何注入：jsdom 缺省全 0。
+ * virtual-core 3.17 读 offsetWidth/offsetHeight，3.19 起改读 clientWidth/clientHeight，两组都注入。
+ */
 function installGeometryMocks() {
-  vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockImplementation(function (
-    this: HTMLElement,
-  ) {
-    return this.hasAttribute('data-wbs-scroll-viewport') ? 600 : 0
-  })
-  vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(function (
-    this: HTMLElement,
-  ) {
-    return this.hasAttribute('data-wbs-scroll-viewport') ? 900 : 0
-  })
+  for (const prop of ['offsetHeight', 'clientHeight'] as const) {
+    vi.spyOn(HTMLElement.prototype, prop, 'get').mockImplementation(function (this: HTMLElement) {
+      return this.hasAttribute('data-wbs-scroll-viewport') ? 600 : 0
+    })
+  }
+  for (const prop of ['offsetWidth', 'clientWidth'] as const) {
+    vi.spyOn(HTMLElement.prototype, prop, 'get').mockImplementation(function (this: HTMLElement) {
+      return this.hasAttribute('data-wbs-scroll-viewport') ? 900 : 0
+    })
+  }
   vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function () {
     return {
       x: 0,

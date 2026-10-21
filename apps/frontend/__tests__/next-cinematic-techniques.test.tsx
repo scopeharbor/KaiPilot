@@ -81,7 +81,7 @@ describe('前景剪纸层（Foreground Cutout）', () => {
     const brand = container.querySelector('[data-login-brand]')
     expect(brand).not.toBeNull()
     expect(brand?.textContent).toContain('开项')
-    expect(brand?.textContent).toContain('OPENXIANG')
+    expect(brand?.textContent).toContain('KAIPILOT')
     expect(brand?.textContent).toContain('一句话启动项目')
   })
 })

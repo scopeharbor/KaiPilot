@@ -1,6 +1,6 @@
 #!/bin/sh
 # =============================================================================
-# 开项 OpenXiang —— backend 容器入口（v3-docker-compose-runtime-foundation, design D2/D3）
+# 开项 KaiPilot —— backend 容器入口（v3-docker-compose-runtime-foundation, design D2/D3）
 #
 # 三种确定性动作：
 #   init-config  一次性初始化：原子 create-if-absent 生成 APP_KEY / JWT_ACCESS_SECRET

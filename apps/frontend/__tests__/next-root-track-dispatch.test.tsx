@@ -181,7 +181,7 @@ describe('根路径确定性双轨分流测试（tasks 1.1 / 1.2）', () => {
 
       expect(replaceMock).not.toHaveBeenCalled()
       expect(pushMock).not.toHaveBeenCalled()
-      expect(screen.getByRole('status')).toHaveTextContent('正在进入开项 OpenXiang…')
+      expect(screen.getByRole('status')).toHaveTextContent('正在进入开项 KaiPilot…')
     })
 
     test('会话完成水合后，自动评估并执行确定性分流', () => {
