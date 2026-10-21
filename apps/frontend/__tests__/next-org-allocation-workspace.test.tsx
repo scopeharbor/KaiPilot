@@ -795,6 +795,8 @@ describe('单层信封运行时形态回归（Major-1：无 `.data` 二次解包
     expect(document.querySelector('[data-allocation-detail-facts] h3')?.textContent).toBe(
       '调配方案 2026/9/1',
     )
+    // 切到新草案之后「已创建」通知仍在：切换草案的清理不能抹掉新草案自己的通知
+    expect(screen.getByText('已创建草案 #7，可在下方逐项编排后生成影响预览。')).toBeInTheDocument()
 
     // 预览：POST preview 单层 {data: preview} → 摘要回显（既有二次解包实现下
     // 运行时结果为 undefined，预览永不回显——此断言为回归锁）。
