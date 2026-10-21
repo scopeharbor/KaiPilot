@@ -136,13 +136,30 @@ function response(branch: 'clarify' | 'ready') {
 test('自适应澄清可进入初步草案，UI 列出待确认项并保留人工审查门', async ({ page, request }) => {
   const auth = await loginAsAdmin(request)
   let preliminaryRequested = false
-  await page.route('**/api/v1/ai/project-intents/analyze', async (route) => {
+  // 意图分析走异步任务：POST …/analyze/jobs 提交，响应即为任务；这里直接返回已完成的任务，
+  // 结果即模拟的自适应澄清响应（不调用模型）。
+  let jobSeq = 0
+  await page.route('**/api/v1/ai/project-intents/analyze/jobs', async (route) => {
     const body = route.request().postDataJSON() as { requestPreliminaryDraft?: boolean }
     preliminaryRequested = body.requestPreliminaryDraft === true
+    const now = Date.now()
+    jobSeq += 1
     await route.fulfill({
-      status: 200,
+      status: 201,
       contentType: 'application/json',
-      body: JSON.stringify({ data: response(preliminaryRequested ? 'ready' : 'clarify') }),
+      body: JSON.stringify({
+        data: {
+          id: `e2e-adaptive-job-${jobSeq}`,
+          kind: 'intent',
+          state: 'completed',
+          liveOutputId: null,
+          createdAt: now,
+          updatedAt: now,
+          expiresAt: now + 3_600_000,
+          progress: '已完成',
+          result: response(preliminaryRequested ? 'ready' : 'clarify'),
+        },
+      }),
     })
   })
 

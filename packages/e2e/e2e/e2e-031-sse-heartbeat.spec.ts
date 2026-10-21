@@ -4,7 +4,8 @@ import { API_BASE, setAuthSession, tokenPermissions } from './_auth-helper.js'
 /**
  * E2E-031: SSE 心跳 —— 慢模型 25 秒无业务 delta 时 UI 不误报断线
  *
- * 后端以 AI_DRAFT_SLOW_FIRST_CHUNK_MS=25000 启动 MockAdapter：首个 chunk 延迟 25s，
+ * 项目描述带「【模拟慢模型】」标记，MockAdapter 让这次生成的首个 chunk 延迟 25s
+ *（也可用 AI_DRAFT_SLOW_FIRST_CHUNK_MS 对整个后端生效），
  * 期间 runner 每 5s 发心跳。浏览器必须保持“生成中”，不出现“生成任务已中断”，
  * 最终进入不可确认的审查态（fallback/fixture 不允许确认导入）。
  */
@@ -142,7 +143,8 @@ test.describe('E2E-031: SSE 心跳与慢模型保活', () => {
     const onboarding = page.getByRole('button', { name: '关闭引导' })
     if (await onboarding.isVisible().catch(() => false)) await onboarding.click()
 
-    await page.getByLabel('项目一句话描述').fill('开发一个内部工具，和现有 API 对接')
+    // 描述带「模拟慢模型」标记：只让这次生成的 Mock 首个 chunk 延迟 25s，不影响同一后端上的其他用例
+    await page.getByLabel('项目一句话描述').fill('【模拟慢模型】开发一个内部工具，和现有 API 对接')
     await page.getByRole('button', { name: /开始分析/ }).click()
 
     // 核心层：一次只渲染一张卡（与 e2e-030 同一套已验证选择）

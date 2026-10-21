@@ -59,8 +59,11 @@ async function answerCurrentCard(page: Page, title: string, optionLabel?: string
 
 test.describe('E2E-030: AI 快速创建逐题澄清与草案审查', () => {
   test('逐题完成核心+条件、刷新恢复并审查草案（零自动导入）', async ({ page, request }) => {
+    // 逐题澄清 + 刷新恢复 + 草案生成整条链路，dev 按需编译下远超默认 30s
+    test.setTimeout(300_000)
     const session = await createAiEligibleUser(request)
-    await page.goto('/')
+    // 在不会自动跳转的 /login 上写入会话；根路由 / 会在水合后 replace 跳转，与下一次 goto 竞争导致 ERR_ABORTED
+    await page.goto('/login', { waitUntil: 'domcontentloaded' })
     await setAuthSession(page, session)
 
     await page.goto('/ai-create')
@@ -93,38 +96,54 @@ test.describe('E2E-030: AI 快速创建逐题澄清与草案审查', () => {
 
     // ── 条件层：和现有 API 对接触发 integration-migration 卡片组；若已被预填解析则直接 ready ──
     const card = page.locator('article[aria-labelledby^="1.0:"]')
+    const ready = page.getByRole('button', { name: /开始生成草案/ })
     for (let i = 0; i < 12; i += 1) {
-      const ready = page.getByRole('button', { name: /开始生成草案/ })
       if (await ready.isVisible().catch(() => false)) break
       await expect(card).toHaveCount(1)
+      // 回答后上一张卡的选项会先变为禁用、再换成下一题：等到 ready 或当前卡有可交互元素再判断，
+      // 否则会点到上一题已禁用的选项而一直等下去
+      const enabledInCard = card
+        .locator('button:not([disabled]):visible, input:not([disabled]):visible')
+        .first()
+      await expect(ready.or(enabledInCard).first()).toBeVisible({ timeout: 45_000 })
+      if (await ready.isVisible().catch(() => false)) break
+
       const option = card
         .getByRole('button', { name: /不迁移|一次性迁移|不需要|暂不|标准|内部标准/ })
         .first()
-      if (await option.isVisible()) {
+      if ((await option.isVisible()) && (await option.isEnabled())) {
         await option.click()
-        await page.waitForTimeout(600)
+        await page.waitForTimeout(1200)
         continue
       }
       const dateInput = card.locator('input[type="date"]')
-      if (await dateInput.isVisible()) {
+      if ((await dateInput.isVisible()) && (await dateInput.isEnabled())) {
         await dateInput.fill('2026-09-01')
         await card.getByRole('button', { name: '回答' }).click()
-        await page.waitForTimeout(600)
+        await page.waitForTimeout(1200)
         continue
       }
       const anyOption = card
-        .locator('button')
+        .locator('button:not([disabled])')
         .filter({ hasText: /建议|标准|内部|不需要|暂不|一次|分批|灰度|试点/ })
         .first()
       if (await anyOption.isVisible()) {
         await anyOption.click()
-        await page.waitForTimeout(600)
+        await page.waitForTimeout(1200)
+        continue
+      }
+      // 只有自定义输入的题（如「计划使用哪些第三方服务？」）：填一个保守答案
+      const custom = card.locator('input[type="text"]:not([disabled])')
+      if (await custom.isVisible()) {
+        await custom.fill('暂不接入')
+        await card.getByRole('button', { name: '回答' }).click()
+        await page.waitForTimeout(1200)
         continue
       }
       const skip = card.getByRole('button', { name: '跳过' })
-      if ((await skip.isVisible()) && !(await skip.isDisabled())) {
+      if ((await skip.isVisible()) && (await skip.isEnabled())) {
         await skip.click()
-        await page.waitForTimeout(600)
+        await page.waitForTimeout(1200)
         continue
       }
       break
@@ -146,7 +165,8 @@ test.describe('E2E-030: AI 快速创建逐题澄清与草案审查', () => {
 
     await page.getByRole('button', { name: /开始生成草案/ }).click()
 
-    await expect(page.getByText('当前草案不可确认导入')).toBeVisible({ timeout: 30_000 })
+    // 五阶段生成 + 质量闭环在 dev 服务器上要几十秒
+    await expect(page.getByText('当前草案不可确认导入')).toBeVisible({ timeout: 120_000 })
     const confirmButtons = page.getByRole('button', { name: /确认导入/ })
     const confirmCount = await confirmButtons.count()
     if (confirmCount > 0) {
