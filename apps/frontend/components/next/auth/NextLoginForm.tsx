@@ -287,7 +287,16 @@ export function NextLoginForm({
 
         <p className="mt-4 text-center text-xs text-[var(--nx-text-muted)]">AI 驱动，项目从容。</p>
         {/* 源代码入口（AGPL 第 13 条）：未配置地址时不渲染 */}
-        <SourceCodeLink className="mt-2 flex justify-center" />
+        <div className="mt-2 flex items-center justify-center gap-4">
+          <a
+            href="/welcome"
+            className="text-[11px] text-[var(--nx-text-muted)] hover:text-[var(--nx-text-primary)] hover:underline"
+            data-welcome-link
+          >
+            产品介绍
+          </a>
+          <SourceCodeLink />
+        </div>
       </div>
 
       {/* 电影级品牌排版（左上角固定，DOM 信息层；DOM 序在表单之后以保分层契约） */}

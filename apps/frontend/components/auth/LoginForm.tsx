@@ -311,7 +311,12 @@ export function LoginForm({
               </p>
             ) : null}
           </div>
-          <SourceCodeLink className="mt-4 flex justify-center text-gray-500" />
+          <div className="mt-4 flex items-center justify-center gap-4 text-[11px] text-gray-500">
+            <a href="/welcome" className="hover:text-gray-900 hover:underline" data-welcome-link>
+              产品介绍
+            </a>
+            <SourceCodeLink className="text-gray-500" />
+          </div>
         </div>
       </section>
     </main>
