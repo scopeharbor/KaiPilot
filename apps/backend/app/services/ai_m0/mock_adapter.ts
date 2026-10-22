@@ -103,23 +103,56 @@ function simpleHash(input: string): string {
 }
 
 /**
+ * 项目描述里带上这个标记时（出现在 sentence 或用户 prompt 中），Mock 在首个生成阶段 charter_scope 的首个 chunk
+ * 延迟 {@link MOCK_SLOW_FIRST_CHUNK_DEFAULT_MS}。
+ */
+export const MOCK_SLOW_FIRST_CHUNK_MARKER = '【模拟慢模型】'
+export const MOCK_SLOW_FIRST_CHUNK_DEFAULT_MS = 25_000
+
+/**
+ * 测试专用：Mock 首个 chunk 的延迟（毫秒），用来验证静默窗口内心跳保活、浏览器不误报断线（E2E-031）。
+ * 环境变量 AI_DRAFT_SLOW_FIRST_CHUNK_MS 对整个进程的每次调用生效；描述里带标记只影响这一次生成，
+ * 不拖慢同一后端上的其他端到端用例。两者都没有时不延迟。
+ *
+ * 标记只在首个阶段 charter_scope 生效：后续阶段与质量闭环（prompt 不带阶段信封）会再调用
+ * 模型十几次，每次都等 25s 会让生成远超测试等待时间。
+ */
+export function resolveSlowFirstChunkMs(
+  text: string | undefined,
+  envValue: string | undefined,
+  stage: string | null = null,
+) {
+  const fromEnv = Number(envValue ?? 0)
+  if (Number.isFinite(fromEnv) && fromEnv > 0) return fromEnv
+  if (stage !== 'charter_scope') return 0
+  return text?.includes(MOCK_SLOW_FIRST_CHUNK_MARKER) ? MOCK_SLOW_FIRST_CHUNK_DEFAULT_MS : 0
+}
+
+/**
  * 五阶段生成启用后，离线 adapter 也必须遵守「本阶段只返回本阶段字段」协议。
  * 这里复用确定性 fixture 仅为了本机 UI / CI 联调；`isReal=false` 与生成元数据门禁
  * 会继续阻止它被确认导入。
  */
-function stageAwarePayload(options: GenerateOptions): unknown {
-  let request: Record<string, unknown> | null = null
+function parseStageRequest(options: GenerateOptions): Record<string, unknown> | null {
   try {
     const stageRequestText = options.promptSet?.userPrompt.split('\n\n【定向修复信封】', 1)[0]
     const parsed = JSON.parse(stageRequestText ?? '') as unknown
     if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
-      request = parsed as Record<string, unknown>
+      return parsed as Record<string, unknown>
     }
   } catch {
     // 旧单次生成 prompt 不是 JSON 时保留原有联调响应。
   }
+  return null
+}
 
-  const stage = typeof request?.stage === 'string' ? request.stage : null
+function stageOf(request: Record<string, unknown> | null): string | null {
+  return typeof request?.stage === 'string' ? request.stage : null
+}
+
+function stageAwarePayload(options: GenerateOptions): unknown {
+  const request = parseStageRequest(options)
+  const stage = stageOf(request)
   if (!stage) return buildMockDraft(options.sentence)
 
   const draft = buildDraftFromBlueprint(DRAFT_BLUEPRINTS.software)
@@ -156,9 +189,12 @@ export class MockAdapter implements Adapter {
     const json = JSON.stringify(stageAwarePayload(options))
     // 分成 4 片模拟 SSE chunk，让前端能看到流式效果。
     const size = Math.ceil(json.length / 4)
-    // 测试专用：AI_DRAFT_SLOW_FIRST_CHUNK_MS > 0 时延迟首个 chunk（配合 E2E-031
-    // 验证 25s 静默窗口内心跳保活、浏览器不误报断线）。
-    const slowFirstChunkMs = Number(process.env.AI_DRAFT_SLOW_FIRST_CHUNK_MS ?? 0)
+    // 草案各阶段的 sentence 是固定标签，用户描述在 prompt 里，两处都要看
+    const slowFirstChunkMs = resolveSlowFirstChunkMs(
+      [options.sentence, options.promptSet?.userPrompt].filter(Boolean).join('\n'),
+      process.env.AI_DRAFT_SLOW_FIRST_CHUNK_MS,
+      stageOf(parseStageRequest(options)),
+    )
     let seq = 0
     for (let i = 0; i < json.length; i += size) {
       if (i === 0 && slowFirstChunkMs > 0) {

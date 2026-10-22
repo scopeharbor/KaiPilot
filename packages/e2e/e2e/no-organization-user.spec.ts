@@ -82,9 +82,10 @@ test.describe('无组织用户：关键页面渲染引导且不崩', () => {
     page.on('pageerror', (err) => pageErrors.push(String(err.message ?? err)))
 
     await page.goto('/projects/1', { waitUntil: 'domcontentloaded' })
-    await page.waitForTimeout(2500)
-    const body = await page.evaluate(() => document.body?.innerText ?? '')
-    expect(/请先选择组织|项目不存在|没有权限|加载失败/.test(body)).toBeTruthy()
+    // 会话恢复与 dev 冷编译期间先显示「正在载入」，等任一引导/降级文案出现，而不是固定等待
+    await expect(page.getByText(/请先选择组织|项目不存在|没有权限|加载失败/).first()).toBeVisible({
+      timeout: 30_000,
+    })
     expect(pageErrors).toEqual([])
   })
 
@@ -129,6 +130,8 @@ test.describe('个人组织用户：关键页面不崩', () => {
   }
 
   test('关键页面渲染且无未捕获异常', async ({ page, request }) => {
+    // 依次访问 8 个页面，dev 按需编译下逐个冷编译，与同文件其他用例一样放宽测试级超时
+    test.setTimeout(150_000)
     await seedPersonalOrgSession(page, request)
 
     const pageErrors: string[] = []

@@ -922,7 +922,7 @@ export const useAiProjectDraftStore = create<AiProjectDraftState>()(
         schemaVersion: state.schemaVersion,
         userId: state.userId,
         organizationId: state.organizationId,
-        status: state.status,
+        status: persistableDraftStatus(state),
         rawInput: state.rawInput,
         requirementBrief: state.requirementBrief,
         requirementBriefFor: state.requirementBriefFor,
@@ -970,6 +970,18 @@ export const useAiProjectDraftStore = create<AiProjectDraftState>()(
     },
   ),
 )
+
+/**
+ * 「分析中」只在本页的请求进行时成立；刷新后没有请求在等结果，原样恢复会卡在「正在分析」、
+ * 重新分析按钮也是禁用的。正在提交的那条回答只在请求里、还没写进 answers，无法原样续上，
+ * 所以落盘时退回到发起分析前的状态：有问题卡就回到澄清（重新作答当前卡），否则回到输入。
+ */
+export function persistableDraftStatus(
+  state: Pick<AiProjectDraftState, 'status' | 'cards' | 'activeCard'>,
+): AiProjectDraftStatus {
+  if (state.status !== 'analyzing') return state.status
+  return state.cards.length > 0 || state.activeCard ? 'clarifying' : 'idle'
+}
 
 export function buildClarificationAnswer(
   card: ClarificationCard,
