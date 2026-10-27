@@ -16,6 +16,8 @@ test.describe('E2E-032: 记忆维基核心流程', () => {
   let headers: Record<string, string>
   let projectId: number
   let pageId: number
+  // 界面流程在新 UI 轨道未开启时会跳过；第二个用例不依赖它，缺页时经 API 建页
+  let uiFlowRan = false
   // 标识保持在 20 字符以内：DLP 会把 20+ 字符的连续串当作疑似密钥并阻断导出
   const slug = `wk${Date.now() % 1_000_000}`
 
@@ -38,9 +40,17 @@ test.describe('E2E-032: 记忆维基核心流程', () => {
     await page.goto('/next/wiki')
     // 新 UI 轨道由前端构建开关 NEXT_PUBLIC_FF_NEXT_UI 灰度；未开启时会被送回旧版首页
     await page.waitForLoadState('networkidle')
+    // 未开启时的跳回旧版首页可能晚于 networkidle：等到「新建页面」出现或已离开 /next/wiki 再判断
+    const newPageButton = page.getByRole('button', { name: '新建页面' })
+    await Promise.race([
+      newPageButton.waitFor({ timeout: 60_000 }).catch(() => undefined),
+      page
+        .waitForURL((url) => !url.pathname.startsWith('/next/wiki'), { timeout: 60_000 })
+        .catch(() => undefined),
+    ])
     test.skip(!page.url().includes('/next/wiki'), '新 UI 轨道未开启（NEXT_PUBLIC_FF_NEXT_UI）')
 
-    await page.getByRole('button', { name: '新建页面' }).click()
+    await newPageButton.click()
     await page.getByLabel('页面标识').fill(slug)
     await page
       .getByLabel('页面内容')
@@ -75,19 +85,48 @@ test.describe('E2E-032: 记忆维基核心流程', () => {
     await expect(proposal).toContainText('撤回主张')
     await proposal.getByRole('button', { name: '发布' }).click()
     await expect(page.getByText(/已发布修订/)).toBeVisible()
+    uiFlowRan = true
   })
 
   test('其他组织用户读取该页返回 404；导出得到 zip', async ({ request }) => {
-    const list = await request.get(`${API_BASE}/wiki/spaces`, { headers })
-    const space = (await list.json()).data.find(
-      (s: { scopeKind: string }) => s.scopeKind === 'organization',
-    )
+    // 组织空间幂等解析（界面流程跳过时空间可能尚未建立）
+    const resolved = await request.post(`${API_BASE}/wiki/spaces/resolve`, {
+      headers,
+      data: { scopeKind: 'organization' },
+    })
+    expect(resolved.status()).toBe(200)
+    const space = (await resolved.json()).data as { id: number }
     const pages = await request.get(`${API_BASE}/wiki/spaces/${space.id}/pages?perPage=100`, {
       headers,
     })
-    pageId = (await pages.json()).data.find((p: { slug: string }) => p.slug === slug).id
+    const existing = (await pages.json()).data.find((p: { slug: string }) => p.slug === slug)
+    if (existing) {
+      pageId = existing.id
+    } else {
+      const created = await request.post(`${API_BASE}/wiki/spaces/${space.id}/pages`, {
+        headers,
+        data: {
+          slug,
+          body: [
+            '---',
+            'type: lesson',
+            'title: E2E 发布教训',
+            'summary: 端到端验证用页面',
+            '---',
+            '## 教训',
+            '- 发布前先在预发环境演练。[^c:drill]',
+            '',
+            `[^c:drill]: project#${projectId} | kind:rule`,
+          ].join('\n'),
+        },
+      })
+      expect(created.status()).toBe(201)
+      pageId = (await created.json()).data.page.id
+    }
     const view = await request.get(`${API_BASE}/wiki/pages/${pageId}`, { headers })
-    expect((await view.json()).data.body).not.toContain('回滚方案')
+    expect(view.status()).toBe(200)
+    // 界面流程跑过时，撤回的主张已不在已发布正文里
+    if (uiFlowRan) expect((await view.json()).data.body).not.toContain('回滚方案')
 
     const email = `e2e-wiki-outsider-${Date.now()}@test.local`
     await request.post(`${API_BASE}/auth/register`, {
