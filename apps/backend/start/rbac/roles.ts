@@ -25,6 +25,8 @@ import {
   KNOWLEDGE_VIEW,
   KNOWLEDGE_AUTHOR,
   KNOWLEDGE_MANAGE,
+  WIKI_VIEW,
+  WIKI_REVIEW,
   PORTFOLIO_VIEW,
   PORTFOLIO_MANAGE,
   AUDIT_VIEW,
@@ -521,6 +523,9 @@ export const ROLE_PERMISSIONS: Record<CanonicalRole, readonly Permission[]> = {
     DEPARTMENT_VIEW,
     ISSUE_MANAGE,
     REQUIREMENT_MANAGE,
+    // 记忆维基（v3-llm-wiki-memory-foundation）
+    WIKI_VIEW,
+    WIKI_REVIEW,
   ],
 
   [CanonicalRole.PROJECT_MANAGER]: [
@@ -686,6 +691,9 @@ export const ROLE_PERMISSIONS: Record<CanonicalRole, readonly Permission[]> = {
     // AI 质量与成本控制台（v3-ai-quality-cost-admin-console）：项目经理仅成本视图
     AI_USAGE_VIEW,
     AI_QUALITY_COST_CONSOLE_VIEW_COST,
+    // 记忆维基（v3-llm-wiki-memory-foundation）
+    WIKI_VIEW,
+    WIKI_REVIEW,
   ],
 
   [CanonicalRole.MEMBER]: [
@@ -774,6 +782,8 @@ export const ROLE_PERMISSIONS: Record<CanonicalRole, readonly Permission[]> = {
     PMO_DECISION_VIEW,
     // TRIZ 到交付闭环：成员只读（link/verify/reopen 需 PM/管理员）
     TRIZ_DELIVERY_LOOP_VIEW,
+    // 记忆维基（v3-llm-wiki-memory-foundation）
+    WIKI_VIEW,
   ],
 
   [CanonicalRole.EXTERNAL_COLLABORATOR]: [
@@ -878,6 +888,8 @@ export const ROLE_PERMISSIONS: Record<CanonicalRole, readonly Permission[]> = {
     PMO_DECISION_VIEW,
     // TRIZ 到交付闭环：观察者只读
     TRIZ_DELIVERY_LOOP_VIEW,
+    // 记忆维基（v3-llm-wiki-memory-foundation）
+    WIKI_VIEW,
   ],
 }
 
@@ -967,6 +979,8 @@ export const PROJECT_DELEGABLE_PERMISSIONS: ReadonlySet<Permission> = new Set<Pe
   'prediction:confirm',
   'project_health:confirm',
   'recommendation:manage',
+  // 记忆维基：项目经理审阅本项目维基（v3-llm-wiki-memory-foundation）
+  'wiki:review',
 ])
 
 /**

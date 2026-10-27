@@ -54,6 +54,8 @@ export type DlpContentCategory =
   | 'report_export_metadata'
   | 'report_export_text'
   | 'document_preview'
+  /** 维基 Markdown 导出（v3-llm-wiki-default-on：通用长串密钥模式放宽为随机串模式）。 */
+  | 'wiki_export_text'
 
 /** DLP 声明动作（要执行的操作类型） */
 export type DlpDeclaredAction =
@@ -163,6 +165,7 @@ export const DLP_CONTENT_CATEGORIES: readonly DlpContentCategory[] = [
   'report_export_metadata',
   'report_export_text',
   'document_preview',
+  'wiki_export_text',
 ] as const
 
 export const DLP_DECLARED_ACTIONS: readonly DlpDeclaredAction[] = [

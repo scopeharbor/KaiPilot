@@ -37,8 +37,15 @@ import { FallbackDataCard } from './cards/FallbackDataCard'
 import { TrizContradictionCard } from './cards/TrizContradictionCard'
 import { AiGlobalSearchResultCard } from './cards/AiGlobalSearchResultCard'
 import { AiMorningBriefingCard } from './cards/AiMorningBriefingCard'
+import { WikiIndexCard, WikiReadCard, WikiSearchCard } from './cards/WikiResultCard'
+import { WikiFileBackButton } from './WikiFileBackButton'
 import type { MorningBriefingData } from '@/lib/next/ai-morning-briefing'
-import type { SearchResultItem } from '@aiproj/types'
+import type {
+  SearchResultItem,
+  WikiQueryIndexDto,
+  WikiQueryReadDto,
+  WikiQuerySearchDto,
+} from '@aiproj/types'
 
 /**
  * AI 同事消息时间线容器与空态引导（v3-ui-next-ai-colleague W2 · tasks 2.3）。
@@ -615,6 +622,25 @@ function ColleagueToolCard({
       }
       break
     }
+    // v3-llm-wiki-query-navigation：记忆维基只读查阅
+    case 'wiki_index': {
+      if (isRecord(data) && Array.isArray(data.spaces)) {
+        return <WikiIndexCard data={data as unknown as WikiQueryIndexDto} />
+      }
+      break
+    }
+    case 'wiki_search': {
+      if (isRecord(data) && Array.isArray(data.results)) {
+        return <WikiSearchCard data={data as unknown as WikiQuerySearchDto} />
+      }
+      break
+    }
+    case 'wiki_read': {
+      if (isRecord(data) && typeof data.pageId === 'number') {
+        return <WikiReadCard data={data as unknown as WikiQueryReadDto} />
+      }
+      break
+    }
     case 'get_morning_briefing': {
       return (
         <AiMorningBriefingCard
@@ -907,10 +933,19 @@ export function AiColleagueMessageList({ onQuickAction }: AiColleagueMessageList
                       onAnswer={onQuickAction}
                     />
                   ) : message.liveAnswer ? (
-                    <AiColleagueLiveAnswerBubble
-                      content={message.content ?? ''}
-                      live={message.liveAnswer}
-                    />
+                    <>
+                      <AiColleagueLiveAnswerBubble
+                        content={message.content ?? ''}
+                        live={message.liveAnswer}
+                      />
+                      {message.liveAnswer.status === 'done' && (message.content ?? '').trim() ? (
+                        <WikiFileBackButton
+                          question={findPrecedingUserText(messages, index) ?? ''}
+                          answer={message.content ?? ''}
+                          projectId={message.liveAnswer.projectId ?? null}
+                        />
+                      ) : null}
+                    </>
                   ) : message.toolExecution ? (
                     renderAssistantBody(
                       message.toolExecution,

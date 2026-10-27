@@ -8,8 +8,17 @@
  * 状态挂在 `globalThis` 上：开发态热重载可能让本模块重新求值，挂在模块作用域会丢掉
  * 已注册的企业实现，私有部署就会静默变成「DLP 放行」。
  */
-import { NoopCopilotWatermark, PassThroughCopilotDlp } from '#services/edition/defaults'
-import type { CopilotDlpPort, CopilotWatermarkPort, PlatformAiPort } from '#services/edition/ports'
+import {
+  NoopCopilotWatermark,
+  PassThroughCopilotDlp,
+  PassThroughWikiExportDlp,
+} from '#services/edition/defaults'
+import type {
+  CopilotDlpPort,
+  CopilotWatermarkPort,
+  PlatformAiPort,
+  WikiExportDlpPort,
+} from '#services/edition/ports'
 
 export interface EditionHooks {
   /** 每次调用返回一个可用的 DLP 预检实现。 */
@@ -18,6 +27,8 @@ export interface EditionHooks {
   copilotWatermark: () => CopilotWatermarkPort
   /** 平台统一 AI 配置；个人版为 null。 */
   platformAi: PlatformAiPort | null
+  /** 维基 Markdown 导出的 DLP 预检（v3-llm-wiki-default-on）；个人版放行。 */
+  wikiExportDlp: () => WikiExportDlpPort
 }
 
 function defaultHooks(): EditionHooks {
@@ -25,6 +36,7 @@ function defaultHooks(): EditionHooks {
     copilotDlp: () => new PassThroughCopilotDlp(),
     copilotWatermark: () => new NoopCopilotWatermark(),
     platformAi: null,
+    wikiExportDlp: () => new PassThroughWikiExportDlp(),
   }
 }
 

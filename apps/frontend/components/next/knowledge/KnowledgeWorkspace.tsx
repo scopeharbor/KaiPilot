@@ -8,6 +8,7 @@ import { knowledgeApi } from '@/lib/api/knowledge'
 import { KNOWLEDGE_QUERY_KEYS } from '@/hooks/use-knowledge'
 import { usePermissions } from '@/hooks/use-permissions'
 import type { KnowledgeItemLowSensitiveProjection } from '@aiproj/types'
+import { WikiEntryButton } from '@/components/next/wiki/WikiWorkspace'
 import { KnowledgeListTable } from './KnowledgeListTable'
 import { KnowledgeCreateDrawer, KnowledgeReviewDrawer } from './KnowledgeManageDrawers'
 import { resolveErrorMessage } from './KnowledgeManageDrawers'
@@ -74,6 +75,7 @@ export function KnowledgeWorkspace() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <WikiEntryButton />
           {canViewOperating ? (
             <button
               type="button"

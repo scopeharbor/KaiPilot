@@ -2844,6 +2844,131 @@ router
       .prefix('/knowledge')
       .use(middleware.auth())
 
+    // v3-llm-wiki-memory-foundation —— 记忆维基（组织级开关默认关闭；本期不注入模型上下文）
+    const WikiMemoryController = () => import('#controllers/wiki_memory_controller')
+    router
+      .group(() => {
+        router.get('/settings', [WikiMemoryController, 'getSettings']).as('wiki.settings.show')
+        router.put('/settings', [WikiMemoryController, 'updateSettings']).as('wiki.settings.update')
+        router.get('/spaces', [WikiMemoryController, 'listSpaces']).as('wiki.spaces.index')
+        router
+          .post('/spaces/resolve', [WikiMemoryController, 'resolveSpace'])
+          .as('wiki.spaces.resolve')
+        router.get('/spaces/:id/pages', [WikiMemoryController, 'listPages']).as('wiki.pages.index')
+        router
+          .post('/spaces/:id/pages', [WikiMemoryController, 'createPage'])
+          .as('wiki.pages.create')
+        router.get('/spaces/:id/search', [WikiMemoryController, 'search']).as('wiki.spaces.search')
+        router.get('/spaces/:id/log', [WikiMemoryController, 'listLog']).as('wiki.spaces.log')
+        router
+          .get('/spaces/:id/lint-findings', [WikiMemoryController, 'listFindings'])
+          .as('wiki.spaces.findings')
+        router.post('/spaces/:id/lint', [WikiMemoryController, 'runLint']).as('wiki.spaces.lint')
+        router
+          .post('/spaces/:id/contradiction-check', [WikiMemoryController, 'checkContradictions'])
+          .as('wiki.spaces.contradiction-check')
+        router
+          .post('/lint-findings/:id/dismiss', [WikiMemoryController, 'dismissFinding'])
+          .as('wiki.lint-findings.dismiss')
+        router
+          .post('/projects/:id/retrospective/refresh', [
+            WikiMemoryController,
+            'refreshRetrospective',
+          ])
+          .as('wiki.projects.retrospective-refresh')
+        router
+          .post('/pages/:id/lessons', [WikiMemoryController, 'draftLessons'])
+          .as('wiki.pages.lessons')
+        router
+          .post('/claims/:id/promote', [WikiMemoryController, 'promoteLesson'])
+          .as('wiki.claims.promote')
+        router
+          .get('/lessons/recall', [WikiMemoryController, 'recallLessons'])
+          .as('wiki.lessons.recall')
+        router.post('/eval/run', [WikiMemoryController, 'runEval']).as('wiki.eval.run')
+        router.get('/eval/runs', [WikiMemoryController, 'listEvalRuns']).as('wiki.eval.runs')
+        router
+          .post('/eval/answer-estimate', [WikiMemoryController, 'estimateAnswerEval'])
+          .as('wiki.eval.answer-estimate')
+        router
+          .post('/eval/answer-run', [WikiMemoryController, 'runAnswerEval'])
+          .as('wiki.eval.answer-run')
+        router
+          .get('/eval/answer-runs/latest', [WikiMemoryController, 'latestAnswerEval'])
+          .as('wiki.eval.answer-latest')
+        router
+          .post('/spaces/:id/import-copilot-memory', [WikiMemoryController, 'migrateCopilotMemory'])
+          .as('wiki.spaces.import-copilot-memory')
+        router
+          .get('/spaces/:id/retractions', [WikiMemoryController, 'listRetractions'])
+          .as('wiki.spaces.retractions')
+        router
+          .delete('/retractions/:retractionId', [WikiMemoryController, 'liftRetraction'])
+          .as('wiki.retractions.lift')
+        router
+          .get('/spaces/:id/export', [WikiMemoryController, 'exportSpace'])
+          .as('wiki.spaces.export')
+        router
+          .post('/spaces/:id/ingest', [WikiMemoryController, 'triggerIngest'])
+          .as('wiki.spaces.ingest')
+        router
+          .get('/spaces/:id/ingest-runs', [WikiMemoryController, 'listIngestRuns'])
+          .as('wiki.spaces.ingest-runs')
+        router.post('/file-back', [WikiMemoryController, 'fileBack']).as('wiki.file-back')
+        router
+          .post('/dossier/refresh', [WikiMemoryController, 'refreshDossier'])
+          .as('wiki.dossier.refresh')
+        router
+          .post('/process/refresh', [WikiMemoryController, 'refreshProcess'])
+          .as('wiki.process.refresh')
+        router
+          .post('/pages/:id/interpret', [WikiMemoryController, 'interpretProcess'])
+          .as('wiki.pages.interpret')
+        router
+          .get('/shadow-summary', [WikiMemoryController, 'shadowSummary'])
+          .as('wiki.shadow-summary')
+        router
+          .post('/spaces/:id/clear', [WikiMemoryController, 'clearPersonalSpace'])
+          .as('wiki.spaces.clear')
+        router
+          .post('/me/estimate-calibration/refresh', [WikiMemoryController, 'refreshMyEstimate'])
+          .as('wiki.me.estimate-refresh')
+        router
+          .post('/me/import-memory', [WikiMemoryController, 'importMyMemory'])
+          .as('wiki.me.import-memory')
+        router
+          .get('/shared-with-me', [WikiMemoryController, 'sharedWithMe'])
+          .as('wiki.shared-with-me')
+        router.get('/pages/:id', [WikiMemoryController, 'showPage']).as('wiki.pages.show')
+        router
+          .get('/pages/:id/revisions', [WikiMemoryController, 'listRevisions'])
+          .as('wiki.pages.revisions')
+        router
+          .post('/pages/:id/revisions', [WikiMemoryController, 'createRevision'])
+          .as('wiki.pages.revisions.create')
+        router
+          .post('/pages/:id/rollback', [WikiMemoryController, 'rollback'])
+          .as('wiki.pages.rollback')
+        router
+          .put('/pages/:id/sharing', [WikiMemoryController, 'updateSharing'])
+          .as('wiki.pages.sharing')
+        router
+          .get('/revisions/:id', [WikiMemoryController, 'showRevision'])
+          .as('wiki.revisions.show')
+        router
+          .post('/revisions/:id/publish', [WikiMemoryController, 'publishRevision'])
+          .as('wiki.revisions.publish')
+        router
+          .post('/revisions/:id/reject', [WikiMemoryController, 'rejectRevision'])
+          .as('wiki.revisions.reject')
+        router.get('/review-queue', [WikiMemoryController, 'reviewQueue']).as('wiki.review-queue')
+        router
+          .post('/claims/:id/retract', [WikiMemoryController, 'retractClaim'])
+          .as('wiki.claims.retract')
+      })
+      .prefix('/wiki')
+      .use(middleware.auth())
+
     // v2-traceability-source-attribution —— Traceability API。
     router
       .group(() => {

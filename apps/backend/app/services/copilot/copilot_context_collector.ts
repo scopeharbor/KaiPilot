@@ -134,7 +134,6 @@ function now(): string {
 
 export class CopilotContextCollector {
   readonly #searchService: SearchService
-  readonly #knowledgeService: KnowledgeService
   /** 权限判定回调（由注入方提供，复用既有 Policy）。 */
   readonly #permissionChecker: (
     organizationId: number,
@@ -146,6 +145,7 @@ export class CopilotContextCollector {
 
   constructor(deps: {
     searchService: SearchService
+    /** 保留参数形状；回合不再查询知识底座（v3-llm-wiki-rag-retirement）。 */
     knowledgeService: KnowledgeService
     permissionChecker: (
       organizationId: number,
@@ -155,7 +155,6 @@ export class CopilotContextCollector {
     buildSearchContext: (request: CopilotContextAssemblyRequest) => SearchContext
   }) {
     this.#searchService = deps.searchService
-    this.#knowledgeService = deps.knowledgeService
     this.#permissionChecker = deps.permissionChecker
     this.#buildSearchContext = deps.buildSearchContext
   }
@@ -437,27 +436,16 @@ export class CopilotContextCollector {
   // ── Task 4.3: 知识底座生产查询路径接入 ──────────────────────────
 
   /**
-   * 查询知识底座（生产路径）。
-   * 合格知识层由实际使用的查询路径推导，而非调用方自报。
+   * 知识层合格性与查询路径标记（生产路径，L3 排除）。
+   *
+   * v3-llm-wiki-rag-retirement：此前这里调用知识底座检索后丢弃结果，回合并未使用；
+   * 已退役，组织记忆改由维基上下文包经回合注入端口交给模型。返回值与以前相同。
    */
-  async queryKnowledge(organizationId: number, query?: string): Promise<CollectorKnowledgeResult> {
-    // 生产路径（L3 已由 KnowledgeService 强制排除）
-    const tierList = COPILOT_PRODUCTION_KNOWLEDGE_TIERS
-    const queryPath = 'production'
-
-    // 知识查询（仅在有查询词时执行）
-    if (query) {
-      try {
-        await this.#knowledgeService.query(organizationId, {
-          keyword: query,
-          evalContext: false,
-        })
-      } catch {
-        // 知识查询失败不影响采集结果
-      }
-    }
-
-    return { tierList, queryPath }
+  async queryKnowledge(
+    _organizationId: number,
+    _query?: string,
+  ): Promise<CollectorKnowledgeResult> {
+    return { tierList: COPILOT_PRODUCTION_KNOWLEDGE_TIERS, queryPath: 'production' }
   }
 
   // ── Task 4.7: Skill 方法论切面接入 ──────────────────────────────

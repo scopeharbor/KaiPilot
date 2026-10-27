@@ -23,6 +23,7 @@ import MemberDirectoryService from '#services/ai_colleague/member_directory_serv
 import SearchPolicy from '#policies/search_policy'
 import AiToolsExecutorService from '#services/ai_tools/ai_tools_executor_service'
 import { AiToolsRegistry } from '#services/ai_tools/registry'
+import WikiQueryService from '#services/wiki_memory/query/wiki_query_service'
 import {
   aiColleagueMemberNamesValidator,
   aiColleaguePageVisionValidator,
@@ -40,6 +41,7 @@ export default class AiToolsController {
     private planner: AiColleagueActionPlannerService,
     private searchPolicy: SearchPolicy,
     private assist: AiColleagueAssistService,
+    private wikiQuery: WikiQueryService,
   ) {}
 
   async index(ctx: HttpContext) {
@@ -100,6 +102,11 @@ export default class AiToolsController {
       observations: input.observations ?? [],
       iteration: input.iteration,
       page: input.page ?? null,
+      // 记忆维基：组织已开启且有 wiki:view 时才把查阅动作交给模型（规划器本身不读维基）
+      wikiAvailable: await this.wikiQuery.isAvailable({
+        user,
+        organizationId: ctx.tenant!.organizationId,
+      }),
     })
     return ctx.response.ok({ data: plan })
   }

@@ -52,6 +52,14 @@ import {
 } from './get_project_summary.js'
 import { createGetTaskDetailTool, GET_TASK_DETAIL_TOOL_NAME } from './get_task_detail.js'
 import {
+  createWikiIndexTool,
+  createWikiReadTool,
+  createWikiSearchTool,
+  WIKI_INDEX_TOOL_NAME,
+  WIKI_READ_TOOL_NAME,
+  WIKI_SEARCH_TOOL_NAME,
+} from './wiki_tools.js'
+import {
   createListProjectSignalsTool,
   LIST_PROJECT_SIGNALS_TOOL_NAME,
 } from './list_project_signals.js'
@@ -107,7 +115,12 @@ export {
   CREATE_RISK_FROM_INTERVENTION_TOOL_NAME,
   CREATE_CHANGE_REQUEST_FROM_INTERVENTION_TOOL_NAME,
   LIST_PROJECT_SIGNALS_TOOL_NAME,
+  // v3-llm-wiki-query-navigation：只读维基工具
+  WIKI_INDEX_TOOL_NAME,
+  WIKI_READ_TOOL_NAME,
+  WIKI_SEARCH_TOOL_NAME,
 }
+export { createWikiIndexTool, createWikiReadTool, createWikiSearchTool }
 export { createGetGanttSnapshotTool, createGetProjectSummaryTool, createGetTaskDetailTool }
 export { createListProjectRisksTool, createListProjectTasksTool, createNavigateToSpaceTool }
 export {
@@ -185,6 +198,10 @@ export const AI_TOOLS_NAMES = [
   TOGGLE_TASK_STEPS_TOOL_NAME,
   // AI 同事：用自然语言改设置（个人 / 项目 / 组织；写，预览拦截）
   UPDATE_SETTING_TOOL_NAME,
+  // v3-llm-wiki-query-navigation：只读维基工具（目录 / 读页 / 检索）
+  WIKI_INDEX_TOOL_NAME,
+  WIKI_READ_TOOL_NAME,
+  WIKI_SEARCH_TOOL_NAME,
 ] as const
 
 /**
@@ -263,6 +280,10 @@ export function buildAllAiToolDefinitions(deps?: AiToolsHandlerDeps): ToolDefini
     ) as unknown as ToolDefinition,
     // AI 同事：用自然语言改设置（写工具，execute 一律预览拦截）。
     createUpdateSettingTool() as unknown as ToolDefinition,
+    // v3-llm-wiki-query-navigation：只读维基工具（目录 / 读页 / 检索）。
+    createWikiIndexTool() as unknown as ToolDefinition,
+    createWikiReadTool() as unknown as ToolDefinition,
+    createWikiSearchTool() as unknown as ToolDefinition,
   ]
   return definitions
 }

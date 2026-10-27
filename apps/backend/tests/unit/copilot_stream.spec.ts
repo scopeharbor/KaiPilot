@@ -6,7 +6,7 @@
  * - clarify / route 终态事件（零 answer-delta）
  * - DLP 阻断 → 零输出（异常在开流前抛出，sink 未被调用）
  * - 空回答 → turn-error，不伪造 answer-done、不落 assistant 消息
- * - 流式中断 → turn-error（errorKind=retryable-service）
+ * - 流式中断 → turn-error（内部异常 retryable-service；供应商超时 model-timeout）
  * - 断言序列号严格递增、事件不携带敏感全文键
  *
  * 纯 vitest：依赖全部注入，零 AdonisJS 运行时、零数据库、零网络。
@@ -264,7 +264,29 @@ describe('流式回合：answer 事件序列', () => {
     expect(sessions.appended.filter((m: any) => m.role === 'assistant')).toHaveLength(0)
   })
 
-  it('流式超时中断 → turn-error（model-timeout），保留已累积增量前的非完成终态', async () => {
+  it('流式中断 → turn-error（retryable-service），保留已累积增量前的非完成终态', async () => {
+    // 认不出来的内部异常归为 retryable-service（不冒充供应商问题）
+    const { service, sessions } = makeService({
+      streamAnswerExecutor: async function* () {
+        yield '一部分'
+        throw new Error('stream pipeline broke')
+      },
+    })
+    const { sink, events } = makeSink()
+
+    await service.executeStream(execInput({ text: '项目现在怎么样' }), sink)
+
+    const errorEvent = events.find((e) => e.type === 'turn-error')
+    expect(errorEvent?.type).toBe('turn-error')
+    if (errorEvent && errorEvent.type === 'turn-error') {
+      expect(errorEvent.errorKind).toBe('retryable-service')
+    }
+    expect(events.find((e) => e.type === 'answer-done')).toBeUndefined()
+    expect(sessions.appended.filter((m: any) => m.role === 'assistant')).toHaveLength(0)
+  })
+
+  it('流式中途供应商超时 → turn-error（model-timeout），不写助手消息', async () => {
+    // 2026-10-12 起供应商错误细分（copilot_model_failure）：超时不再笼统归为 retryable-service
     const { service, sessions } = makeService({
       streamAnswerExecutor: async function* () {
         yield '一部分'
@@ -276,9 +298,8 @@ describe('流式回合：answer 事件序列', () => {
     await service.executeStream(execInput({ text: '项目现在怎么样' }), sink)
 
     const errorEvent = events.find((e) => e.type === 'turn-error')
-    expect(errorEvent).toBeDefined()
+    expect(errorEvent?.type).toBe('turn-error')
     if (errorEvent && errorEvent.type === 'turn-error') {
-      // 2026-10-06 起按供应商真实错误分类（copilot_model_failure.ts），超时不再归为 retryable-service
       expect(errorEvent.errorKind).toBe('model-timeout')
     }
     expect(events.find((e) => e.type === 'answer-done')).toBeUndefined()

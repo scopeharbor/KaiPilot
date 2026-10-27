@@ -71,6 +71,24 @@ export interface CopilotWatermarkPort {
 }
 
 // ---------------------------------------------------------------------------
+// 维基导出 DLP 预检（v3-llm-wiki-default-on）
+// ---------------------------------------------------------------------------
+
+export interface WikiExportDlpInput {
+  organizationId: number
+  projectId: number | null
+  actorId: number
+  text: string
+  sourceHash: string
+  itemCount: number
+}
+
+export interface WikiExportDlpPort {
+  /** true = 放行导出；企业实现在预检结果不是放行（含要求水印）时返回 false。 */
+  preflight(input: WikiExportDlpInput): Promise<boolean>
+}
+
+// ---------------------------------------------------------------------------
 // 平台统一 AI 配置（SaaS 运营）
 // ---------------------------------------------------------------------------
 

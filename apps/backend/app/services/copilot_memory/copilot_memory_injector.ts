@@ -31,6 +31,9 @@ import {
  *
  * 三层注入优先级（D4）：项目 > 组织 > 用户偏好（越具体越优先）。
  * 当同标签同层级的记忆冲突时，更具体层级的记忆优先。
+ *
+ * v3-llm-wiki-rag-retirement：本函数没有生产调用方；AI 同事回合的组织记忆由维基上下文包承担，
+ * 项目 / 组织级记忆可由维基审阅者迁移为待审提议。保留以免影响既有测试与接口。
  */
 export function selectMemoriesForInjection(
   memories: readonly CopilotMemoryEntry[],

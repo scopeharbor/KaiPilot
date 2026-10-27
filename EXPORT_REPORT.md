@@ -4,8 +4,8 @@
 
 ## 来源
 
-- 来源提交：`bb9eb736770ed67926df910e73c78e189b190acd`
-- 清单 SHA-256：`8193e24aa26c14d121a6723200abd68ac566f51c1900cb1f20c3a90582d9d61d`
+- 来源提交：`fc52a57c935eaeb84fea56cea5718ce0ff2e5f95`
+- 清单 SHA-256：`ed6424f8b403a696b237ff851cea9ae3703571e0da3dcbcefda57d724b2eec11`
 - 关卡档位：`full`
 - LICENSE：AGPL-3.0 官方原文（SHA-256 一致）
 
@@ -13,16 +13,16 @@
 
 | 关卡 | 名称             | 结果 | 耗时      | 说明                                                                          |
 | ---- | ---------------- | ---- | --------- | ----------------------------------------------------------------------------- |
-| 1    | 禁止引用         | 通过 | 4.4 秒    | 0 处                                                                          |
-| 2    | 敏感信息         | 通过 | 6.6 秒    | 0 处；gitleaks 本机未安装，仅内置规则                                         |
-| 3    | 依赖重建         | 通过 | 2.4 秒    | lockfile regenerate                                                           |
-| 4    | 质量门禁（完整） | 通过 | 70.5 分钟 | pnpm lint ✓；pnpm format:check ✓；pnpm typecheck ✓；pnpm build ✓；pnpm test ✓ |
-| 5    | 全新迁移         | 通过 | 13.9 秒   | migration:run ✓；migration:rollback --batch=0 ✓                               |
+| 1    | 禁止引用         | 通过 | 4.9 秒    | 0 处                                                                          |
+| 2    | 敏感信息         | 通过 | 7.6 秒    | 0 处；gitleaks 本机未安装，仅内置规则                                         |
+| 3    | 依赖重建         | 通过 | 3.1 秒    | lockfile regenerate                                                           |
+| 4    | 质量门禁（完整） | 通过 | 58.2 分钟 | pnpm lint ✓；pnpm format:check ✓；pnpm typecheck ✓；pnpm build ✓；pnpm test ✓ |
+| 5    | 全新迁移         | 通过 | 15.9 秒   | migration:run ✓；migration:rollback --batch=0 ✓                               |
 
 ## 统计
 
-- 保留文件：6551 个
-- 排除文件：4092 个（internal 3626，credentials 2，enterprise 436，platform 28）
+- 保留文件：6683 个
+- 排除文件：4171 个（internal 3704，credentials 2，enterprise 437，platform 28）
 - 剥离标记区块：191 个（enterprise 160，saas-gating 4，platform 26，internal 1）
 - 品牌替换：180 个文件 416 处，素材 11 个
 - 生成的公开文件：README.md、README.zh-CN.md、CONTRIBUTING.md、SECURITY.md、LICENSE、NOTICE、.github/PULL_REQUEST_TEMPLATE.md

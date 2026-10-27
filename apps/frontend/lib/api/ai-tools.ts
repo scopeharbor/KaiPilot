@@ -193,6 +193,9 @@ export interface ColleaguePlannedAction {
     | 'list_project_risks'
     | 'capture_page'
     | 'update_setting'
+    | 'wiki_index'
+    | 'wiki_read'
+    | 'wiki_search'
   parameters: Record<string, unknown>
   summary: string
   /** prioritize = 执行后把结果交给模型排优先级、给建议。 */

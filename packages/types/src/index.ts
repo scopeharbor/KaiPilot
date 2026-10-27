@@ -3198,5 +3198,15 @@ export type {
   ReleaseTrustSensitiveFindingKind,
   ReleaseTrustSensitiveFinding,
 } from './release-trust-and-evidence-center.js'
+export * from './llm-wiki-memory.js'
+export * from './llm-wiki-ingest.js'
+export * from './llm-wiki-query.js'
+export * from './llm-wiki-dossier.js'
+export * from './llm-wiki-process.js'
+export * from './llm-wiki-person.js'
+export * from './llm-wiki-lint.js'
+export * from './llm-wiki-retrospective.js'
+export * from './llm-wiki-eval.js'
+export * from './llm-wiki-retirement.js'
 
 export * from './ai-connection-requirement.js'

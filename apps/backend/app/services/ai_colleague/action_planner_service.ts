@@ -181,6 +181,10 @@ export interface PlannedColleagueAction {
     | 'capture_page'
     // 用自然语言改设置（个人 / 项目 / 组织；写操作，先预览再确认，日历第 4 批）
     | 'update_setting'
+    // 记忆维基只读查阅（目录 / 读页 / 检索；组织开启维基且有 wiki:view 时才提供）
+    | 'wiki_index'
+    | 'wiki_read'
+    | 'wiki_search'
   parameters: Record<string, unknown>
   /** 给用户看的一句话说明（程序生成，不用模型原话）。 */
   summary: string
@@ -238,6 +242,8 @@ export interface PlanActionsInput {
   iteration?: number
   /** 当前页面：可见文字摘要（标题、按钮、表格行…），以及看图模型对截图的描述（有则带）。 */
   page?: ColleaguePageContext | null
+  /** 组织已开启记忆维基且用户有 wiki:view（控制器计算；规划器本身不读维基）。 */
+  wikiAvailable?: boolean
 }
 
 /** 一步动作的执行结果（交回模型的「观察」）。 */
@@ -290,7 +296,23 @@ function toPositiveInt(value: unknown): number | null {
 }
 
 /** 系统提示：工具说明 + 输出格式（只输出 JSON）。 */
-export function buildPlannerSystemPrompt(): string {
+/** 记忆维基动作的提示词（只在可用时追加）。 */
+const WIKI_PLANNER_PROMPT_LINES: readonly string[] = [
+  '22. {"action":"wiki_index","projectId":可选数字} —— 查看记忆维基目录（项目、部门、组织维基里已发布的页面，每页一行摘要）。',
+  '23. {"action":"wiki_read","pageId":数字,"section":"可选小标题"} —— 读一页维基（pageId 来自 wiki_index / wiki_search 的结果；可只读某个小标题下的一节）。',
+  '24. {"action":"wiki_search","keyword":"关键词","projectId":可选数字} —— 在维基标题、小标题与摘要里找（目录太长或找不到时用）。',
+  '- 记忆维基是本组织经审阅的经验、教训、决策与规矩：用户问「我们以前怎么做 / 有什么教训 / 本组织的规矩 / 这类项目一般怎样」时，先 wiki_index 或 wiki_search，再 wiki_read（continue=true）。维基是推断不是证据：涉及日期、数字、状态时用 task_detail / list_tasks / project_summary / list_risks 核对实时数据，两者冲突时以实时数据为准，并在答复里说明维基可能已过期。',
+]
+
+const WIKI_NATIVE_PROMPT_LINE =
+  '- 记忆维基是本组织经审阅的经验、教训、决策与规矩：用户问「我们以前怎么做 / 有什么教训 / 本组织的规矩」时先用 read_wiki_index 或 search_wiki，再用 read_wiki_page。维基是推断不是证据：涉及日期、数字、状态时用 show_task_detail / list_tasks / project_summary / list_risks 核对实时数据，冲突时以实时数据为准并说明维基可能已过期。'
+
+export interface PlannerPromptOptions {
+  /** 组织已开启记忆维基且用户有 wiki:view。 */
+  wiki?: boolean
+}
+
+export function buildPlannerSystemPrompt(options: PlannerPromptOptions = {}): string {
   return [
     '你是项目管理平台「开项」里 AI 同事的操作理解器。把用户的一句话理解成要系统执行的操作序列，只输出一个 JSON 对象，不要输出任何其他文字。',
     '可用操作（action 字段）：',
@@ -336,6 +358,7 @@ export function buildPlannerSystemPrompt(): string {
     '- 名称匹配到多个任务或完全找不到、日期说不清时，不要猜：对应动作不要输出，并在 clarification 里简短问用户；有明确候选时把候选放进 options（2–4 个简短完整的答案，如「PROJ-5#12 登录页开发」「明天」），界面会显示成可点选的卡片，用户也能自己输入。',
     '- 一句话里有多个操作时全部按顺序列出（最多 8 个）。',
     '- 你只是提出建议，真正修改前系统会让用户逐条确认；不要在 reply 里说「已完成」。',
+    ...(options.wiki ? WIKI_PLANNER_PROMPT_LINES : []),
   ].join('\n')
 }
 
@@ -829,6 +852,56 @@ export const COLLEAGUE_PLANNER_TOOLS: readonly PlannerToolDefinition[] = [
   },
 ]
 
+/** 记忆维基只读工具（组织开启维基且有 wiki:view 时才提供给模型）。 */
+export const WIKI_PLANNER_TOOLS: readonly PlannerToolDefinition[] = [
+  {
+    name: 'read_wiki_index',
+    description:
+      '查看记忆维基目录：项目、部门、组织维基里已发布的页面（每页一行摘要）。用来找本组织的经验、教训、决策与规矩。',
+    parameters: {
+      type: 'object',
+      properties: {
+        projectId: { type: 'integer', description: '可选：项目 id（不给用当前项目）' },
+      },
+      additionalProperties: false,
+    },
+    toAction: (args) => ({ action: 'wiki_index', projectId: args.projectId }),
+  },
+  {
+    name: 'read_wiki_page',
+    description:
+      '读一页记忆维基的已发布版本；pageId 来自 read_wiki_index / search_wiki 的结果，可只读某个小标题下的一节。',
+    parameters: {
+      type: 'object',
+      properties: {
+        pageId: { type: 'integer', description: '页面 id' },
+        section: { type: 'string', description: '可选：小标题' },
+      },
+      required: ['pageId'],
+      additionalProperties: false,
+    },
+    toAction: (args) => ({ action: 'wiki_read', pageId: args.pageId, section: args.section }),
+  },
+  {
+    name: 'search_wiki',
+    description: '在记忆维基的标题、小标题与摘要里找关键词（目录太长或找不到时用）。',
+    parameters: {
+      type: 'object',
+      properties: {
+        keyword: { type: 'string', description: '关键词' },
+        projectId: { type: 'integer', description: '可选：项目 id（不给用当前项目）' },
+      },
+      required: ['keyword'],
+      additionalProperties: false,
+    },
+    toAction: (args) => ({
+      action: 'wiki_search',
+      keyword: args.keyword,
+      projectId: args.projectId,
+    }),
+  },
+]
+
 /** 不在项目空间时仍可用的工具。 */
 export const GLOBAL_PLANNER_TOOL_NAMES: ReadonlySet<string> = new Set([
   // 任务类工具作用于任务自己的项目（我负责的 / 提到编号的），不需要先进项目
@@ -851,6 +924,9 @@ export const GLOBAL_PLANNER_TOOL_NAMES: ReadonlySet<string> = new Set([
   'search_entities',
   'set_ui_preference',
   'change_setting',
+  'read_wiki_index',
+  'read_wiki_page',
+  'search_wiki',
   PLANNER_CLARIFY_TOOL_NAME,
 ])
 
@@ -863,6 +939,9 @@ const READ_TOOL_NAMES: ReadonlySet<string> = new Set([
   'project_summary',
   'list_risks',
   'look_at_page',
+  'read_wiki_index',
+  'read_wiki_page',
+  'search_wiki',
 ])
 
 /** 原生工具调用方式 → 适配器 API。 */
@@ -874,7 +953,7 @@ export const NATIVE_TOOL_API_BY_MODE: Readonly<Partial<Record<AiToolCallingMode,
   }
 
 /** 原生方式的系统提示（工具定义由 API 的 tools 参数携带，这里只讲规则）。 */
-export function buildNativePlannerSystemPrompt(): string {
+export function buildNativePlannerSystemPrompt(options: PlannerPromptOptions = {}): string {
   return [
     '你是项目管理平台「开项」里 AI 同事的操作理解器。用户会用一句话让系统做事，你用提供的工具表达要执行的操作。',
     '- 一句话里有多个操作时，按用户说的先后顺序调用多个工具（最多 8 个）。',
@@ -893,6 +972,7 @@ export function buildNativePlannerSystemPrompt(): string {
     '- 改日期与改状态时系统会按依赖自动顺延或往前拉后续任务（与界面同一套排期逻辑），不要再逐个改后续任务。',
     '- page 是用户当前页面（visibleText 可见文字、visualDescription 截图描述）；回答「这是什么 / 这里怎么做」以它为准，不够时调用 look_at_page。',
     '- 你只是提出建议，真正修改前系统会让用户逐条确认；不要说「已完成」。可以附一句简短说明你准备做什么。',
+    ...(options.wiki ? [WIKI_NATIVE_PROMPT_LINE] : []),
   ].join('\n')
 }
 
@@ -904,7 +984,9 @@ export function nativeToolCallsToRawPlan(result: {
   text: string
   toolCalls: readonly { name: string; arguments: Record<string, unknown> | null }[]
 }): { raw: Record<string, unknown>; unknownCalls: string[] } {
-  const byName = new Map(COLLEAGUE_PLANNER_TOOLS.map((tool) => [tool.name, tool]))
+  const byName = new Map(
+    [...COLLEAGUE_PLANNER_TOOLS, ...WIKI_PLANNER_TOOLS].map((tool) => [tool.name, tool]),
+  )
   const actions: Record<string, unknown>[] = []
   const questions: string[] = []
   const options: unknown[] = []
@@ -984,6 +1066,8 @@ export function normalizePlannedActions(
     projects?: readonly PlannerProjectRow[]
     /** 可改的设置目录（change_setting 的 key 只能来自这里）。 */
     settings?: readonly PlannerSettingRow[]
+    /** 组织已开启记忆维基且用户有 wiki:view。 */
+    wikiAvailable?: boolean
   },
 ): Pick<
   ColleagueActionPlan,
@@ -1026,6 +1110,48 @@ export function normalizePlannedActions(
 
     if (PROJECT_ONLY.has(kind) && projectId === null) {
       rejected.push('这一步需要先进入某个项目空间，已忽略')
+      continue
+    }
+
+    if (kind === 'wiki_index' || kind === 'wiki_read' || kind === 'wiki_search') {
+      if (context.wikiAvailable !== true) {
+        rejected.push('本组织没有开启记忆维基（或你没有查看权限），已忽略查阅维基')
+        continue
+      }
+      if (kind === 'wiki_read') {
+        const pageId = toPositiveInt(action.pageId)
+        if (pageId === null) {
+          rejected.push('没有给出要读的维基页面，已忽略')
+          continue
+        }
+        const section = shortText(action.section, 60)
+        actions.push({
+          toolName: 'wiki_read',
+          parameters: { pageId, ...(section ? { section } : {}) },
+          summary: `阅读维基页面 #${pageId}${section ? `「${section}」一节` : ''}`,
+        })
+        continue
+      }
+      const named =
+        action.projectId === undefined || action.projectId === null
+          ? null
+          : (projectById.get(toPositiveInt(action.projectId) ?? -1) ?? null)
+      const target = named?.id ?? projectId
+      const scope = target === null ? {} : { projectId: target }
+      if (kind === 'wiki_index') {
+        actions.push({ toolName: 'wiki_index', parameters: scope, summary: '查看记忆维基目录' })
+        continue
+      }
+      const keyword = shortText(action.keyword, 60)
+      if (!keyword || keyword.endsWith('…')) {
+        rejected.push('维基检索的关键词为空或太长（最多 60 字），已忽略')
+        continue
+      }
+      actions.push({
+        toolName: 'wiki_search',
+        parameters: { keyword, ...scope },
+        summary: `在记忆维基里找「${keyword}」`,
+      })
       continue
     }
 
@@ -1756,6 +1882,7 @@ export default class AiColleagueActionPlannerService {
     })
     const modelLabel = resolved.model ? `${resolved.provider}/${resolved.model}` : null
     const requestedMode: AiToolCallingMode = resolved.toolCallingMode ?? 'prompt_json'
+    const wikiAvailable = input.wikiAvailable === true
     const context = {
       projectId: project?.id ?? null,
       tasks,
@@ -1764,6 +1891,7 @@ export default class AiColleagueActionPlannerService {
       members,
       projects,
       settings,
+      wikiAvailable,
     }
     const meta = { model: modelLabel, requestedToolCallingMode: requestedMode }
 
@@ -1774,15 +1902,15 @@ export default class AiColleagueActionPlannerService {
       try {
         const result = await resolved.gateway.callTools({
           api: nativeApi,
-          systemPrompt: buildNativePlannerSystemPrompt(),
+          systemPrompt: buildNativePlannerSystemPrompt({ wiki: wikiAvailable }),
           userPrompt,
-          tools: COLLEAGUE_PLANNER_TOOLS.filter(
-            (tool) => project !== null || GLOBAL_PLANNER_TOOL_NAMES.has(tool.name),
-          ).map(({ name, description, parameters }) => ({
-            name,
-            description,
-            parameters,
-          })),
+          tools: [...COLLEAGUE_PLANNER_TOOLS, ...(wikiAvailable ? WIKI_PLANNER_TOOLS : [])]
+            .filter((tool) => project !== null || GLOBAL_PLANNER_TOOL_NAMES.has(tool.name))
+            .map(({ name, description, parameters }) => ({
+              name,
+              description,
+              parameters,
+            })),
           temperature: 0,
           promptName: `ai_colleague.action_plan.${requestedMode}`,
         })
@@ -1807,7 +1935,7 @@ export default class AiColleagueActionPlannerService {
     // ── Prompt + JSON（原方式，也是回退路径）──
     const generated = await resolved.gateway.generate({
       sentence: text,
-      promptSet: { systemPrompt: buildPlannerSystemPrompt(), userPrompt },
+      promptSet: { systemPrompt: buildPlannerSystemPrompt({ wiki: wikiAvailable }), userPrompt },
       strategy: 'prompt',
       temperature: 0,
       promptName: 'ai_colleague.action_plan',

@@ -149,6 +149,9 @@ export const ALL_PERMISSIONS = [
   'knowledge:view',
   'knowledge:author',
   'knowledge:manage',
+  // 记忆维基（v3-llm-wiki-memory-foundation）
+  'wiki:view',
+  'wiki:review',
   // PMO 组合交通灯（v3-pmo-portfolio-traffic-light）
   'portfolio:view',
   'portfolio:manage',
@@ -438,6 +441,8 @@ export const AI_COMPILER_SKILL_KNOWLEDGE_REVIEW: Permission = 'ai:compiler:skill
 export const KNOWLEDGE_VIEW: Permission = 'knowledge:view'
 export const KNOWLEDGE_AUTHOR: Permission = 'knowledge:author'
 export const KNOWLEDGE_MANAGE: Permission = 'knowledge:manage'
+export const WIKI_VIEW: Permission = 'wiki:view'
+export const WIKI_REVIEW: Permission = 'wiki:review'
 
 // PMO 组合交通灯（v3-pmo-portfolio-traffic-light）
 export const PORTFOLIO_VIEW: Permission = 'portfolio:view'

@@ -10,7 +10,15 @@
  * 全部是确定性计算（蒙特卡洛使用固定种子），同一草案得到同一结果，可写入 meta 并参与哈希。
  */
 
-import type { ProjectDraftGroundingManifest, ProjectDraftPlanInsights } from '@aiproj/types'
+import {
+  WIKI_PROCESS_APPROVAL_TASK_PATTERN,
+  WIKI_PROCESS_BLOCKED_HINT_RATE,
+  WIKI_PROCESS_REWORK_HINT_RATE,
+  type ProjectDraftGroundingManifest,
+  type ProjectDraftPlanInsights,
+  type WikiProcessRealityForDraft,
+  type WikiReferenceClassForDraft,
+} from '@aiproj/types'
 import { formatIsoDate, isWorkingDay, parseIsoDate } from '#services/gantt_working_calendar'
 import { buildDraftCalendar, isProductionChangeTask, type DraftCalendar } from './cn_calendar.ts'
 
@@ -800,6 +808,82 @@ export function autoLinkTraceability(draft: JsonObject): {
 }
 
 // ---------------------------------------------------------------------------
+// 参照类对比（v3-llm-wiki-planning-dossier）：只提示、不阻断、不改草案
+// ---------------------------------------------------------------------------
+
+const REFERENCE_CLASS_MAX_LONG_TASKS = 10
+
+export function referenceClassInsight(
+  draft: JsonObject,
+  referenceClass: WikiReferenceClassForDraft,
+): NonNullable<ProjectDraftPlanInsights['referenceClass']> {
+  const tasks = (Array.isArray(draft.tasks) ? draft.tasks : []).filter(isObject)
+  const longTasks = tasks
+    .map((task) => ({
+      id: String(task.id ?? ''),
+      name: markedString(task.name),
+      durationDays: Number(markedValue(task.durationDays)),
+    }))
+    .filter(
+      (task) =>
+        task.id && Number.isFinite(task.durationDays) && task.durationDays > referenceClass.p80Days,
+    )
+    .sort((a, b) => b.durationDays - a.durationDays || a.id.localeCompare(b.id))
+    .slice(0, REFERENCE_CLASS_MAX_LONG_TASKS)
+  return { ...referenceClass, longTasks }
+}
+
+// ---------------------------------------------------------------------------
+// 流程实况（v3-llm-wiki-process-reality）
+// ---------------------------------------------------------------------------
+
+const PROCESS_MAX_APPROVAL_TASKS = 10
+
+/**
+ * 按本组织已发布流程页给出提示：返工率高 → 预留返工缓冲；受阻多 → 留等待余量；
+ * 审批类任务工期短于变更审批实际等待 P80 → 列出。只提示、不阻断、不改草案；都不成立时返回 null。
+ */
+export function processRealityInsight(
+  draft: JsonObject,
+  reality: WikiProcessRealityForDraft,
+): ProjectDraftPlanInsights['processReality'] | null {
+  const notes: string[] = []
+  const flow = reality.taskFlow
+  if (flow && flow.reworkRate >= WIKI_PROCESS_REWORK_HINT_RATE)
+    notes.push(
+      `本组织约 ${flow.reworkRate}% 的任务完成后又被重新打开或退回（「${flow.label}」，${flow.samples} 个样本）：评审、验收类任务建议预留返工缓冲。`,
+    )
+  if (flow && flow.blockedRate >= WIKI_PROCESS_BLOCKED_HINT_RATE)
+    notes.push(
+      `本组织 ${flow.blockedRate}% 的任务受阻或暂停过（「${flow.label}」）：关键路径上的任务建议留出等待余量。`,
+    )
+  const approval = reality.changeApproval
+  const approvalTasks = approval
+    ? (Array.isArray(draft.tasks) ? draft.tasks : [])
+        .filter(isObject)
+        .map((task) => ({
+          id: String(task.id ?? ''),
+          name: markedString(task.name),
+          durationDays: Number(markedValue(task.durationDays)),
+        }))
+        .filter(
+          (task) =>
+            task.id &&
+            WIKI_PROCESS_APPROVAL_TASK_PATTERN.test(task.name) &&
+            Number.isFinite(task.durationDays) &&
+            task.durationDays < approval.waitP80Days,
+        )
+        .sort((a, b) => a.durationDays - b.durationDays || a.id.localeCompare(b.id))
+        .slice(0, PROCESS_MAX_APPROVAL_TASKS)
+    : []
+  if (approval && approvalTasks.length > 0)
+    notes.push(
+      `本组织变更审批从提交到结论实际要 P80 ${approval.waitP80Days} 天（「${approval.label}」，${approval.samples} 个样本）：${approvalTasks.length} 个审批类任务的工期短于这个值，确认是否留够等待时间。`,
+    )
+  return notes.length > 0 ? { notes, approvalTasks } : null
+}
+
+// ---------------------------------------------------------------------------
 // 汇总
 // ---------------------------------------------------------------------------
 
@@ -807,8 +891,17 @@ export function computePlanInsights(args: {
   draft: JsonObject
   rawInput: string
   manifest?: ProjectDraftGroundingManifest | null
+  /** 草案上下文里的参照类（来自组织维基计划档案）；缺省时不产出参照类段。 */
+  referenceClass?: WikiReferenceClassForDraft
+  /** 草案上下文里的流程实况（来自组织维基流程页）；缺省或无可提示内容时不产出流程实况段。 */
+  processReality?: WikiProcessRealityForDraft
+  /** 草案上下文里的历史教训（来自组织教训库）；缺省或为空时不产出历史教训段。 */
+  lessons?: Array<{ statement: string; section: string | null }>
 }): ProjectDraftPlanInsights {
   const { draft } = args
+  const processReality = args.processReality
+    ? processRealityInsight(draft, args.processReality)
+    : null
   const charter = isObject(draft.charter) ? draft.charter : {}
   const startDate = markedString(charter.startDate) || null
   const endDate = markedString(charter.endDate) || null
@@ -867,5 +960,12 @@ export function computePlanInsights(args: {
     scheduleConfidence: scheduleConfidence(draft, draftCalendar, spans),
     stageGates: evaluateStageGates(draft, signal),
     traceability: evaluateTraceability(draft, args.manifest),
+    ...(args.referenceClass
+      ? { referenceClass: referenceClassInsight(draft, args.referenceClass) }
+      : {}),
+    ...(processReality ? { processReality } : {}),
+    ...(args.lessons && args.lessons.length > 0
+      ? { lessons: args.lessons.map((l) => ({ statement: l.statement, section: l.section })) }
+      : {}),
   }
 }

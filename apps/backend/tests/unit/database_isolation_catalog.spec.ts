@@ -73,7 +73,11 @@ test.group('DatabaseIsolationCatalog 完整性', () => {
     // 实验与版本域 +5（ai_prompt_versions/ai_offline_regression_cases/ai_offline_regression_runs/ai_shadow_experiments/ai_shadow_runs）
     // 其中 31 张是企业版独有表（企业审计 2、DLP 4、水印 3、KMS 4、合规 5、SAML 3、OIDC 3、SCIM 7），
     // 个人版导出时随企业模块一起排除（v3-personal-edition-open-source-export 3.6）
-    let expectedTables = 263
+    // v3-llm-wiki-memory-foundation +10（wiki_spaces/pages/revisions/claims/claim_sources/links/log_entries/lint_findings/retractions/search_entries）
+    // v3-llm-wiki-ingest-pipeline +1（wiki_ingest_runs）
+    // v3-llm-wiki-query-navigation +1（wiki_context_shadow_records）
+    // v3-llm-wiki-eval-gate +1（wiki_eval_runs）——维基表两个版本都有
+    let expectedTables = 276
     assert.equal(decls.length, expectedTables)
   })
 
