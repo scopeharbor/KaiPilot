@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Loader2, Plus, X } from 'lucide-react'
 import { createRisk, type RiskCategory } from '@/lib/api/risks'
 import { RISK_CATEGORY_OPTIONS, RISK_SCALE_OPTIONS } from '@/components/next/charts/risk/risk-meta'
+import { WikiLessonRecall } from '@/components/next/wiki/WikiLessonRecall'
 
 /**
  * 新建风险抽屉（v3-ui-next-risk-change-domains W1 · tasks 1.7）。
@@ -170,6 +171,9 @@ export function RiskCreateDrawer({ projectId, open, onClose }: RiskCreateDrawerP
               className={`${fieldClass} h-auto resize-y py-1.5 leading-relaxed`}
             />
           </div>
+
+          {/* v3-llm-wiki-retrospective-lessons：组织教训库里「历史上遇到过」的教训，只提示 */}
+          <WikiLessonRecall text={`${title} ${description}`} projectId={projectId} />
 
           <div>
             <label htmlFor="risk-create-category" className={labelClass}>

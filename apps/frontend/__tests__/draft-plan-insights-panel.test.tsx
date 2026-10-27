@@ -146,3 +146,105 @@ describe('治理文档', () => {
     expect(riskStrategyLabel(undefined)).toBeNull()
   })
 })
+
+describe('参照类对比（v3-llm-wiki-planning-dossier）', () => {
+  const rc = { label: '软件类项目任务工期参照类', samples: 20, p50Days: 3, p80Days: 5 }
+
+  test('列出超 P80 的任务并说明依据与「仅提示」', () => {
+    render(
+      <DraftPlanInsightsPanel
+        insights={{
+          ...insights,
+          referenceClass: {
+            ...rc,
+            longTasks: [
+              { id: 'task-1', name: '需求分析', durationDays: 12 },
+              { id: 'task-9', name: '', durationDays: 8 },
+            ],
+          },
+        }}
+        tasks={[]}
+      />,
+    )
+    const section = screen.getByTestId('draft-reference-class')
+    expect(within(section).getByText(/依据组织维基「软件类项目任务工期参照类」/)).toBeTruthy()
+    expect(within(section).getByText(/20 个样本/)).toBeTruthy()
+    expect(within(section).getByText(/2 个任务的工期超过 P80.*仅提示，不影响转正/)).toBeTruthy()
+    expect(within(section).getByText('需求分析 · 12 天')).toBeTruthy()
+    expect(within(section).getByText('task-9 · 8 天')).toBeTruthy()
+  })
+
+  test('没有超 P80 的任务时给出肯定提示；没有参照类时不显示', () => {
+    const { unmount } = render(
+      <DraftPlanInsightsPanel
+        insights={{ ...insights, referenceClass: { ...rc, longTasks: [] } }}
+        tasks={[]}
+      />,
+    )
+    expect(screen.getByText('没有任务的工期超过 P80。')).toBeTruthy()
+    unmount()
+    render(<DraftPlanInsightsPanel insights={insights} tasks={[]} />)
+    expect(screen.queryByTestId('draft-reference-class')).toBeNull()
+  })
+})
+
+describe('流程实况（v3-llm-wiki-process-reality）', () => {
+  test('列出提示句与审批类短工期任务，并说明仅提示', () => {
+    render(
+      <DraftPlanInsightsPanel
+        insights={{
+          ...insights,
+          processReality: {
+            notes: [
+              '本组织约 25% 的任务完成后又被重新打开或退回（「任务流转：声明与实际」，30 个样本）：评审、验收类任务建议预留返工缓冲。',
+              '本组织变更审批从提交到结论实际要 P80 5 天（「变更审批：声明与实际」，6 个样本）：2 个审批类任务的工期短于这个值，确认是否留够等待时间。',
+            ],
+            approvalTasks: [
+              { id: 'task-3', name: '法务审批', durationDays: 1 },
+              { id: 'task-4', name: '', durationDays: 2 },
+            ],
+          },
+        }}
+        tasks={[]}
+      />,
+    )
+    const section = screen.getByTestId('draft-process-reality')
+    expect(within(section).getByText(/仅提示，不影响转正/)).toBeTruthy()
+    expect(within(section).getByText(/约 25% 的任务完成后又被重新打开/)).toBeTruthy()
+    expect(within(section).getByText(/P80 5 天/)).toBeTruthy()
+    expect(within(section).getByText('法务审批 · 1 天')).toBeTruthy()
+    expect(within(section).getByText('task-4 · 2 天')).toBeTruthy()
+  })
+
+  test('没有流程实况时不显示', () => {
+    render(<DraftPlanInsightsPanel insights={insights} tasks={[]} />)
+    expect(screen.queryByTestId('draft-process-reality')).toBeNull()
+  })
+})
+
+describe('历史教训（v3-llm-wiki-retrospective-lessons）', () => {
+  test('有教训时列出并注明章节；没有时不显示', () => {
+    const { unmount } = render(
+      <DraftPlanInsightsPanel
+        insights={{
+          ...insights,
+          lessons: [
+            {
+              statement: '证书类任务开工前先确认办理周期（来自「支付改造」复盘）。',
+              section: '软件类',
+            },
+            { statement: '第三方依赖要指定负责人。', section: null },
+          ],
+        }}
+        tasks={[]}
+      />,
+    )
+    const section = screen.getByTestId('draft-lessons')
+    expect(within(section).getByText(/仅提示，不影响转正/)).toBeTruthy()
+    expect(within(section).getByText('［软件类］')).toBeTruthy()
+    expect(within(section).getByText(/第三方依赖要指定负责人/)).toBeTruthy()
+    unmount()
+    render(<DraftPlanInsightsPanel insights={insights} tasks={[]} />)
+    expect(screen.queryByTestId('draft-lessons')).toBeNull()
+  })
+})

@@ -290,6 +290,76 @@ export function DraftPlanInsightsPanel({
           </p>
         ) : null}
       </section>
+
+      {insights.referenceClass ? (
+        <section aria-label="参照类对比" className="mt-4" data-testid="draft-reference-class">
+          <h4 className="mb-1 text-xs font-medium text-gray-600">参照类对比</h4>
+          <p className="text-xs text-gray-500">
+            依据组织维基「{insights.referenceClass.label}」：同类已完成任务实际用时中位数{' '}
+            {insights.referenceClass.p50Days} 个工作日，P80 {insights.referenceClass.p80Days}{' '}
+            个工作日（{insights.referenceClass.samples} 个样本）。
+          </p>
+          {insights.referenceClass.longTasks.length === 0 ? (
+            <p className="mt-1 text-xs text-success">没有任务的工期超过 P80。</p>
+          ) : (
+            <>
+              <p className="mt-1 text-xs text-warning">
+                {insights.referenceClass.longTasks.length} 个任务的工期超过
+                P80，请确认拆分是否足够细，或在任务说明里写明理由（仅提示，不影响转正）：
+              </p>
+              <ul className="mt-1 list-disc pl-5 text-xs text-slate-800">
+                {insights.referenceClass.longTasks.map((task) => (
+                  <li key={task.id}>
+                    {task.name || taskName(task.id)} · {task.durationDays} 天
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </section>
+      ) : null}
+
+      {insights.processReality ? (
+        <section aria-label="流程实况" className="mt-4" data-testid="draft-process-reality">
+          <h4 className="mb-1 text-xs font-medium text-gray-600">流程实况</h4>
+          <p className="text-xs text-gray-500">
+            依据组织维基里本组织实际的任务流转与审批记录（仅提示，不影响转正）：
+          </p>
+          <ul className="mt-1 list-disc pl-5 text-xs text-warning">
+            {insights.processReality.notes.map((note) => (
+              <li key={note}>{note}</li>
+            ))}
+          </ul>
+          {insights.processReality.approvalTasks.length > 0 ? (
+            <ul className="mt-1 list-disc pl-5 text-xs text-slate-800">
+              {insights.processReality.approvalTasks.map((task) => (
+                <li key={task.id}>
+                  {task.name || taskName(task.id)} · {task.durationDays} 天
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </section>
+      ) : null}
+
+      {insights.lessons && insights.lessons.length > 0 ? (
+        <section aria-label="历史教训" className="mt-4" data-testid="draft-lessons">
+          <h4 className="mb-1 text-xs font-medium text-gray-600">历史教训</h4>
+          <p className="text-xs text-gray-500">
+            组织教训库里与本项目相关的教训（仅提示，不影响转正）：
+          </p>
+          <ul className="mt-1 list-disc pl-5 text-xs text-slate-800">
+            {insights.lessons.map((lesson) => (
+              <li key={lesson.statement}>
+                {lesson.section ? (
+                  <span className="text-gray-500">［{lesson.section}］</span>
+                ) : null}
+                {lesson.statement}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </div>
   )
 }

@@ -9,6 +9,7 @@
  *
  * 所有查询都按 organization_id 隔离；只读，不写任何记录。样本不足的信号不产出，避免拿一两条数据左右计划。
  */
+import type { DateTime } from 'luxon'
 import AiProjectDraft from '#models/ai_project_draft'
 import AiProjectDraftVersion from '#models/ai_project_draft_version'
 import Task from '#models/task'
@@ -113,7 +114,8 @@ export function explicitRoster(draft: ProjectDraft | undefined) {
     .filter((entry) => entry.role && !/^成员#\d+$/u.test(entry.role))
 }
 
-async function recallEdits(organizationId: number, projectType: ProjectType | null) {
+/** 同类已转正草案 vs 正式项目的删补任务、工期调整与阶段偏好（计划档案打法页复用）。 */
+export async function recallEdits(organizationId: number, projectType: ProjectType | null) {
   const query = AiProjectDraft.query()
     .where('organization_id', organizationId)
     .whereNotNull('project_id')
@@ -189,25 +191,74 @@ async function recallEdits(organizationId: number, projectType: ProjectType | nu
   }
 }
 
-async function recallExecutionFactor(organizationId: number) {
-  const rows = await Task.query()
+/**
+ * 已完成任务的计划工期与实际工作日（最近 500 个）；projectType 给出时只取来自该类型草案的项目。
+ * 计划档案参照类页复用（v3-llm-wiki-planning-dossier）。
+ */
+export async function collectExecutionSamples(
+  organizationId: number,
+  projectType: ProjectType | null = null,
+  /**
+   * v3-llm-wiki-person-space：只取某人负责的任务、限制条数（个人估算校准用）；
+   * v3-llm-wiki-eval-gate：只取某日之前完成的任务、只取某项目（计划回测用）。缺省时行为不变。
+   */
+  opts: {
+    assigneeId?: number
+    limit?: number
+    completedBefore?: DateTime
+    projectId?: number
+  } = {},
+): Promise<Array<{ plannedDays: number; actualDays: number }>> {
+  const query = Task.query()
     .join('projects', 'projects.id', 'tasks.project_id')
     .where('projects.organization_id', organizationId)
     .whereNull('tasks.deleted_at')
     .whereNotNull('tasks.actual_start_date')
     .whereNotNull('tasks.actual_end_date')
     .where('tasks.duration_days', '>', 0)
+  if (projectType) {
+    query.whereIn(
+      'tasks.project_id',
+      AiProjectDraft.query()
+        .where('organization_id', organizationId)
+        .where('project_type', projectType)
+        .whereNotNull('project_id')
+        .select('project_id'),
+    )
+  }
+  if (opts.assigneeId !== undefined)
+    query.where('tasks.assignee_id', opts.assigneeId).where('tasks.assignee_type', 'user')
+  if (opts.completedBefore)
+    query.where('tasks.actual_end_date', '<', opts.completedBefore.toISODate()!)
+  if (opts.projectId !== undefined) query.where('tasks.project_id', opts.projectId)
+  const rows = await query
     .orderBy('tasks.id', 'desc')
-    .limit(500)
+    .limit(opts.limit ?? 500)
     .select('tasks.duration_days', 'tasks.actual_start_date', 'tasks.actual_end_date')
-  const ratios = rows
+  return rows
     .map((task) => {
       const start = task.actualStartDate?.toMillis()
       const end = task.actualEndDate?.toMillis()
       if (!start || !end || end < start) return null
-      return weekdaysBetween(start, end) / Number(task.durationDays)
+      return { plannedDays: Number(task.durationDays), actualDays: weekdaysBetween(start, end) }
     })
-    .filter((ratio): ratio is number => ratio !== null && Number.isFinite(ratio) && ratio > 0)
+    .filter(
+      (s): s is { plannedDays: number; actualDays: number } =>
+        s !== null &&
+        Number.isFinite(s.actualDays / s.plannedDays) &&
+        s.actualDays / s.plannedDays > 0,
+    )
+}
+
+async function recallExecutionFactor(organizationId: number) {
+  return executionFactorFromSamples(await collectExecutionSamples(organizationId))
+}
+
+/** 执行偏差系数：样本 ≥8、中位实际 ÷ 计划夹在 0.8–1.5，偏差不足 5% 视为无（计划回测复用同一规则）。 */
+export function executionFactorFromSamples(
+  samples: ReadonlyArray<{ plannedDays: number; actualDays: number }>,
+): { factor: number; samples: number } | null {
+  const ratios = samples.map((s) => s.actualDays / s.plannedDays)
   if (ratios.length < MIN_EXECUTION_SAMPLES) return null
   const factor = clampFactor(median(ratios))
   return Math.abs(factor - 1) >= 0.05 ? { factor, samples: ratios.length } : null
@@ -293,7 +344,8 @@ function uniqueNames(names: string[]) {
   return out
 }
 
-function clampFactor(value: number) {
+/** 校准系数限幅（计划档案读取复用）。 */
+export function clampFactor(value: number) {
   return Math.round(Math.min(FACTOR_BOUNDS.max, Math.max(FACTOR_BOUNDS.min, value)) * 100) / 100
 }
 

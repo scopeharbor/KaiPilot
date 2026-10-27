@@ -58,8 +58,9 @@ const SAFE_DUPLICATE_ON_PG = new Set([
   //   PG 先 DROP CONSTRAINT 再建活动行条件唯一索引 uq_wbs_nodes_task_id_active；旧同名仅 SQLite up
   //   与 down 重建，PG 上永不与新对象共存。
   'wbs_nodes_task_id_unique',
-  // uq_cs_idempotency：1997090000000_scope_copilot_session_idempotency_to_actor 的 up 先 dropUnique
-  //   旧名再建 uq_cs_actor_idempotency；down 先删 actor 约束再重建旧名，任一方向都不与原对象共存。
+  // uq_cs_idempotency：1841000000000 建组织级幂等唯一约束；1997090000000_scope_copilot_session_idempotency_to_actor
+  //   的 up 先 dropUnique 旧名再建 uq_cs_actor_idempotency，down 先删新约束再按原名重建旧约束（无损回滚）。
+  //   两个同名对象在任何时刻都不共存（PG 与 SQLite 皆然）。
   'uq_cs_idempotency',
 ])
 

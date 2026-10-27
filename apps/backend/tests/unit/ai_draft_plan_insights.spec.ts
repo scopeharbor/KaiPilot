@@ -424,3 +424,120 @@ describe('normalizeDraftExtensions', () => {
     expect(tasks[5].headcount).toBeUndefined()
   })
 })
+
+describe('参照类对比（v3-llm-wiki-planning-dossier）', () => {
+  const rc = { label: '全组织任务工期参照类', samples: 20, p50Days: 3, p80Days: 5 }
+  const rcDraft = {
+    charter: {},
+    tasks: [
+      { id: 'a', name: field('短任务'), durationDays: field(3) },
+      { id: 'b', name: field('超长任务'), durationDays: field(12) },
+      { id: 'c', name: field('稍长任务'), durationDays: field(6) },
+      { id: 'd', name: field('无工期'), durationDays: field('未知') },
+      { name: field('无编号'), durationDays: field(20) },
+    ],
+  }
+
+  it('列出超过 P80 的任务（工期降序），不改草案', () => {
+    const before = JSON.stringify(rcDraft)
+    const insights = computePlanInsights({ draft: rcDraft, rawInput: '', referenceClass: rc })
+    expect(insights.referenceClass).toEqual({
+      ...rc,
+      longTasks: [
+        { id: 'b', name: '超长任务', durationDays: 12 },
+        { id: 'c', name: '稍长任务', durationDays: 6 },
+      ],
+    })
+    expect(JSON.stringify(rcDraft)).toBe(before)
+  })
+
+  it('没有参照类时不产出该段', () => {
+    expect(computePlanInsights({ draft: rcDraft, rawInput: '' }).referenceClass).toBeUndefined()
+  })
+})
+
+describe('流程实况（v3-llm-wiki-process-reality）', () => {
+  const taskFlow = { label: '任务流转：声明与实际', samples: 30, reworkRate: 25, blockedRate: 35 }
+  const changeApproval = {
+    label: '变更审批：声明与实际',
+    samples: 6,
+    waitP50Days: 2,
+    waitP80Days: 5,
+    returnRate: 33,
+  }
+  const processDraft = {
+    charter: {},
+    tasks: [
+      { id: 'a', name: field('法务审批'), durationDays: field(1) },
+      { id: 'b', name: field('合同签字'), durationDays: field(3) },
+      { id: 'c', name: field('上线审批'), durationDays: field(6) },
+      { id: 'd', name: field('前端开发'), durationDays: field(1) },
+      { id: 'e', name: field('合规审核'), durationDays: field('未知') },
+    ],
+  }
+
+  it('返工、受阻与审批类短工期任务都给出提示，不改草案', () => {
+    const before = JSON.stringify(processDraft)
+    const insights = computePlanInsights({
+      draft: processDraft,
+      rawInput: '',
+      processReality: { taskFlow, changeApproval },
+    })
+    const pr = insights.processReality!
+    expect(pr.notes).toHaveLength(3)
+    expect(pr.notes[0]).toContain('25%')
+    expect(pr.notes[0]).toContain('30 个样本')
+    expect(pr.notes[1]).toContain('35%')
+    expect(pr.notes[2]).toContain('P80 5 天')
+    expect(pr.notes[2]).toContain('2 个审批类任务')
+    expect(pr.approvalTasks).toEqual([
+      { id: 'a', name: '法务审批', durationDays: 1 },
+      { id: 'b', name: '合同签字', durationDays: 3 },
+    ])
+    expect(JSON.stringify(processDraft)).toBe(before)
+  })
+
+  it('低于阈值且没有审批类短工期任务时不产出该段；没有流程实况时也不产出', () => {
+    const calm = {
+      taskFlow: { ...taskFlow, reworkRate: 10, blockedRate: 10 },
+      changeApproval: { ...changeApproval, waitP80Days: 1 },
+    }
+    expect(
+      computePlanInsights({ draft: processDraft, rawInput: '', processReality: calm })
+        .processReality,
+    ).toBeUndefined()
+    expect(
+      computePlanInsights({ draft: processDraft, rawInput: '' }).processReality,
+    ).toBeUndefined()
+    // 只有审批页时只给审批提示
+    const onlyApproval = computePlanInsights({
+      draft: processDraft,
+      rawInput: '',
+      processReality: { changeApproval },
+    }).processReality!
+    expect(onlyApproval.notes).toHaveLength(1)
+    expect(onlyApproval.approvalTasks.map((t) => t.id)).toEqual(['a', 'b'])
+  })
+})
+
+describe('历史教训（v3-llm-wiki-retrospective-lessons）', () => {
+  const lessonDraft = {
+    tasks: [{ id: 't1', name: { value: '证书申请' }, durationDays: { value: 2 } }],
+  }
+
+  it('有教训时原样列出，不改草案；没有或为空时缺省', () => {
+    const before = JSON.stringify(lessonDraft)
+    const lessons = [
+      { statement: '证书类任务开工前先确认办理周期（来自「支付改造」复盘）。', section: '软件类' },
+      { statement: '第三方依赖要指定负责人。', section: null },
+    ]
+    expect(computePlanInsights({ draft: lessonDraft, rawInput: '', lessons }).lessons).toEqual(
+      lessons,
+    )
+    expect(JSON.stringify(lessonDraft)).toBe(before)
+    expect(
+      computePlanInsights({ draft: lessonDraft, rawInput: '', lessons: [] }).lessons,
+    ).toBeUndefined()
+    expect(computePlanInsights({ draft: lessonDraft, rawInput: '' }).lessons).toBeUndefined()
+  })
+})

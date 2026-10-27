@@ -655,6 +655,29 @@ export interface ProjectDraftPlanInsights {
     /** 交付物四段链路全部完整的比例。 */
     coverage: number
   }
+  /**
+   * 参照类对比（v3-llm-wiki-planning-dossier）：工期超过本组织同类任务实际 P80 的草案任务。
+   * 只提示、不阻断；草案上下文没有参照类时缺省。
+   */
+  referenceClass?: {
+    label: string
+    samples: number
+    p50Days: number
+    p80Days: number
+    longTasks: Array<{ id: string; name: string; durationDays: number }>
+  }
+  /**
+   * 流程实况（v3-llm-wiki-process-reality）：按本组织实际流转给出的提示句与工期短于审批实际等待 P80 的审批类任务。
+   * 只提示、不阻断；没有可提示的内容时缺省。
+   */
+  processReality?: {
+    notes: string[]
+    approvalTasks: Array<{ id: string; name: string; durationDays: number }>
+  }
+  /**
+   * 历史教训（v3-llm-wiki-retrospective-lessons）：组织教训库里与本草案相关的教训，只提示、不阻断；没有时缺省。
+   */
+  lessons?: Array<{ statement: string; section: string | null }>
 }
 
 /** 生成元数据：结构化策略、三档判定、fallback 与修复摘要（供审计与审查面板展示保证等级）。 */

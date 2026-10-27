@@ -332,13 +332,15 @@ const DIRECT_WRITE_PATTERN =
   /db\.transaction|\.create\(\s*\{|Query\(\{ client|\.insert\(|\.update\(|\.delete\(|\.save\(\)/
 
 test.group('TRIZ AI 工具契约（W2b）', () => {
-  test('注册表元数据投影：既有 8 + 矛盾求解 6 + 任务状态 1 + 我的工作 1 + 改负责人 1 + 删除任务 1 + 新建任务 1 + 勾选步骤 1 + 改设置 1 = 21，字段完备且零 handler 泄漏（RL-14）', ({
+  test('注册表元数据投影：既有 8 + 矛盾求解 6 + 任务状态 1 + 我的工作 1 + 改负责人 1 + 删除任务 1 + 新建任务 1 + 勾选步骤 1 + 改设置 1 + 维基只读 3 = 24，字段完备且零 handler 泄漏（RL-14）', ({
     assert,
   }) => {
     const metadata = AiToolsRegistry.getInstance().getAllMetadata()
     const names = metadata.map((tool) => tool.name)
-    assert.lengthOf(metadata, 21)
+    assert.lengthOf(metadata, 24)
     assert.include(names, 'update_setting')
+    // v3-llm-wiki-query-navigation：只读维基工具
+    for (const name of ['wiki_index', 'wiki_read', 'wiki_search']) assert.include(names, name)
     // AI 同事自然语言操作：任务状态写工具（元数据 14 → 15）
     assert.include(names, 'update_task_status')
     assert.include(names, 'get_my_work')

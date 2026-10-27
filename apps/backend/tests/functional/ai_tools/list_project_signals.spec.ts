@@ -189,8 +189,9 @@ test.group('AI 工具 list_project_signals（W4 补 2.4）', (group) => {
       data: Array<{ name: string; sideEffect: string }>
       meta: { total: number }
     }
-    assert.equal(body.meta.total, 21)
-    assert.lengthOf(body.data, 21)
+    // v3-llm-wiki-query-navigation +3（wiki_index / wiki_read / wiki_search）
+    assert.equal(body.meta.total, 24)
+    assert.lengthOf(body.data, 24)
     assert.deepEqual([...body.data.map((tool) => tool.name)].sort(), [...AI_TOOLS_NAMES].sort())
     for (const name of LEGACY_TOOL_NAMES) {
       assert.include(

@@ -47,6 +47,11 @@ import SearchPolicy from '#policies/search_policy'
 import KnowledgeService from '#services/knowledge/knowledge_service'
 import { CopilotSessionService } from '#services/copilot_session/copilot_session_service'
 import { CopilotContextAssemblyService } from '#services/copilot/copilot_context_assembly_service'
+import WikiContextShadowService from '#services/wiki_memory/query/wiki_context_shadow_service'
+import WikiCopilotContextService, {
+  prepareWikiMemoryForPrompt,
+} from '#services/wiki_memory/query/wiki_copilot_context_service'
+import app from '@adonisjs/core/services/app'
 import { CopilotSkillActivationService } from '#services/copilot/copilot_skill_activation_service'
 import CopilotTurnService, {
   CopilotTurnShapeError,
@@ -467,6 +472,8 @@ export default class CopilotTurnController {
   }): CopilotTurnService {
     const { ctx, body, user, organizationId, allowedProjectIds, attribution, skillActivation } =
       params
+    // v3-llm-wiki-rag-retirement：本回合以提问者身份装配的维基上下文包（未开启维基 / 无权限 / 关闭时为 null）
+    let turnWikiPack: import('@aiproj/types').WikiContextPackDto | null = null
     const buildAnswerInput = async (answerInput: {
       normalizedText: string
       scope: CopilotScope
@@ -618,6 +625,28 @@ export default class CopilotTurnController {
           )
         }
       }
+      // 成员目录：问题与维基记忆里的姓名都换成代号
+      const members = await new MemberDirectoryService().listMembers(
+        organizationId,
+        allowedProjectIds,
+      )
+      // 维基记忆（v3-llm-wiki-rag-retirement）：经 DLP 预检放行才交给模型；属于推断，实时数据优先
+      const wikiSection = await prepareWikiMemoryForPrompt(turnWikiPack, {
+        rewrite: (text) => pseudonymizeText(text, members),
+        preflight: async (serialized, itemCount) => {
+          const check = await deps.dlpAdapter.preflightContextAssembly({
+            organizationId,
+            actorId: user.id,
+            projectId: attribution.projectId ? Number(attribution.projectId) : null,
+            sourceHash: createHash('sha256').update(serialized).digest('hex'),
+            authorizedContextSummary: serialized,
+            contextPacketRefs: ['copilot:wiki-memory'],
+            itemCount,
+          })
+          return check.adapterAvailable && check.allowed && !check.maskedContext
+        },
+      })
+      if (wikiSection) instructions.push(wikiSection.instruction)
       if (disclosure && disclosure.status === 'context_unavailable') {
         instructions.push(
           '当前无法取得该页面对应的项目数据：不要回答"根据当前项目"式的伪项目事实；说明无法取得数据，并建议重试或明确要查看的项目',
@@ -633,10 +662,7 @@ export default class CopilotTurnController {
           }默认使用简体中文。`,
           userPrompt: JSON.stringify({
             // 问题里的成员姓名换成〔成员·编码〕代号再交给模型（不外发姓名，界面展示时换回）
-            question: pseudonymizeText(
-              answerInput.normalizedText,
-              await new MemberDirectoryService().listMembers(organizationId, allowedProjectIds),
-            ),
+            question: pseudonymizeText(answerInput.normalizedText, members),
             conversationHistory,
             scope: answerInput.scope,
             intent: answerInput.intentSummary,
@@ -673,6 +699,7 @@ export default class CopilotTurnController {
                 }
               : {}),
             internalFacts: answerInput.contextFacts ?? [],
+            ...(wikiSection ? { wikiMemory: wikiSection.wikiMemory } : {}),
             ...(references.tasks.length > 0 ? { referencedTasks: references.tasks } : {}),
             ...(references.projects.length > 0 ? { referencedProjects: references.projects } : {}),
             ...(appNavigation.length > 0
@@ -697,7 +724,17 @@ export default class CopilotTurnController {
       }
     }
 
+    // v3-llm-wiki-query-navigation / v3-llm-wiki-rag-retirement —— 装配后：以提问者身份装配维基上下文包供回答使用，
+    // 同一个包交给影子观测记录统计（组织未开启维基或无权限时都不运行；失败不影响回合）
     const deps: ConstructorParameters<typeof CopilotTurnService>[0] = {
+      knowledgeShadow: {
+        observe: async (input) => {
+          const memory = await app.container.make(WikiCopilotContextService)
+          turnWikiPack = await memory.build(input)
+          const shadow = await app.container.make(WikiContextShadowService)
+          return shadow.observe(input, turnWikiPack)
+        },
+      },
       assembly: new CopilotContextAssemblyService({
         searchService: this.searchService,
         knowledgeService: this.knowledgeService,

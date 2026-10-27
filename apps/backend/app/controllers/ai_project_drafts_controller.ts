@@ -85,7 +85,16 @@ import { contextTeamRoster } from '#services/ai_draft/resource_plan'
 import { analyzePlanUnderstanding } from '#services/ai_draft/understanding_service'
 import { analysisJobs } from '#services/ai_analysis/lucid_analysis_job_repository'
 import { analysisJobRequestValidator } from '#validators/analysis_job_validator'
-import { PROJECT_DRAFT_MODULES } from '@aiproj/types'
+import {
+  PROJECT_DRAFT_MODULES,
+  type WikiLessonForDraft,
+  type WikiProcessRealityForDraft,
+  type WikiReferenceClassForDraft,
+} from '@aiproj/types'
+import app from '@adonisjs/core/services/app'
+import WikiPlanningDossierService from '#services/wiki_memory/dossier/wiki_planning_dossier_service'
+import WikiProcessRealityService from '#services/wiki_memory/process/wiki_process_reality_service'
+import WikiLessonService from '#services/wiki_memory/retrospective/wiki_lesson_service'
 
 const DRAFT_MODEL_CAPABILITIES = ['project_draft', 'chat'] as const
 
@@ -109,12 +118,18 @@ function attachPlanInsights(
     meta?: { planInsights?: unknown; groundingManifest?: unknown } | null
   },
   rawInput: string,
+  referenceClass?: WikiReferenceClassForDraft,
+  processReality?: WikiProcessRealityForDraft,
+  lessons?: WikiLessonForDraft[],
 ): void {
   if (!result.draft || !result.meta) return
   try {
     result.meta.planInsights = computePlanInsights({
       draft: result.draft as Record<string, unknown>,
       rawInput,
+      ...(referenceClass ? { referenceClass } : {}),
+      ...(processReality ? { processReality } : {}),
+      ...(lessons && lessons.length > 0 ? { lessons } : {}),
       manifest: result.meta.groundingManifest as Parameters<
         typeof computePlanInsights
       >[0]['manifest'],
@@ -189,7 +204,7 @@ export default class AiProjectDraftsController {
 
     // §6.1: 前置快速失败（openSse 之前，失败仍走 HTTP 错误契约）
     await this.groundTeamSize(context, organizationId)
-    await this.attachPlanningMemory(context, organizationId, user.id)
+    await this.attachPlanningMemory(context, organizationId, user)
     const body = ctx.request.body() as { connectionId?: number; modelId?: number }
     const resolved = await resolveAdapter({
       connectionId: body.connectionId,
@@ -323,7 +338,7 @@ export default class AiProjectDraftsController {
     const requestContext = structuredClone(ctx.request.input('context'))
     const context = this.parseContext(ctx)
     await this.groundTeamSize(context, organizationId)
-    await this.attachPlanningMemory(context, organizationId, user.id)
+    await this.attachPlanningMemory(context, organizationId, user)
     const body = ctx.request.body() as {
       connectionId?: number
       modelId?: number
@@ -390,7 +405,7 @@ export default class AiProjectDraftsController {
     const { user, organizationId } = await this.requireTrigger(ctx)
     const context = this.parseContext(ctx)
     await this.groundTeamSize(context, organizationId)
-    await this.attachPlanningMemory(context, organizationId, user.id)
+    await this.attachPlanningMemory(context, organizationId, user)
     const body = ctx.request.body() as {
       connectionId?: number
       modelId?: number
@@ -1008,7 +1023,7 @@ export default class AiProjectDraftsController {
 
     // 与 stream() 相同的前置快速失败（openSse 之前仍走 HTTP 错误契约）
     await this.groundTeamSize(context, organizationId)
-    await this.attachPlanningMemory(context, organizationId, user.id)
+    await this.attachPlanningMemory(context, organizationId, user)
     const body = ctx.request.body() as { connectionId?: number; modelId?: number }
     const resolved = await resolveAdapter({
       connectionId: body.connectionId,
@@ -1419,7 +1434,13 @@ export default class AiProjectDraftsController {
       })
       await eventChain
       throwIfPersistFailed()
-      attachPlanInsights(result, context.rawInput)
+      attachPlanInsights(
+        result,
+        context.rawInput,
+        context.planningMemory?.referenceClass,
+        context.planningMemory?.processReality,
+        context.planningMemory?.lessons,
+      )
 
       // §4.3: 反幻觉校验
       const validation = result.draft
@@ -1651,9 +1672,78 @@ export default class AiProjectDraftsController {
   private async attachPlanningMemory(
     context: ConfirmedProjectContext,
     organizationId: number,
-    userId: number,
+    actor: User | null,
   ): Promise<void> {
     context.planningMemory = undefined
+    // 用已认证的调用者本人（不按客户端 ID 再查模型）
+    const user = actor
+    const userId = actor?.id ?? 0
+    await this.attachDossierOrLiveMemory(context, organizationId, userId, user)
+    // v3-llm-wiki-process-reality：组织已发布流程页时，追加实际流转与审批等待（注明页名与样本数）；
+    // 没有流程页或未开启维基时不改变规划记忆。
+    if (!user) return
+    try {
+      const processService = await app.container.make(WikiProcessRealityService)
+      const reality = await processService.processForDraft({ user, organizationId })
+      if (reality) {
+        const memory = context.planningMemory ?? { facts: [], durationFactor: null }
+        context.planningMemory = {
+          ...memory,
+          facts: [...memory.facts, ...reality.facts],
+          processReality: reality.processReality,
+        }
+      }
+    } catch (error) {
+      logger.warn({ err: error, organizationId }, '流程页读取失败，本次生成不使用流程实况')
+    }
+    // v3-llm-wiki-retrospective-lessons：组织教训库里与本次需求相关的已发布教训（只提示）；未开启维基或没有相关教训时不变。
+    try {
+      const lessonService = await app.container.make(WikiLessonService)
+      const found = await lessonService.lessonsForDraft(
+        { user, organizationId },
+        context.parsedIntent?.projectType ?? null,
+        context.rawInput,
+      )
+      if (found) {
+        const memory = context.planningMemory ?? { facts: [], durationFactor: null }
+        context.planningMemory = {
+          ...memory,
+          facts: [...memory.facts, ...found.facts],
+          lessons: found.lessons,
+        }
+      }
+    } catch (error) {
+      logger.warn({ err: error, organizationId }, '教训库读取失败，本次生成不使用历史教训')
+    }
+  }
+
+  private async attachDossierOrLiveMemory(
+    context: ConfirmedProjectContext,
+    organizationId: number,
+    userId: number,
+    user: User | null,
+  ): Promise<void> {
+    // v3-llm-wiki-planning-dossier：组织已开启记忆维基且有已发布计划档案页时，读页面（可见、可纠正、注明依据）；
+    // 否则沿用下面的现场计算（未开启维基的组织行为不变）。
+    try {
+      const dossierService = await app.container.make(WikiPlanningDossierService)
+      const dossier = user
+        ? await dossierService.dossierForDraft(
+            { user, organizationId },
+            context.parsedIntent?.projectType ?? null,
+          )
+        : null
+      if (dossier) {
+        context.planningMemory = {
+          facts: dossier.facts,
+          durationFactor: dossier.durationFactor,
+          ...(dossier.referenceClass ? { referenceClass: dossier.referenceClass } : {}),
+        }
+        return
+      }
+    } catch (error) {
+      logger.warn({ err: error, organizationId }, '计划档案读取失败，改用现场计算的规划记忆')
+    }
     try {
       const memory = await recallPlanningMemory({
         organizationId,

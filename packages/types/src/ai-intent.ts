@@ -626,6 +626,30 @@ export interface ConfirmedProjectContext {
   planningMemory?: {
     facts: string[]
     durationFactor: { factor: number; basis: string } | null
+    /**
+     * 所用参照类（v3-llm-wiki-planning-dossier：来自组织维基已发布的参照类页；现场计算时缺省）。
+     * 计划体检据此提示超出实际 P80 的任务。
+     */
+    referenceClass?: { label: string; samples: number; p50Days: number; p80Days: number }
+    /**
+     * 流程实况（v3-llm-wiki-process-reality：来自组织维基已发布流程页；缺省表示没有可用流程页）。
+     * 计划体检据此提示返工缓冲、等待余量与审批类任务工期。
+     */
+    processReality?: {
+      taskFlow?: { label: string; samples: number; reworkRate: number; blockedRate: number }
+      changeApproval?: {
+        label: string
+        samples: number
+        waitP50Days: number
+        waitP80Days: number
+        returnRate: number
+      }
+    }
+    /**
+     * 历史教训（v3-llm-wiki-retrospective-lessons：来自组织教训库已发布、读者可见的主张；缺省表示没有相关教训）。
+     * 计划体检据此列出「历史教训」。
+     */
+    lessons?: Array<{ statement: string; section: string | null }>
   }
   /** 生成前就「能不能如期完成」协商出的决定；生成时由程序套用到截止日 / 团队 / 范围。 */
   feasibilityDecision?: FeasibilityDecision

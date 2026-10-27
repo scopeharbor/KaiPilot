@@ -229,6 +229,21 @@ export interface CopilotTurnStreamSink {
   readonly isWritable?: () => boolean
 }
 
+/**
+ * 知识影子观测端口（v3-llm-wiki-query-navigation）：既有上下文装配完成后调用，只记录统计。
+ * 结构类型，不引用实现模块；返回值被忽略，结果绝不注入模型或改变上下文包。
+ */
+export interface CopilotKnowledgeShadowObserver {
+  observe(input: {
+    organizationId: number
+    actorId: number
+    projectId: number | null
+    query: string
+    legacySourcesCount: number
+    legacyFactsCount: number
+  }): Promise<unknown>
+}
+
 export interface CopilotTurnServiceDeps {
   readonly assembly: CopilotContextAssemblyService
   readonly sessions: CopilotSessionService
@@ -249,6 +264,8 @@ export interface CopilotTurnServiceDeps {
    * 异步写入装配结果的观测记录，失败降级不阻断回合。
    */
   readonly observationService?: CopilotContextObservationService
+  /** 知识影子观测（v3-llm-wiki-query-navigation；缺省不运行，失败不影响回合）。 */
+  readonly knowledgeShadow?: CopilotKnowledgeShadowObserver
   /**
    * 落账钩子（缺省用既有 recorder）。
    * 注入点仅供测试模拟落账失败，生产不覆写。
@@ -931,6 +948,22 @@ export default class CopilotTurnService {
       )
       if (obsResult.degraded && obsResult.warningCode) {
         warnings.push(obsResult.warningCode as any)
+      }
+    }
+
+    // ── 4b'. 知识影子观测（只记录、不注入；失败不影响回合）──────────
+    if (this.#deps.knowledgeShadow) {
+      try {
+        await this.#deps.knowledgeShadow.observe({
+          organizationId,
+          actorId,
+          projectId: request.attribution.projectId ? Number(request.attribution.projectId) : null,
+          query: normalizedText,
+          legacySourcesCount: assembled.sources.length,
+          legacyFactsCount: assembled.contextFacts?.length ?? 0,
+        })
+      } catch {
+        // 影子观测失败只影响观测本身
       }
     }
 
