@@ -1,3 +1,4 @@
+import { renderToString } from 'react-dom/server'
 import { render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import {
@@ -57,5 +58,12 @@ describe('BrandLogo and BrandLoader', () => {
     expect(image?.getAttribute('width')).toBe('96')
     expect(image?.getAttribute('height')).toBe('96')
     expect(screen.getByText('加载中')).toBeInTheDocument()
+  })
+
+  test('服务端渲染一律用浅色版，深色版只在 hydration 后切换（避免深色主题下 hydration 不一致）', () => {
+    themeState.resolvedTheme = 'dark'
+    expect(renderToString(<BrandLogo />)).toContain(BRAND_LOGO_LIGHT_SRC)
+    expect(renderToString(<BrandLoader />)).toContain(BRAND_LOADER_LIGHT_SRC)
+    expect(renderToString(<BrandLogo onDark />)).toContain(BRAND_LOGO_DARK_SRC)
   })
 })

@@ -60,7 +60,7 @@ export const GanttLeftColumn = memo(function GanttLeftColumn({
               'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400',
               active ? 'bg-primary-50' : 'bg-transparent',
             )}
-            style={{ top: start, height: rowHeight, paddingLeft: 12 + task.depth * 12 }}
+            style={{ top: start, height: rowHeight }}
             onMouseEnter={() => onHover(task.id)}
             onMouseLeave={() => onHover(null)}
             onFocus={() => onHover(task.id)}
@@ -80,14 +80,19 @@ export const GanttLeftColumn = memo(function GanttLeftColumn({
               }
             }}
           >
+            {/* OpenProject 式甘特左表：WBS 列在前，层级缩进只作用于主题（v3-classic-ui-openproject-views）。
+                不显示全局自增 #id（v1-ui-polish-and-assignment：对用户无意义的全局编号不外露）。 */}
+            {showWbsCode ? (
+              <span className="w-10 shrink-0 truncate font-mono text-[11px] text-muted">
+                {task.wbsCode}
+              </span>
+            ) : null}
+            <span aria-hidden className="shrink-0" style={{ width: task.depth * 12 }} />
             <span
               aria-hidden
               className="h-2 w-2 shrink-0 rounded-full"
               style={{ backgroundColor: statusVar(task.status) }}
             />
-            {showWbsCode ? (
-              <span className="shrink-0 font-mono text-[11px] text-muted">{task.wbsCode}</span>
-            ) : null}
             <span
               className={cn(
                 'min-w-0 flex-1 truncate',

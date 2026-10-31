@@ -8,7 +8,9 @@ import { Toaster } from '@/components/ui/Toast'
 import { UI_STORE_KEY } from '@/stores/ui-store'
 import { RegisterOfflineFallback } from '@/components/layout/RegisterOfflineFallback'
 import VariantRuntime from '@/components/locale/variant-runtime'
+import { classicPaletteBootScript } from '@/lib/classic-palettes'
 import './globals.css'
+import './classic-theme.css'
 
 export const metadata: Metadata = {
   title: '开项 KaiPilot',
@@ -28,6 +30,9 @@ const densityScript = `(function(){try{var s=localStorage.getItem('${UI_STORE_KE
 // 前把 documentElement.lang 与 data-text-variant 对齐用户已保存的变体，
 // 避免繁体页面首帧闪回简体。key 必须与 lib/locale/variant-store.ts 的
 // localStorage key 保持一致；取值非法时回退 'cn'。
+// 旧版色系防闪烁脚本（v3-classic-ui-openproject-style）：非 /next 路径在 hydration 前写入 data-classic-palette。
+const classicPaletteScript = classicPaletteBootScript(UI_STORE_KEY)
+
 const VARIANT_STORAGE_KEY = 'aiproj-text-variant'
 const variantScript = `(function(){try{var v=localStorage.getItem('${VARIANT_STORAGE_KEY}');var lang='zh-CN';if(v==='tw'){lang='zh-TW';}else if(v==='hk'){lang='zh-HK';}else{v='cn';}document.documentElement.lang=lang;document.documentElement.setAttribute('data-text-variant',v);}catch(e){document.documentElement.setAttribute('data-text-variant','cn');}})();`
 
@@ -37,6 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: densityScript }} />
         <script dangerouslySetInnerHTML={{ __html: variantScript }} />
+        <script dangerouslySetInnerHTML={{ __html: classicPaletteScript }} />
       </head>
       <body>
         <ThemeProvider>

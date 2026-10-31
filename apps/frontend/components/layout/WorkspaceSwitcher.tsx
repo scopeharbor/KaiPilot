@@ -42,12 +42,12 @@ export function WorkspaceSwitcher({ collapsed = false }: WorkspaceSwitcherProps)
     return (
       <div
         className={cn(
-          'flex w-full items-center gap-2 rounded-[var(--radius-md)] border border-border bg-gray-0 px-2 py-1.5 text-sm text-gray-700',
+          'flex w-full items-center gap-2 rounded-[var(--radius-md)] bg-[var(--shell-sidebar-hover)] px-2 py-1.5 text-sm text-[var(--shell-sidebar-fg)]',
           collapsed && 'justify-center px-0',
         )}
         aria-label="当前为个人空间"
       >
-        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[var(--radius-sm)] bg-primary-50 text-primary-600">
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[var(--radius-sm)] bg-[var(--shell-sidebar-active-bg)] text-[var(--shell-sidebar-active-fg)]">
           <UserRound className="h-4 w-4" aria-hidden />
         </span>
         {collapsed ? null : <span className="min-w-0 flex-1 truncate">个人空间</span>}
@@ -72,19 +72,23 @@ export function WorkspaceSwitcher({ collapsed = false }: WorkspaceSwitcherProps)
     <DropdownMenu>
       <DropdownMenuTrigger
         className={cn(
-          'flex w-full items-center gap-2 rounded-[var(--radius-md)] border border-border bg-gray-0 px-2 py-1.5 text-left text-sm',
-          'text-gray-700 transition-colors hover:bg-gray-50',
+          // 侧栏色系（v3-classic-ui-openproject-style）：浅色半透明底，深浅侧栏都可读
+          'flex w-full items-center gap-2 rounded-[var(--radius-md)] bg-[var(--shell-sidebar-hover)] px-2 py-1.5 text-left text-sm',
+          'text-[var(--shell-sidebar-fg)] transition-colors hover:brightness-110',
           collapsed && 'justify-center px-0',
           focusRing,
         )}
       >
-        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[var(--radius-sm)] bg-primary-50 text-primary-600">
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[var(--radius-sm)] bg-[var(--shell-sidebar-active-bg)] text-[var(--shell-sidebar-active-fg)]">
           <EditionIcon className="h-4 w-4" aria-hidden />
         </span>
         {collapsed ? null : (
           <>
             <span className="min-w-0 flex-1 truncate">{currentLabel}</span>
-            <ChevronsUpDown className="h-4 w-4 shrink-0 text-gray-400" aria-hidden />
+            <ChevronsUpDown
+              className="h-4 w-4 shrink-0 text-[var(--shell-sidebar-muted)]"
+              aria-hidden
+            />
           </>
         )}
       </DropdownMenuTrigger>

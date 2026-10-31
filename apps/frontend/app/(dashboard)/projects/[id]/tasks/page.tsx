@@ -101,14 +101,15 @@ function TaskBatchPageContent({ projectId }: { projectId: number }) {
   const somePageSelected = selectedOnPage > 0 && !allPageSelected
 
   return (
-    <div className="space-y-5 pb-12 pt-2">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="space-y-1">
-          <p className="text-xs font-medium uppercase tracking-[0.12em] text-primary-600">
-            日常任务操作
-          </p>
-          <h2 className="text-2xl font-semibold text-gray-800 text-balance">批量管理任务</h2>
-          <p className="max-w-2xl text-sm text-gray-500">
+    <div className="space-y-4 pb-12 pt-4">
+      {/* OpenProject 式视图工具列：标题 + 一行说明，操作在右（v3-classic-ui-openproject-views） */}
+      <header
+        data-view-toolbar
+        className="flex flex-col gap-3 border-b border-border pb-3 sm:flex-row sm:items-end sm:justify-between"
+      >
+        <div className="min-w-0">
+          <h2 className="text-lg font-semibold text-gray-800">批量管理任务</h2>
+          <p className="mt-0.5 max-w-3xl text-xs text-gray-500">
             当前页面提供批量编辑、指派、状态变更和移入回收站；完整列表视图将在后续增强。
           </p>
         </div>

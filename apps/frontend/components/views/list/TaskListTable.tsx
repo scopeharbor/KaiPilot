@@ -14,7 +14,7 @@ import { Checkbox } from '@/components/ui/Checkbox'
 import { Progress } from '@/components/ui/Progress'
 import type { ListSortTerm } from '@/lib/api/list-view'
 import type { Task, TaskPriority } from '@/lib/api/tasks'
-import { TASK_STATUS_LABELS } from '@/lib/task-status'
+import { TaskStatusPill } from '@/components/views/tasks/TaskStatusPill'
 import { isAgentAssignee } from '@/types/agent-assignee'
 import { useUiStore } from '@/stores/ui-store'
 import { cn } from '@/lib/utils'
@@ -87,21 +87,35 @@ export function TaskListTable({
         ),
       },
       {
-        id: 'name',
-        accessorKey: 'name',
-        header: '任务',
-        size: 280,
+        // OpenProject 式工作包表格：编号独立成列（v3-classic-ui-openproject-views）
+        id: 'id',
+        header: 'ID',
+        size: 72,
+        enableSorting: false,
         cell: ({ row }) => (
           <button
             type="button"
-            className="min-w-0 text-left focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+            aria-label={`打开任务 #${row.original.id}`}
+            className="font-mono text-xs text-primary-600 hover:underline focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
             onClick={() => onOpen(row.original.id)}
           >
-            <span className="block truncate font-medium text-gray-800 hover:text-primary-600 hover:underline">
+            #{row.original.id}
+          </button>
+        ),
+      },
+      {
+        id: 'name',
+        accessorKey: 'name',
+        header: '任务',
+        size: 240,
+        cell: ({ row }) => (
+          <button
+            type="button"
+            className="block min-w-0 max-w-full text-left focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+            onClick={() => onOpen(row.original.id)}
+          >
+            <span className="block truncate text-gray-800 hover:text-primary-600 hover:underline">
               {row.original.name}
-            </span>
-            <span className="mt-0.5 block font-mono text-[11px] text-gray-400">
-              #{row.original.id}
             </span>
           </button>
         ),
@@ -110,7 +124,7 @@ export function TaskListTable({
         id: 'priority',
         accessorKey: 'priority',
         header: '优先级',
-        size: 100,
+        size: 80,
         cell: ({ row }) => (
           <Badge variant={PRIORITY_VARIANTS[row.original.priority]}>
             {PRIORITY_LABELS[row.original.priority]}
@@ -121,16 +135,14 @@ export function TaskListTable({
         id: 'status',
         accessorKey: 'status',
         header: '状态',
-        size: 112,
-        cell: ({ row }) => (
-          <Badge variant="outline">{TASK_STATUS_LABELS[row.original.status]}</Badge>
-        ),
+        size: 104,
+        cell: ({ row }) => <TaskStatusPill status={row.original.status} />,
       },
       {
         id: 'assignee',
         accessorFn: (task) => task.assignee?.fullName || task.assignee?.email,
         header: '负责人',
-        size: 180,
+        size: 160,
         cell: ({ row }) => {
           const task = row.original
           const isAgent = isAgentAssignee(task.assigneeType)
@@ -154,7 +166,7 @@ export function TaskListTable({
         id: 'progressPercent',
         accessorKey: 'progressPercent',
         header: '进度',
-        size: 140,
+        size: 130,
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
             <Progress
@@ -172,7 +184,7 @@ export function TaskListTable({
         id: 'endDate',
         accessorKey: 'endDate',
         header: '计划截止',
-        size: 136,
+        size: 124,
         cell: ({ row }) => {
           const overdue = isOverdue(row.original)
           return (
@@ -193,7 +205,7 @@ export function TaskListTable({
         id: 'estimatedHours',
         accessorKey: 'estimatedHours',
         header: '工时',
-        size: 150,
+        size: 110,
         cell: ({ row }) => (
           <span
             className="text-sm tabular-nums text-gray-600"
@@ -223,7 +235,8 @@ export function TaskListTable({
     },
   })
   const tableRows = table.getRowModel().rows
-  const rowHeight = density === 'compact' ? 36 : 52
+  // OpenProject 式紧凑行：舒适 40 / 紧凑 32
+  const rowHeight = density === 'compact' ? 32 : 40
   const rowVirtualizer = useVirtualizer({
     count: tableRows.length,
     getScrollElement: () => scrollRef.current,
@@ -237,9 +250,12 @@ export function TaskListTable({
     : tableRows
         .slice(0, Math.ceil(480 / rowHeight) + 12)
         .map((_, index) => ({ index, start: index * rowHeight }))
+  // 「任务」列吃掉剩余宽度（OpenProject 式主题列），其余列定宽；表格最小总宽 1068px（各列宽之和）。
   const template = table
     .getVisibleLeafColumns()
-    .map((column) => `${column.getSize()}px`)
+    .map((column) =>
+      column.id === 'name' ? `minmax(${column.getSize()}px, 1fr)` : `${column.getSize()}px`,
+    )
     .join(' ')
 
   return (
@@ -252,13 +268,13 @@ export function TaskListTable({
       aria-colcount={columns.length}
     >
       <div
-        className="sticky top-0 z-10 min-w-[1126px] border-b border-border bg-gray-50"
+        className="sticky top-0 z-10 min-w-[1068px] border-b border-border-strong bg-surface"
         role="rowgroup"
       >
         {table.getHeaderGroups().map((headerGroup) => (
           <div
             key={headerGroup.id}
-            className="grid h-11 items-center"
+            className="grid h-9 items-center"
             style={{ gridTemplateColumns: template }}
             role="row"
             aria-rowindex={1}
@@ -268,7 +284,7 @@ export function TaskListTable({
               return (
                 <div
                   key={header.id}
-                  className="min-w-0 px-3 text-left text-xs font-semibold text-gray-500"
+                  className="flex h-full min-w-0 items-center border-r border-border px-2 text-left text-xs font-semibold text-gray-700 last:border-r-0"
                   role="columnheader"
                   aria-sort={
                     sorted === 'asc' ? 'ascending' : sorted === 'desc' ? 'descending' : 'none'
@@ -277,7 +293,7 @@ export function TaskListTable({
                   {header.isPlaceholder ? null : header.column.getCanSort() ? (
                     <button
                       type="button"
-                      className="inline-flex min-h-9 items-center gap-1 rounded px-1 hover:bg-gray-100 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+                      className="inline-flex min-h-8 items-center gap-1 rounded px-1 hover:bg-gray-100 hover:text-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
                       onClick={header.column.getToggleSortingHandler()}
                       title="点击排序；按住 Shift 可进行多字段排序"
                     >
@@ -301,7 +317,7 @@ export function TaskListTable({
       </div>
 
       <div
-        className="relative min-w-[1126px]"
+        className="relative min-w-[1068px]"
         style={{ height: `${rowVirtualizer.getTotalSize() || tableRows.length * rowHeight}px` }}
         role="rowgroup"
       >
@@ -312,7 +328,10 @@ export function TaskListTable({
               key={row.id}
               ref={rowVirtualizer.measureElement}
               data-index={virtualRow.index}
-              className="absolute left-0 top-0 grid w-full items-center border-b border-border bg-gray-0 hover:bg-primary-50/40"
+              className={cn(
+                'absolute left-0 top-0 grid w-full items-center border-b border-border bg-gray-0 hover:bg-primary-50/60',
+                selectedIds.has(row.original.id) && 'bg-primary-50',
+              )}
               style={{
                 gridTemplateColumns: template,
                 minHeight: rowHeight,
@@ -323,7 +342,11 @@ export function TaskListTable({
               data-task-id={row.original.id}
             >
               {row.getVisibleCells().map((cell) => (
-                <div key={cell.id} className="min-w-0 px-3 py-1.5" role="cell">
+                <div
+                  key={cell.id}
+                  className="flex h-full min-w-0 items-center border-r border-border/60 px-2 py-1 text-sm last:border-r-0"
+                  role="cell"
+                >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </div>
               ))}

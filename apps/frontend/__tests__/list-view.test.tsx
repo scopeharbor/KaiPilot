@@ -169,7 +169,8 @@ describe('List view', () => {
     expect(onToggle).toHaveBeenCalledWith(task.id, true)
     fireEvent.click(screen.getByRole('button', { name: new RegExp(task.name) }))
     expect(onOpen).toHaveBeenCalledWith(task.id)
-    expect(container.querySelector('[data-task-id="11"]')).toHaveStyle({ minHeight: '36px' })
+    // OpenProject 式紧凑行：紧凑密度 32px（v3-classic-ui-openproject-views）
+    expect(container.querySelector('[data-task-id="11"]')).toHaveStyle({ minHeight: '32px' })
     expect(screen.getAllByText(/逾期/).length).toBeGreaterThan(0)
   })
 

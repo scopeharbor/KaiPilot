@@ -1,4 +1,5 @@
 import ProjectDetailPage from '@/app/(dashboard)/projects/[id]/page'
+import { ProjectHeader } from '@/components/layout/ProjectHeader'
 import ProjectMembersPage from '@/app/(dashboard)/projects/[id]/members/page'
 import ProjectsPage from '@/app/(dashboard)/projects/page'
 import NewProjectPage from '@/app/(dashboard)/projects/new/page'
@@ -16,7 +17,7 @@ import { getMetric } from '@/lib/dashboard-metrics'
 import { useAuthStore } from '@/stores/auth-store'
 import { DASHBOARD_METRIC_KEYS } from '@aiproj/types'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { accessTokenWith } from './_jwt-helper'
 
@@ -291,22 +292,49 @@ describe('项目页面', () => {
     expect(screen.queryByRole('button', { name: /移除/ })).not.toBeInTheDocument()
   })
 
-  test('详情页显示统计卡片、最近活动与归档入口', async () => {
+  test('详情页（项目概览）显示统计卡片与最近活动；项目头显示归档入口', async () => {
     vi.spyOn(projectsApi, 'get').mockResolvedValue(baseProject)
     vi.spyOn(projectDashboardApi, 'get').mockResolvedValue(dashboardFixture)
     loginAs(['project:view', 'project:update'], 1, 'owner')
-    renderWithQuery(<ProjectDetailPage />)
+    const { unmount } = renderWithQuery(<ProjectDetailPage />)
     expect(await screen.findByText('开项平台')).toBeInTheDocument()
     expect(screen.getByText('创建项目')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '归档项目' })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: '项目关键指标' })).toBeInTheDocument()
+    unmount()
+
+    renderWithQuery(<ProjectHeader />)
+    expect(await screen.findByRole('button', { name: '归档项目' })).toBeInTheDocument()
   })
 
-  test('已归档项目详情显示恢复入口', async () => {
+  test('已归档项目的项目头显示恢复入口', async () => {
     vi.spyOn(projectsApi, 'get').mockResolvedValue({ ...baseProject, status: 'archived' })
     vi.spyOn(projectDashboardApi, 'get').mockResolvedValue(dashboardFixture)
     loginAs(['project:view', 'project:update'], 1, 'owner')
-    renderWithQuery(<ProjectDetailPage />)
+    renderWithQuery(<ProjectHeader />)
     expect(await screen.findByRole('button', { name: '恢复项目' })).toBeInTheDocument()
+  })
+
+  test('项目头精简：编码、状态、项目名、项目内入口软跳转与视图 Tab，不含统计与活动', async () => {
+    vi.spyOn(projectsApi, 'get').mockResolvedValue(baseProject)
+    vi.spyOn(projectDashboardApi, 'get').mockResolvedValue(dashboardFixture)
+    loginAs(['project:view', 'project:update'], 1, 'owner')
+    renderWithQuery(<ProjectHeader />)
+    expect(await screen.findByRole('heading', { level: 1, name: '开项平台' })).toBeInTheDocument()
+    const entries = screen.getByRole('navigation', { name: '项目内入口' })
+    for (const [label, segment] of [
+      ['任务批量管理', 'tasks'],
+      ['成员管理', 'members'],
+      ['变更请求', 'change-requests'],
+      ['项目设置', 'settings'],
+    ]) {
+      expect(within(entries).getByRole('link', { name: label })).toHaveAttribute(
+        'href',
+        `/projects/1/${segment}`,
+      )
+    }
+    expect(screen.getByRole('navigation', { name: '项目视图切换' })).toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: '项目关键指标' })).not.toBeInTheDocument()
+    expect(screen.queryByText('最近活动')).not.toBeInTheDocument()
   })
 
   test('详情页从 metrics 字典读取同名指标', async () => {

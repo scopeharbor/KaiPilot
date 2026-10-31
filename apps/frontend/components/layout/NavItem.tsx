@@ -17,10 +17,27 @@ export interface NavItemProps {
 }
 
 /**
- * 侧栏导航项——三态（默认/hover/选中）+ 折叠态图标 tooltip（spec app-shell-navigation）。
+ * 侧栏导航项样式（v3-classic-ui-openproject-style）：颜色取自当前色系的侧栏令牌（`--shell-sidebar-*`），
+ * 项目模块菜单（`ProjectSidebarMenu`）共用同一套样式。
  *
  * 选中态使用 3px 左侧竖线指示器——**是 `DESIGN.md` §12 唯一允许的侧边色条例外**，
  * 其他任何组件不得再引入侧边色条（防 slop 红线）。
+ */
+export function navItemClassName({ active, collapsed }: { active: boolean; collapsed: boolean }) {
+  return cn(
+    'relative flex h-8 items-center gap-2.5 rounded-[var(--radius-md)] px-3 text-sm',
+    'text-[var(--shell-sidebar-fg)] transition-colors',
+    'hover:bg-[var(--shell-sidebar-hover)]',
+    active &&
+      'bg-[var(--shell-sidebar-active-bg)] font-medium text-[var(--shell-sidebar-active-fg)] hover:bg-[var(--shell-sidebar-active-bg)]',
+    active &&
+      'before:absolute before:left-0 before:top-1/2 before:h-4 before:w-[3px] before:-translate-y-1/2 before:rounded-r-[var(--radius-sm)] before:bg-[var(--shell-sidebar-active-fg)]',
+    collapsed && 'justify-center px-0',
+  )
+}
+
+/**
+ * 侧栏导航项——三态（默认/hover/选中）+ 折叠态图标 tooltip（spec app-shell-navigation）。
  */
 export function NavItem({ item, collapsed = false, onNavigate }: NavItemProps) {
   const pathname = usePathname()
@@ -34,19 +51,9 @@ export function NavItem({ item, collapsed = false, onNavigate }: NavItemProps) {
       onClick={onNavigate}
       data-active={active || undefined}
       aria-current={active ? 'page' : undefined}
-      className={cn(
-        'relative flex h-9 items-center gap-3 rounded-[var(--radius-md)] px-3 text-sm font-medium',
-        'text-gray-600 transition-colors',
-        'hover:bg-gray-100 hover:text-gray-800',
-        // 选中态：primary-50 底 + primary-600 字 + 3px 左指示条（允许例外）
-        active && 'bg-primary-50 text-primary-600 hover:bg-primary-50 hover:text-primary-600',
-        active &&
-          'before:absolute before:left-0 before:top-1/2 before:h-4 before:w-[3px] before:-translate-y-1/2 before:rounded-r-[var(--radius-sm)] before:bg-primary-500',
-        collapsed && 'justify-center px-0',
-        focusRing,
-      )}
+      className={cn(navItemClassName({ active, collapsed }), focusRing)}
     >
-      <Icon className="h-5 w-5 shrink-0" aria-hidden />
+      <Icon className="h-4 w-4 shrink-0" aria-hidden />
       {collapsed ? null : <span className="truncate">{item.label}</span>}
     </Link>
   )

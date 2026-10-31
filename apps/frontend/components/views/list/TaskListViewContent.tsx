@@ -160,14 +160,15 @@ export function TaskListViewContent({ projectId }: { projectId: number }) {
   }
 
   return (
-    <div className="space-y-5 pb-12 pt-2">
-      <header className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-        <div className="space-y-1">
-          <p className="text-xs font-medium uppercase tracking-[0.12em] text-primary-600">
-            专业任务工作区
-          </p>
-          <h2 className="text-2xl font-semibold text-gray-800 text-balance">任务列表</h2>
-          <p className="max-w-2xl text-sm text-gray-500">
+    <div className="space-y-4 pb-12 pt-4">
+      {/* OpenProject 式视图工具列：标题 + 一行说明，操作在右（v3-classic-ui-openproject-views） */}
+      <header
+        data-view-toolbar
+        className="flex flex-col gap-3 border-b border-border pb-3 xl:flex-row xl:items-end xl:justify-between"
+      >
+        <div className="min-w-0">
+          <h2 className="text-lg font-semibold text-gray-800">任务列表</h2>
+          <p className="mt-0.5 max-w-3xl text-xs text-gray-500">
             在同一张高密度列表中比较进度、负责人、截止日与工时；排序不会改变看板或 WBS 顺序。
           </p>
         </div>

@@ -1,5 +1,11 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
+import {
+  applyClassicPalette,
+  DEFAULT_CLASSIC_PALETTE,
+  isClassicPaletteId,
+  type ClassicPaletteId,
+} from '@/lib/classic-palettes'
 
 /** 界面密度：舒适（默认）/ 紧凑。与主题正交（design.md D2）。 */
 export type Density = 'comfortable' | 'compact'
@@ -31,6 +37,12 @@ export interface UiState {
    */
   telemetryEnabled: boolean
   setTelemetryEnabled: (enabled: boolean) => void
+  /**
+   * 旧版界面色系（v3-classic-ui-openproject-style）。用户偏好，需持久化；与主题、密度正交。
+   * 只作用于旧版界面：写入 `<html data-classic-palette>`，新版界面路径不设该属性。
+   */
+  classicPalette: ClassicPaletteId
+  setClassicPalette: (palette: ClassicPaletteId) => void
 }
 
 /** 是否处于「减弱动画」偏好。 */
@@ -71,6 +83,18 @@ export const useUiStore = create<UiState>()(
       toggleSidebarCollapsed: () => set({ sidebarCollapsed: !get().sidebarCollapsed }),
       mobileNavOpen: false,
       setMobileNavOpen: (open) => set({ mobileNavOpen: open }),
+      classicPalette: DEFAULT_CLASSIC_PALETTE,
+      setClassicPalette: (palette) => {
+        const next = isClassicPaletteId(palette) ? palette : DEFAULT_CLASSIC_PALETTE
+        // 只在旧版外壳已挂上属性时同步 DOM，避免在新版界面误写。
+        if (
+          typeof document !== 'undefined' &&
+          document.documentElement.hasAttribute('data-classic-palette')
+        ) {
+          applyClassicPalette(next)
+        }
+        set({ classicPalette: next })
+      },
       telemetryEnabled: true,
       setTelemetryEnabled: (enabled) => {
         set({ telemetryEnabled: enabled })
@@ -83,12 +107,24 @@ export const useUiStore = create<UiState>()(
     {
       name: UI_STORE_KEY,
       storage: createJSONStorage(() => localStorage),
-      // 仅持久化用户偏好——密度、侧栏折叠与埋点开关；抽屉开关属会话态，刷新回默认。
+      // 仅持久化用户偏好——密度、侧栏折叠、埋点开关与旧版色系；抽屉开关属会话态，刷新回默认。
       partialize: (state) => ({
         density: state.density,
         sidebarCollapsed: state.sidebarCollapsed,
         telemetryEnabled: state.telemetryEnabled,
+        classicPalette: state.classicPalette,
       }),
+      // 本地保存的色系 id 不在清单内时回退默认色系。
+      merge: (persisted, current) => {
+        const saved = (persisted ?? {}) as Partial<UiState>
+        return {
+          ...current,
+          ...saved,
+          classicPalette: isClassicPaletteId(saved.classicPalette)
+            ? saved.classicPalette
+            : DEFAULT_CLASSIC_PALETTE,
+        }
+      },
       // 水合后把持久化的密度同步到 DOM（首帧由内联脚本兜底，这里保证 store↔DOM 一致）。
       // 同时同步埋点开关状态到 localStorage（供 telemetry client 读取）。
       onRehydrateStorage: () => (state) => {
