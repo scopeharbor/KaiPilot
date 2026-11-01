@@ -1,10 +1,20 @@
 'use client'
 
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Filter, ListChecks, PanelRight, Plus, RotateCcw, Search } from 'lucide-react'
-import { TaskListTable } from '@/components/views/list/TaskListTable'
+import {
+  Columns3,
+  Filter,
+  ListChecks,
+  ListTree,
+  PanelRight,
+  Plus,
+  RotateCcw,
+  Search,
+  Sigma,
+} from 'lucide-react'
+import { TaskListTable, type TaskInlinePatch } from '@/components/views/list/TaskListTable'
 import { TaskBatchActionBar } from '@/components/views/tasks/TaskBatchActionBar'
 import { TaskBatchResultAlert } from '@/components/views/tasks/TaskBatchResultAlert'
 import { TaskDetailDrawer, TaskSplitPanel } from '@/components/views/tasks/TaskDetailDrawer'
@@ -16,6 +26,8 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/DropdownMenu'
@@ -28,15 +40,27 @@ import { useMediaQuery } from '@/hooks/use-media-query'
 import { cn } from '@/lib/utils'
 import { useTaskSelection } from '@/hooks/use-task-selection'
 import { projectKeys, projectMembersApi } from '@/lib/api/projects'
-import type { ListSortTerm, TaskListViewFilters } from '@/lib/api/list-view'
+import {
+  LIST_GROUP_FIELDS,
+  type ListGroupField,
+  type ListSortTerm,
+  type TaskListViewFilters,
+} from '@/lib/api/list-view'
 import {
   tasksApi,
+  type Task,
   type TaskBatchInput,
   type TaskBatchResult,
   type TaskPriority,
   type TaskStatus,
 } from '@/lib/api/tasks'
 import { invalidateTaskQueries } from '@/lib/task-query-invalidation'
+import {
+  TASK_TABLE_COLUMN_LABELS,
+  TASK_TABLE_GROUP_LABELS,
+  TASK_TABLE_OPTIONAL_COLUMNS,
+  useTaskTableStore,
+} from '@/stores/task-table-store'
 
 const STATUS_OPTIONS: Array<[TaskStatus, string]> = [
   ['not_started', '未开始'],
@@ -67,11 +91,37 @@ export function TaskListViewContent({ projectId }: { projectId: number }) {
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null)
   const [batchResult, setBatchResult] = useState<TaskBatchResult | null>(null)
   const [selectionError, setSelectionError] = useState<string | null>(null)
-  const list = useTaskListView(projectId, state)
+  // OpenProject 式「配置视图」：显示列、分组、合计（个人偏好，存本机；v3-classic-ui-openproject-table）
+  const tableColumns = useTaskTableStore((s) => s.columns)
+  const groupBy = useTaskTableStore((s) => s.groupBy)
+  const showSums = useTaskTableStore((s) => s.showSums)
+  const setColumnVisible = useTaskTableStore((s) => s.setColumnVisible)
+  const setGroupBy = useTaskTableStore((s) => s.setGroupBy)
+  const setShowSums = useTaskTableStore((s) => s.setShowSums)
+  const queryFilters = useMemo<TaskListViewFilters>(
+    () => ({ ...state, groupBy: groupBy ?? undefined, sums: showSums || undefined }),
+    [groupBy, showSums, state],
+  )
+  const list = useTaskListView(projectId, queryFilters)
   const members = useQuery({
     queryKey: projectKeys.members(projectId),
     queryFn: () => projectMembersApi.list(projectId),
   })
+  const memberOptions = useMemo(
+    () =>
+      (members.data ?? []).map(
+        (member) =>
+          [
+            member.userId,
+            member.user?.fullName || member.user?.email || `成员 #${member.userId}`,
+          ] as const,
+      ),
+    [members.data],
+  )
+  const memberNames = useMemo(() => new Map(memberOptions), [memberOptions])
+  const [pendingTaskIds, setPendingTaskIds] = useState<ReadonlySet<number>>(() => new Set())
+  const [inlineError, setInlineError] = useState<string | null>(null)
+  const [inlineWarnings, setInlineWarnings] = useState<string[]>([])
 
   useEffect(() => setSearchInput(state.search ?? ''), [state.search])
   // 命令面板「新建任务」上下文命令导航到 ?newTask=1：聚焦快速新建输入框（预填上下文）。
@@ -95,6 +145,38 @@ export function TaskListViewContent({ projectId }: { projectId: number }) {
     onSuccess: async () => {
       setNewTaskName('')
       await invalidateTaskQueries(queryClient, projectId)
+    },
+  })
+  // 行内编辑：状态走状态流转接口（服务端校验流转），其余字段走任务更新接口（带依赖顺延提示）。
+  const inlineEdit = useMutation({
+    mutationFn: async ({ task, patch }: { task: Task; patch: TaskInlinePatch }) => {
+      if ('status' in patch) {
+        await tasksApi.changeStatus(projectId, task.id, { status: patch.status })
+        return [] as string[]
+      }
+      const result = await tasksApi.updateWithWarnings(projectId, task.id, patch)
+      return result.warnings
+    },
+    onMutate: ({ task }) => {
+      setInlineError(null)
+      setPendingTaskIds((previous) => new Set(previous).add(task.id))
+    },
+    onSuccess: async (warnings) => {
+      setInlineWarnings(warnings)
+      await invalidateTaskQueries(queryClient, projectId)
+    },
+    onError: (error, { task }) => {
+      setInlineWarnings([])
+      setInlineError(
+        `任务 #${task.id} 未更新：${(error as { message?: string }).message ?? '请稍后重试。'}`,
+      )
+    },
+    onSettled: (_data, _error, { task }) => {
+      setPendingTaskIds((previous) => {
+        const next = new Set(previous)
+        next.delete(task.id)
+        return next
+      })
     },
   })
   const batch = useMutation({
@@ -214,6 +296,16 @@ export function TaskListViewContent({ projectId }: { projectId: number }) {
           {(createTask.error as { message?: string }).message ?? '请稍后重试。'}
         </Alert>
       ) : null}
+      {inlineError ? (
+        <Alert variant="danger" title="行内修改失败">
+          {inlineError}
+        </Alert>
+      ) : null}
+      {inlineWarnings.length ? (
+        <Alert variant="info" title="已更新">
+          {inlineWarnings.join('；')}
+        </Alert>
+      ) : null}
       {batch.isError ? (
         <Alert variant="danger" title="批量操作失败">
           {(batch.error as { message?: string }).message ?? '请稍后重试。'}
@@ -265,6 +357,62 @@ export function TaskListViewContent({ projectId }: { projectId: number }) {
                     清除筛选
                   </Button>
                 ) : null}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button type="button" variant="secondary">
+                      <Columns3 className="h-4 w-4" aria-hidden />列
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="min-w-44">
+                    <DropdownMenuLabel>显示列</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {TASK_TABLE_OPTIONAL_COLUMNS.map((column) => (
+                      <DropdownMenuCheckboxItem
+                        key={column}
+                        checked={tableColumns.includes(column)}
+                        onSelect={(event) => event.preventDefault()}
+                        onCheckedChange={(checked) => setColumnVisible(column, checked === true)}
+                      >
+                        {TASK_TABLE_COLUMN_LABELS[column]}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button type="button" variant="secondary">
+                      <ListTree className="h-4 w-4" aria-hidden />
+                      {groupBy ? `分组：${TASK_TABLE_GROUP_LABELS[groupBy]}` : '分组'}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="min-w-40">
+                    <DropdownMenuLabel>分组依据</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuRadioGroup
+                      value={groupBy ?? 'none'}
+                      onValueChange={(value) =>
+                        setGroupBy(value === 'none' ? null : (value as ListGroupField))
+                      }
+                    >
+                      <DropdownMenuRadioItem value="none">不分组</DropdownMenuRadioItem>
+                      {LIST_GROUP_FIELDS.map((field) => (
+                        <DropdownMenuRadioItem key={field} value={field}>
+                          {TASK_TABLE_GROUP_LABELS[field]}
+                        </DropdownMenuRadioItem>
+                      ))}
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  aria-pressed={showSums}
+                  title="在表格底部与组头显示整份结果的合计"
+                  onClick={() => setShowSums(!showSums)}
+                >
+                  <Sigma className="h-4 w-4" aria-hidden />
+                  合计
+                </Button>
                 <p className="ml-auto text-sm text-gray-500" aria-live="polite">
                   共 {list.data?.meta.total ?? 0} 项
                   {selection.selectedIds.size ? ` · 已选 ${selection.selectedIds.size} 项` : ''}
@@ -380,6 +528,18 @@ export function TaskListViewContent({ projectId }: { projectId: number }) {
                 onToggle={toggleTask}
                 onTogglePage={togglePage}
                 onOpen={setSelectedTaskId}
+                columns={tableColumns}
+                groupBy={groupBy}
+                groups={list.data?.meta.groups}
+                sums={showSums ? list.data?.meta.sums : undefined}
+                memberNames={memberNames}
+                editing={{
+                  canUpdate: can('task:update'),
+                  canAssign: can('task:assign'),
+                  members: memberOptions,
+                  pendingTaskIds,
+                  onEdit: (task, patch) => inlineEdit.mutate({ task, patch }),
+                }}
               />
             ) : null}
 

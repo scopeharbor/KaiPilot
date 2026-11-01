@@ -4,7 +4,7 @@
 
 ## 来源
 
-- 来源提交：`ce1a8670da8778216e39ba6bfb2d563aed1b7334`
+- 来源提交：`6c2e78eeb1acae061ed0f0f3873550e1f11a6ca7`
 - 清单 SHA-256：`ed6424f8b403a696b237ff851cea9ae3703571e0da3dcbcefda57d724b2eec11`
 - 关卡档位：`full`
 - LICENSE：AGPL-3.0 官方原文（SHA-256 一致）
@@ -13,21 +13,21 @@
 
 | 关卡 | 名称             | 结果 | 耗时      | 说明                                                                          |
 | ---- | ---------------- | ---- | --------- | ----------------------------------------------------------------------------- |
-| 1    | 禁止引用         | 通过 | 4.0 秒    | 0 处                                                                          |
-| 2    | 敏感信息         | 通过 | 6.2 秒    | 0 处；gitleaks 本机未安装，仅内置规则                                         |
-| 3    | 依赖重建         | 通过 | 21.9 秒   | lockfile regenerate                                                           |
-| 4    | 质量门禁（完整） | 通过 | 47.4 分钟 | pnpm lint ✓；pnpm format:check ✓；pnpm typecheck ✓；pnpm build ✓；pnpm test ✓ |
-| 5    | 全新迁移         | 通过 | 12.7 秒   | migration:run ✓；migration:rollback --batch=0 ✓                               |
+| 1    | 禁止引用         | 通过 | 4.4 秒    | 0 处                                                                          |
+| 2    | 敏感信息         | 通过 | 7.0 秒    | 0 处；gitleaks 本机未安装，仅内置规则                                         |
+| 3    | 依赖重建         | 通过 | 23.7 秒   | lockfile regenerate                                                           |
+| 4    | 质量门禁（完整） | 通过 | 58.8 分钟 | pnpm lint ✓；pnpm format:check ✓；pnpm typecheck ✓；pnpm build ✓；pnpm test ✓ |
+| 5    | 全新迁移         | 通过 | 14.9 秒   | migration:run ✓；migration:rollback --batch=0 ✓                               |
 
 ## 统计
 
-- 保留文件：6699 个
-- 排除文件：4196 个（internal 3729，credentials 2，enterprise 437，platform 28）
+- 保留文件：6702 个
+- 排除文件：4200 个（internal 3733，credentials 2，enterprise 437，platform 28）
 - 剥离标记区块：191 个（enterprise 160，saas-gating 4，platform 26，internal 1）
 - 品牌替换：184 个文件 423 处，素材 11 个
 - 生成的公开文件：README.md、README.zh-CN.md、CONTRIBUTING.md、SECURITY.md、LICENSE、NOTICE、.github/PULL_REQUEST_TEMPLATE.md
 - 个人版新增文件：`apps/frontend/app/welcome/page.tsx`、`apps/frontend/components/landing/KaiPilotLanding.tsx`、`apps/frontend/components/landing/KaiPilotWelcome.tsx`、`apps/frontend/components/landing/landing-content.ts`、`apps/frontend/components/landing/kaipilot-landing.css`、`apps/frontend/__tests__/kaipilot-landing.test.tsx`
-- 快照耗时：快照 1.7 分钟
+- 快照耗时：快照 1.9 分钟
 
 ## 发布参数
 

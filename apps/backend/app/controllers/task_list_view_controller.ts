@@ -32,6 +32,8 @@ export default class TaskListViewController {
         sort: Array.isArray(filters.sort) ? filters.sort.join(',') : filters.sort,
         page: filters.page,
         perPage: filters.perPage,
+        groupBy: filters.groupBy,
+        sums: filters.sums,
       },
     )
 

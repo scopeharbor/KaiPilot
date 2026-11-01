@@ -70,5 +70,8 @@ export const listTaskViewValidator = vine.compile(
       .optional(),
     page: vine.number().withoutDecimals().range([1, 100000]).optional(),
     perPage: vine.number().withoutDecimals().range([1, 100]).optional(),
+    // OpenProject 式分组与合计（v3-classic-ui-openproject-table）
+    groupBy: vine.enum(['status', 'priority', 'assignee'] as const).optional(),
+    sums: vine.boolean().optional(),
   }),
 )
