@@ -244,8 +244,10 @@ export function ProjectQuickSwitcher({ className }: { className?: string }) {
   const projects = recent.data?.data ?? []
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
+      {/* 可访问名用「切换项目」：页面内筛选用的项目下拉（风险、资源、问题工作台）叫「选择项目」，
+          同名会让读屏用户分不清，也会让按标签定位的测试命中两个控件 */}
       <DropdownMenuTrigger
-        aria-label="选择项目"
+        aria-label="切换项目"
         className={cn(
           'inline-flex h-8 items-center gap-1.5 rounded-[var(--radius-md)] px-2.5 text-sm font-medium',
           headerButtonClass,

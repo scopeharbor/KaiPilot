@@ -377,7 +377,9 @@ describe('顶栏菜单', () => {
     loginAs(['project:view'])
     renderWithProviders(<ProjectQuickSwitcher />)
     expect(list).not.toHaveBeenCalled()
-    openMenu(screen.getByRole('button', { name: '选择项目' }))
+    openMenu(screen.getByRole('button', { name: '切换项目' }))
+    // 与页面内的「选择项目」筛选下拉区分可访问名
+    expect(screen.queryByRole('button', { name: '选择项目' })).toBeNull()
     expect(list).toHaveBeenCalledWith({ perPage: 8 })
     fireEvent.click(await screen.findByRole('menuitem', { name: /数据中台/ }))
     expect(mockRouter.push).toHaveBeenCalledWith('/projects/3')
