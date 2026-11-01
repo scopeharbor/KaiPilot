@@ -18,20 +18,19 @@ export interface AccessTokenClaims {
   exp?: number
 }
 
-/** base64url → 字符串（兼容浏览器与 jsdom）。 */
+/**
+ * base64url → 字符串。浏览器、jsdom 与 Node（≥16）都有全局 `atob`；
+ * 不引用 `Buffer`——引用它会让浏览器包被注入 buffer 垫片（v3-frontend-load-performance）。
+ */
 function base64UrlDecode(input: string): string {
   const padded = input.replace(/-/g, '+').replace(/_/g, '/')
   const withPad = padded + '='.repeat((4 - (padded.length % 4)) % 4)
-  if (typeof atob === 'function') {
-    return decodeURIComponent(
-      atob(withPad)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join(''),
-    )
-  }
-  // Node 回退
-  return Buffer.from(withPad, 'base64').toString('utf-8')
+  return decodeURIComponent(
+    atob(withPad)
+      .split('')
+      .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+      .join(''),
+  )
 }
 
 /**

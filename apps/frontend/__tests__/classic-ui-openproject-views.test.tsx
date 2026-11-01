@@ -142,6 +142,12 @@ describe('项目概览', () => {
     expect(screen.getByText('园区一期土建与机电')).toBeInTheDocument()
     expect(screen.getByRole('region', { name: '项目关键指标' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: '最近活动' })).toBeInTheDocument()
+    // OpenProject 式两列小部件；无 TRIZ 权限时「创新工具」整块隐藏（has-[nav:empty]:hidden）
+    const widgets = document.querySelector('[data-project-overview-widgets]')!
+    expect(widgets.className).toContain('xl:grid-cols-2')
+    expect(widgets.children).toHaveLength(2)
+    const tools = document.querySelector('[data-project-innovation-tools]')!
+    expect(tools.className).toContain('has-[nav:empty]:hidden')
   })
 
   test('侧栏「概览」高亮、面包屑末段为「概览」', async () => {

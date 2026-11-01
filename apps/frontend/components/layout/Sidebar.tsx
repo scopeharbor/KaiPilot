@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import {
   primaryNavGroups,
@@ -14,6 +15,9 @@ import { useUiStore } from '@/stores/ui-store'
 import { cn } from '@/lib/utils'
 import { focusRing } from '@/lib/variants'
 import { BrandLogo } from '@/components/ui/BrandLogo'
+import { IconButton } from '@/components/ui/IconButton'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip'
+import { sidebarToggleShortcut } from '@/lib/command-registry/built-in/layout'
 import { NavItem } from './NavItem'
 import { WorkspaceSwitcher } from './WorkspaceSwitcher'
 import { ProjectSidebarMenu, projectIdFromPath } from './ProjectSidebarMenu'
@@ -44,6 +48,40 @@ export function useNavItemVisibility(): (item: NavItemConfig) => boolean {
   }
 }
 
+/**
+ * 侧栏折叠开关（v3-classic-ui-openproject-parity：对齐 OpenProject 16.2，开关在侧栏内顶部）。
+ * 只在桌面偏好形态出现；平板强制折叠与移动抽屉不显示。
+ */
+export function SidebarCollapseToggle({ className }: { className?: string }) {
+  const collapsed = useUiStore((state) => state.sidebarCollapsed)
+  const toggle = useUiStore((state) => state.toggleSidebarCollapsed)
+  const label = collapsed ? '展开侧栏' : '折叠侧栏'
+  const Icon = collapsed ? PanelLeftOpen : PanelLeftClose
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <IconButton
+          aria-label={label}
+          aria-expanded={!collapsed}
+          onClick={toggle}
+          className={cn(
+            'shrink-0 text-[color:var(--shell-sidebar-muted)] hover:bg-[color:var(--shell-sidebar-hover)] hover:text-[color:var(--shell-sidebar-fg)]',
+            className,
+          )}
+        >
+          <Icon className="h-5 w-5" aria-hidden />
+        </IconButton>
+      </TooltipTrigger>
+      <TooltipContent side="right" className="flex items-center gap-2">
+        {label}
+        <kbd className="shrink-0 rounded-[var(--radius-sm)] border border-current px-1.5 py-0.5 text-[10px] font-medium opacity-70">
+          {sidebarToggleShortcut()}
+        </kbd>
+      </TooltipContent>
+    </Tooltip>
+  )
+}
+
 export interface SidebarProps {
   /**
    * 强制折叠——由父级驱动（平板强制折叠、移动抽屉固定展开）。
@@ -61,7 +99,7 @@ export interface SidebarProps {
  *
  * 结构：工作区选择器 → 导航（项目外：两组全局导航 + 管理与帮助；项目内：项目模块菜单；`/settings`、`/admin` 下：设置与管理菜单。
  * 全局入口经顶栏全局模块菜单）。
- * 底色与文字取当前色系的侧栏令牌；折叠开关、品牌与用户菜单在顶栏。
+ * 底色与文字取当前色系的侧栏令牌；桌面折叠开关在侧栏顶部（对齐 OpenProject 16.2），品牌与用户菜单在顶栏。
  * 宽度切换不做过渡——侧栏宽属布局属性，逐帧动它会带着内容列（含 1000 任务甘特）一起重排。
  */
 export function Sidebar({ forceCollapsed, showBrand = false, onNavigate }: SidebarProps) {
@@ -97,9 +135,17 @@ export function Sidebar({ forceCollapsed, showBrand = false, onNavigate }: Sideb
         </div>
       ) : null}
 
-      {/* 工作区选择器 */}
-      <div className={cn('px-3 pt-3', collapsed && 'px-2')}>
-        <WorkspaceSwitcher collapsed={collapsed} />
+      {/* 工作区选择器 + 折叠开关（桌面偏好形态；折叠态开关在选择器上方） */}
+      <div
+        className={cn(
+          'flex items-center gap-1 px-3 pt-3',
+          collapsed && 'flex-col-reverse gap-2 px-2',
+        )}
+      >
+        <div className="w-full min-w-0 flex-1">
+          <WorkspaceSwitcher collapsed={collapsed} />
+        </div>
+        {forceCollapsed === undefined ? <SidebarCollapseToggle /> : null}
       </div>
 
       {/* 导航：项目内为项目模块菜单，项目外为两组全局导航 + 管理与帮助（同一滚动区，避免底部入口挤压主菜单） */}

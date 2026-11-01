@@ -297,107 +297,119 @@ function ProjectOverviewContent({ id }: { id: number }) {
         <StatCard label="剩余天数" value={remainingDays} />
       </section>
 
-      <ContradictionSummaryCard
-        projectId={id}
-        summary={dashboard.data?.contradictionSummary}
-        loading={dashboard.isLoading}
-      />
+      {/* OpenProject 式概览小部件：两列（v3-classic-ui-openproject-parity） */}
+      <div data-project-overview-widgets className="grid items-start gap-6 xl:grid-cols-2">
+        <div className="min-w-0 space-y-6">
+          <ContradictionSummaryCard
+            projectId={id}
+            summary={dashboard.data?.contradictionSummary}
+            loading={dashboard.isLoading}
+          />
 
-      <TrizInnovationWorkbenchSummaryCard
-        projectId={id}
-        summary={dashboard.data?.trizInnovationWorkbenchSummary}
-        loading={dashboard.isLoading}
-      />
-
-      <Card variant="outlined">
-        <CardContent className="pt-[var(--card-pad)]">
-          <div className="flex items-center justify-between gap-4">
-            <h2 className="text-lg font-semibold text-gray-800">最近活动</h2>
-            <div className="flex flex-wrap items-center gap-4">
-              <PermissionGuard require="triz_decision:view" fallback={null}>
-                <Link
-                  className="text-sm font-medium text-primary-600 hover:underline"
-                  href={`/projects/${id}/triz-decision-center`}
-                >
-                  TRIZ 决策中心
-                </Link>
-              </PermissionGuard>
-              <PermissionGuard require="triz_resource_analyzer:view" fallback={null}>
-                <Link
-                  className="text-sm font-medium text-primary-600 hover:underline"
-                  href={`/projects/${id}/triz-resource-analyzer`}
-                >
-                  TRIZ 资源分析
-                </Link>
-              </PermissionGuard>
-              <PermissionGuard require="triz_evolution_trend_analysis:view" fallback={null}>
-                <Link
-                  className="text-sm font-medium text-primary-600 hover:underline"
-                  href={`/projects/${id}/triz-evolution-trend`}
-                >
-                  进化趋势
-                </Link>
-              </PermissionGuard>
-              <PermissionGuard require="triz_function_analysis:view" fallback={null}>
-                <Link
-                  className="text-sm font-medium text-primary-600 hover:underline"
-                  href={`/projects/${id}/triz/function-analysis`}
-                >
-                  功能分析图
-                </Link>
-              </PermissionGuard>
-              <PermissionGuard require="triz_skill_layer:view" fallback={null}>
-                <Link
-                  className="text-sm font-medium text-primary-600 hover:underline"
-                  href={`/projects/${id}/triz-skill-layer`}
-                >
-                  TRIZ Skill Layer
-                </Link>
-              </PermissionGuard>
-              <PermissionGuard require="triz_pm_phase_integration:view" fallback={null}>
-                <Link
-                  className="text-sm font-medium text-primary-600 hover:underline"
-                  href={`/projects/${id}/triz-pm-phase`}
-                >
-                  TRIZ-PM 阶段整合
-                </Link>
-              </PermissionGuard>
-              <PermissionGuard require="triz_assistant:view" fallback={null}>
-                <Link
-                  className="text-sm font-medium text-primary-600 hover:underline"
-                  href={`/projects/${id}/triz/assistant`}
-                >
-                  AI-TRIZ 助手
-                </Link>
-              </PermissionGuard>
-            </div>
-          </div>
-          <ul className="mt-4 max-h-80 divide-y divide-border overflow-y-auto pr-1 [scrollbar-color:var(--color-gray-300)_transparent]">
-            {dashboard.data?.recentActivity.map(
-              (item: ProjectDashboard['recentActivity'][number]) => (
-                <li key={item.id} className="py-3 first:pt-0 last:pb-0">
-                  <article className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                    <strong className="font-medium text-gray-800">
-                      {activityLabel(item.event, item.action)}
-                    </strong>
-                    <time className="text-xs text-gray-500" dateTime={item.createdAt}>
-                      {new Date(item.createdAt).toLocaleString('zh-CN')}
-                    </time>
-                  </article>
-                </li>
-              ),
-            )}
-            {dashboard.data && dashboard.data.recentActivity.length === 0 ? (
-              <li className="py-4 text-sm text-gray-500">暂无活动</li>
-            ) : null}
-            {dashboard.isLoading ? (
-              <li className="py-3">
-                <Skeleton className="h-5 w-full" />
-              </li>
-            ) : null}
-          </ul>
-        </CardContent>
-      </Card>
+          <TrizInnovationWorkbenchSummaryCard
+            projectId={id}
+            summary={dashboard.data?.trizInnovationWorkbenchSummary}
+            loading={dashboard.isLoading}
+          />
+        </div>
+        <div className="min-w-0 space-y-6">
+          {/* 无任何可见入口（缺少 TRIZ 权限）时整块隐藏 */}
+          <Card variant="outlined" data-project-innovation-tools className="has-[nav:empty]:hidden">
+            <CardContent className="pt-[var(--card-pad)]">
+              <h2 className="text-lg font-semibold text-gray-800">创新工具</h2>
+              <nav aria-label="创新工具" className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                <PermissionGuard require="triz_decision:view" fallback={null}>
+                  <Link
+                    className="text-sm font-medium text-primary-600 hover:underline"
+                    href={`/projects/${id}/triz-decision-center`}
+                  >
+                    TRIZ 决策中心
+                  </Link>
+                </PermissionGuard>
+                <PermissionGuard require="triz_resource_analyzer:view" fallback={null}>
+                  <Link
+                    className="text-sm font-medium text-primary-600 hover:underline"
+                    href={`/projects/${id}/triz-resource-analyzer`}
+                  >
+                    TRIZ 资源分析
+                  </Link>
+                </PermissionGuard>
+                <PermissionGuard require="triz_evolution_trend_analysis:view" fallback={null}>
+                  <Link
+                    className="text-sm font-medium text-primary-600 hover:underline"
+                    href={`/projects/${id}/triz-evolution-trend`}
+                  >
+                    进化趋势
+                  </Link>
+                </PermissionGuard>
+                <PermissionGuard require="triz_function_analysis:view" fallback={null}>
+                  <Link
+                    className="text-sm font-medium text-primary-600 hover:underline"
+                    href={`/projects/${id}/triz/function-analysis`}
+                  >
+                    功能分析图
+                  </Link>
+                </PermissionGuard>
+                <PermissionGuard require="triz_skill_layer:view" fallback={null}>
+                  <Link
+                    className="text-sm font-medium text-primary-600 hover:underline"
+                    href={`/projects/${id}/triz-skill-layer`}
+                  >
+                    TRIZ Skill Layer
+                  </Link>
+                </PermissionGuard>
+                <PermissionGuard require="triz_pm_phase_integration:view" fallback={null}>
+                  <Link
+                    className="text-sm font-medium text-primary-600 hover:underline"
+                    href={`/projects/${id}/triz-pm-phase`}
+                  >
+                    TRIZ-PM 阶段整合
+                  </Link>
+                </PermissionGuard>
+                <PermissionGuard require="triz_assistant:view" fallback={null}>
+                  <Link
+                    className="text-sm font-medium text-primary-600 hover:underline"
+                    href={`/projects/${id}/triz/assistant`}
+                  >
+                    AI-TRIZ 助手
+                  </Link>
+                </PermissionGuard>
+              </nav>
+            </CardContent>
+          </Card>
+          <Card variant="outlined">
+            <CardContent className="pt-[var(--card-pad)]">
+              <div className="flex items-center justify-between gap-4">
+                <h2 className="text-lg font-semibold text-gray-800">最近活动</h2>
+              </div>
+              <ul className="mt-4 max-h-80 divide-y divide-border overflow-y-auto pr-1 [scrollbar-color:var(--color-gray-300)_transparent]">
+                {dashboard.data?.recentActivity.map(
+                  (item: ProjectDashboard['recentActivity'][number]) => (
+                    <li key={item.id} className="py-3 first:pt-0 last:pb-0">
+                      <article className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                        <strong className="font-medium text-gray-800">
+                          {activityLabel(item.event, item.action)}
+                        </strong>
+                        <time className="text-xs text-gray-500" dateTime={item.createdAt}>
+                          {new Date(item.createdAt).toLocaleString('zh-CN')}
+                        </time>
+                      </article>
+                    </li>
+                  ),
+                )}
+                {dashboard.data && dashboard.data.recentActivity.length === 0 ? (
+                  <li className="py-4 text-sm text-gray-500">暂无活动</li>
+                ) : null}
+                {dashboard.isLoading ? (
+                  <li className="py-3">
+                    <Skeleton className="h-5 w-full" />
+                  </li>
+                ) : null}
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }

@@ -1,5 +1,7 @@
 'use client'
 
+// KaTeX 样式随公式组件加载（v3-frontend-load-performance）
+import 'katex/dist/katex.min.css'
 import { useMemo, useCallback } from 'react'
 import { Copy, Check } from 'lucide-react'
 import { useCopyCode } from '@/hooks/use-copy-code'

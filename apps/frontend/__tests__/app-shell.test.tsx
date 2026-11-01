@@ -160,9 +160,9 @@ describe('AppShell 布局', () => {
     expect(screen.queryByText(/AI 快速创建/)).not.toBeInTheDocument()
   })
 
-  test('顶栏侧栏开关切换折叠，按钮名与 aria-expanded 随状态变化', async () => {
+  test('侧栏内的折叠开关切换折叠，按钮名与 aria-expanded 随状态变化', async () => {
     loginAs(['project:view'])
-    const { SidebarCollapseToggle } = await import('@/components/layout/Topbar')
+    const { SidebarCollapseToggle } = await import('@/components/layout/Sidebar')
     const { useUiStore } = await import('@/stores/ui-store')
     act(() => useUiStore.getState().setSidebarCollapsed(false))
 
@@ -179,9 +179,12 @@ describe('AppShell 布局', () => {
     act(() => useUiStore.getState().setSidebarCollapsed(false))
   })
 
-  test('侧栏本身不再有折叠控件；只有移动抽屉形态带首页品牌行', async () => {
+  test('平板强制折叠与移动抽屉形态不出现折叠控件；只有移动抽屉带首页品牌行', async () => {
     loginAs(['project:view'])
     const { Sidebar } = await import('@/components/layout/Sidebar')
+    const desktop = renderWithProviders(<Sidebar />)
+    expect(screen.getByRole('button', { name: '折叠侧栏' })).toBeInTheDocument()
+    desktop.unmount()
     const { unmount } = renderWithProviders(<Sidebar forceCollapsed />)
     expect(screen.queryByRole('button', { name: /侧栏/ })).not.toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /开项 KaiPilot 首页/ })).not.toBeInTheDocument()

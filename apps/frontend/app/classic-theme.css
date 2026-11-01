@@ -68,13 +68,13 @@
   --shell-header-fg: #ffffff;
   --shell-header-hover: rgba(255, 255, 255, 0.14);
   --shell-header-border: transparent;
-  --shell-sidebar-bg: #262b33;
-  --shell-sidebar-fg: #e6e9ee;
-  --shell-sidebar-muted: #9aa3ae;
-  --shell-sidebar-hover: rgba(255, 255, 255, 0.08);
-  --shell-sidebar-border: transparent;
-  --shell-sidebar-active-bg: #3b6bef;
-  --shell-sidebar-active-fg: #ffffff;
+  --shell-sidebar-bg: #f3f5f8;
+  --shell-sidebar-fg: #1f2328;
+  --shell-sidebar-muted: #59636e;
+  --shell-sidebar-hover: rgba(31, 35, 40, 0.06);
+  --shell-sidebar-border: #d1d9e0;
+  --shell-sidebar-active-bg: #dbe5fb;
+  --shell-sidebar-active-fg: #1e3a8a;
 }
 
 /* ---------------------------------------------------------------------------
@@ -131,20 +131,20 @@
 /* ---------------------------------------------------------------------------
  * 3. 精选色系（每套浅色 + 深色各一块，由同一张表生成）
  * -------------------------------------------------------------------------*/
-/* 开项蓝（brand） */
+/* 开项蓝（brand）：彩色顶栏 + 浅色侧栏（对齐 OpenProject 16.2 起的默认浅色侧栏） */
 :root[data-classic-palette='brand'] {
   --classic-accent: #3b6bef;
   --shell-header-bg: #1e3a8a;
   --shell-header-fg: #ffffff;
   --shell-header-hover: rgba(255, 255, 255, 0.14);
   --shell-header-border: transparent;
-  --shell-sidebar-bg: #262b33;
-  --shell-sidebar-fg: #e6e9ee;
-  --shell-sidebar-muted: #9aa3ae;
-  --shell-sidebar-hover: rgba(255, 255, 255, 0.08);
-  --shell-sidebar-border: transparent;
-  --shell-sidebar-active-bg: #3b6bef;
-  --shell-sidebar-active-fg: #ffffff;
+  --shell-sidebar-bg: #f3f5f8;
+  --shell-sidebar-fg: #1f2328;
+  --shell-sidebar-muted: #59636e;
+  --shell-sidebar-hover: rgba(31, 35, 40, 0.06);
+  --shell-sidebar-border: #d1d9e0;
+  --shell-sidebar-active-bg: #dbe5fb;
+  --shell-sidebar-active-fg: #1e3a8a;
 }
 
 :root[data-classic-palette='brand'][data-mode='dark'] {

@@ -9,7 +9,7 @@ import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
 import { CommandPaletteProvider } from './CommandPalette'
 import { PluginCommandHostBridge } from './PluginCommandHostBridge'
-import { CopilotSidebarPanel } from '@/components/copilot/CopilotSidebarPanel'
+import { LazyCopilotSidebarPanel } from '@/components/copilot/LazyCopilotSidebarPanel'
 import { CopilotOnboardingGuide } from '@/components/copilot/CopilotOnboardingGuide'
 import { useDeclareCopilotDemoCapability } from '@/lib/copilot/demo-capability'
 import { WorkspaceEditionBoundary } from './WorkspaceEditionBoundary'
@@ -84,8 +84,9 @@ export function AppShell({ children }: AppShellProps) {
               </SheetContent>
             </Sheet>
 
-            {/* Copilot 全局侧栏壳（v3-copilot-sidebar-shell）：与 main 同级，右侧固定覆盖 */}
-            <CopilotSidebarPanel />
+            {/* Copilot 全局侧栏壳（v3-copilot-sidebar-shell）：与 main 同级，右侧固定覆盖；
+                首次打开或开始流式时才加载面板代码（v3-frontend-load-performance） */}
+            <LazyCopilotSidebarPanel />
 
             {/* Copilot 新手引导（v3-copilot-mode-adaptation §5）：首次使用时显示 */}
             <CopilotOnboardingGuide />

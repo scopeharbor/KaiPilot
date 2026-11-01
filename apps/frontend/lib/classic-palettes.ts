@@ -39,9 +39,10 @@ export const CLASSIC_PALETTES: readonly ClassicPalette[] = [
   {
     id: 'brand',
     label: '开项蓝',
-    swatch: { header: '#1e3a8a', sidebar: '#262b33', accent: '#3b6bef' },
+    // 彩色顶栏 + 浅色侧栏：对齐 OpenProject 16.2 起的默认浅色侧栏
+    swatch: { header: '#1e3a8a', sidebar: '#f3f5f8', accent: '#3b6bef' },
     headerTone: 'dark',
-    sidebarTone: 'dark',
+    sidebarTone: 'light',
   },
   {
     id: 'sky',

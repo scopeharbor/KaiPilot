@@ -3,11 +3,11 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Filter, ListChecks, Plus, RotateCcw, Search } from 'lucide-react'
+import { Filter, ListChecks, PanelRight, Plus, RotateCcw, Search } from 'lucide-react'
 import { TaskListTable } from '@/components/views/list/TaskListTable'
 import { TaskBatchActionBar } from '@/components/views/tasks/TaskBatchActionBar'
 import { TaskBatchResultAlert } from '@/components/views/tasks/TaskBatchResultAlert'
-import { TaskDetailDrawer } from '@/components/views/tasks/TaskDetailDrawer'
+import { TaskDetailDrawer, TaskSplitPanel } from '@/components/views/tasks/TaskDetailDrawer'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent } from '@/components/ui/Card'
@@ -24,6 +24,8 @@ import { Input } from '@/components/ui/Input'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { useListViewUrlState, useTaskListView } from '@/hooks/use-list-view'
 import { usePermissions } from '@/hooks/use-permissions'
+import { useMediaQuery } from '@/hooks/use-media-query'
+import { cn } from '@/lib/utils'
 import { useTaskSelection } from '@/hooks/use-task-selection'
 import { projectKeys, projectMembersApi } from '@/lib/api/projects'
 import type { ListSortTerm, TaskListViewFilters } from '@/lib/api/list-view'
@@ -105,6 +107,17 @@ export function TaskListViewContent({ projectId }: { projectId: number }) {
   })
 
   const rows = list.data?.data ?? []
+  // OpenProject 式工具列：「筛选」按钮展开筛选面板；宽屏下任务详情以拆分面板停靠在表格右侧
+  // （v3-classic-ui-openproject-parity），窄屏仍用抽屉。
+  const filterCount =
+    (state.statuses?.length ? 1 : 0) +
+    (state.priorities?.length ? 1 : 0) +
+    (state.assigneeIds?.length ? 1 : 0) +
+    (state.dateFrom || state.dateTo ? 1 : 0)
+  const [filtersOpen, setFiltersOpen] = useState(filterCount > 0)
+  const [splitMode, setSplitMode] = useState(true)
+  const wide = useMediaQuery('(min-width: 1280px)')
+  const splitOpen = wide && splitMode && selectedTaskId !== null
   const hasFilters = Boolean(
     state.search ||
     state.statuses?.length ||
@@ -207,181 +220,230 @@ export function TaskListViewContent({ projectId }: { projectId: number }) {
         </Alert>
       ) : null}
 
-      <Card variant="outlined">
-        <CardContent className="p-0">
-          <div className="space-y-3 border-b border-border p-[var(--card-pad)]">
-            <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
-              <label className="relative block min-w-0 flex-1 lg:max-w-sm">
-                <span className="sr-only">搜索任务名称或编号</span>
-                <Search
-                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
-                  aria-hidden
-                />
-                <Input
-                  className="pl-9"
-                  value={searchInput}
-                  placeholder="搜索任务名称或编号"
-                  onChange={(event) => setSearchInput(event.target.value)}
-                />
-              </label>
-              <MultiFilter
-                label="状态"
-                values={state.statuses ?? []}
-                options={STATUS_OPTIONS}
-                onChange={(values) => setFilter('statuses', values.length ? values : undefined)}
-              />
-              <MultiFilter
-                label="优先级"
-                values={state.priorities ?? []}
-                options={PRIORITY_OPTIONS}
-                onChange={(values) => setFilter('priorities', values.length ? values : undefined)}
-              />
-              <MultiFilter
-                label="负责人"
-                values={state.assigneeIds ?? []}
-                options={(members.data ?? []).map((member) => [
-                  member.userId,
-                  member.user?.fullName || member.user?.email || `成员 #${member.userId}`,
-                ])}
-                onChange={(values) => setFilter('assigneeIds', values.length ? values : undefined)}
-              />
-              {hasFilters ? (
-                <Button type="button" variant="ghost" onClick={clearFilters}>
-                  <RotateCcw className="h-4 w-4" aria-hidden />
-                  清除筛选
+      <div
+        data-list-split={splitOpen || undefined}
+        className={cn(
+          'min-w-0',
+          splitOpen && 'grid grid-cols-[minmax(0,1fr)_420px] items-start gap-4',
+        )}
+      >
+        <Card variant="outlined" className="min-w-0">
+          <CardContent className="p-0">
+            <div data-list-toolbar className="border-b border-border">
+              <div className="flex flex-wrap items-center gap-2 px-[var(--card-pad)] py-2.5">
+                <label className="relative block min-w-0 flex-1 sm:max-w-sm">
+                  <span className="sr-only">搜索任务名称或编号</span>
+                  <Search
+                    className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                    aria-hidden
+                  />
+                  <Input
+                    className="pl-9"
+                    value={searchInput}
+                    placeholder="搜索任务名称或编号"
+                    onChange={(event) => setSearchInput(event.target.value)}
+                  />
+                </label>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  aria-expanded={filtersOpen}
+                  aria-controls="task-list-filters"
+                  onClick={() => setFiltersOpen((open) => !open)}
+                >
+                  <Filter className="h-4 w-4" aria-hidden />
+                  筛选
+                  {filterCount ? (
+                    <span className="rounded-full bg-primary-100 px-1.5 text-xs text-primary-700">
+                      {filterCount}
+                    </span>
+                  ) : null}
                 </Button>
+                {hasFilters ? (
+                  <Button type="button" variant="ghost" onClick={clearFilters}>
+                    <RotateCcw className="h-4 w-4" aria-hidden />
+                    清除筛选
+                  </Button>
+                ) : null}
+                <p className="ml-auto text-sm text-gray-500" aria-live="polite">
+                  共 {list.data?.meta.total ?? 0} 项
+                  {selection.selectedIds.size ? ` · 已选 ${selection.selectedIds.size} 项` : ''}
+                </p>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="hidden xl:inline-flex"
+                  aria-pressed={splitMode}
+                  title="在表格右侧显示任务详情"
+                  onClick={() => setSplitMode((on) => !on)}
+                >
+                  <PanelRight className="h-4 w-4" aria-hidden />
+                  拆分视图
+                </Button>
+              </div>
+              {filtersOpen ? (
+                <div
+                  id="task-list-filters"
+                  data-list-filter-panel
+                  className="flex flex-wrap items-center gap-2 border-t border-border bg-surface px-[var(--card-pad)] py-2.5"
+                >
+                  <MultiFilter
+                    label="状态"
+                    values={state.statuses ?? []}
+                    options={STATUS_OPTIONS}
+                    onChange={(values) => setFilter('statuses', values.length ? values : undefined)}
+                  />
+                  <MultiFilter
+                    label="优先级"
+                    values={state.priorities ?? []}
+                    options={PRIORITY_OPTIONS}
+                    onChange={(values) =>
+                      setFilter('priorities', values.length ? values : undefined)
+                    }
+                  />
+                  <MultiFilter
+                    label="负责人"
+                    values={state.assigneeIds ?? []}
+                    options={(members.data ?? []).map((member) => [
+                      member.userId,
+                      member.user?.fullName || member.user?.email || `成员 #${member.userId}`,
+                    ])}
+                    onChange={(values) =>
+                      setFilter('assigneeIds', values.length ? values : undefined)
+                    }
+                  />
+                  <label className="flex items-center gap-2 text-xs text-gray-500">
+                    截止日从
+                    <Input
+                      className="h-9 w-auto"
+                      type="date"
+                      value={state.dateFrom ?? ''}
+                      onChange={(event) => setFilter('dateFrom', event.target.value || undefined)}
+                    />
+                  </label>
+                  <label className="flex items-center gap-2 text-xs text-gray-500">
+                    到
+                    <Input
+                      className="h-9 w-auto"
+                      type="date"
+                      value={state.dateTo ?? ''}
+                      onChange={(event) => setFilter('dateTo', event.target.value || undefined)}
+                    />
+                  </label>
+                </div>
               ) : null}
             </div>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex flex-wrap items-center gap-2">
-                <label className="flex items-center gap-2 text-xs text-gray-500">
-                  截止日从
-                  <Input
-                    className="h-9 w-auto"
-                    type="date"
-                    value={state.dateFrom ?? ''}
-                    onChange={(event) => setFilter('dateFrom', event.target.value || undefined)}
-                  />
-                </label>
-                <label className="flex items-center gap-2 text-xs text-gray-500">
-                  到
-                  <Input
-                    className="h-9 w-auto"
-                    type="date"
-                    value={state.dateTo ?? ''}
-                    onChange={(event) => setFilter('dateTo', event.target.value || undefined)}
-                  />
-                </label>
-              </div>
-              <p className="text-sm text-gray-500" aria-live="polite">
-                共 {list.data?.meta.total ?? 0} 项
-                {selection.selectedIds.size ? ` · 已选 ${selection.selectedIds.size} 项` : ''}
-              </p>
-            </div>
-          </div>
 
-          {list.isLoading ? <ListSkeleton /> : null}
-          {list.isError ? (
-            <div className="p-[var(--card-pad)]">
-              <Alert variant="danger" title="任务列表加载失败">
-                <div className="mt-2">
+            {list.isLoading ? <ListSkeleton /> : null}
+            {list.isError ? (
+              <div className="p-[var(--card-pad)]">
+                <Alert variant="danger" title="任务列表加载失败">
+                  <div className="mt-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => list.refetch()}
+                    >
+                      重试
+                    </Button>
+                  </div>
+                </Alert>
+              </div>
+            ) : null}
+            {list.data && rows.length === 0 ? (
+              <EmptyState
+                icon={hasFilters ? Filter : ListChecks}
+                title={hasFilters ? '没有符合条件的任务' : '这个项目还没有任务'}
+                description={
+                  hasFilters
+                    ? '调整或清除筛选条件，再看看其他任务。'
+                    : can('task:create')
+                      ? '从右上角快速新建第一项任务。'
+                      : '有权限的项目成员创建任务后会显示在这里。'
+                }
+                action={
+                  hasFilters ? (
+                    <Button type="button" variant="secondary" onClick={clearFilters}>
+                      清除筛选
+                    </Button>
+                  ) : undefined
+                }
+              />
+            ) : null}
+            {rows.length ? (
+              <TaskListTable
+                rows={rows}
+                sort={state.sort as ListSortTerm[]}
+                selectedIds={selection.selectedIds}
+                onSortChange={(sort) => setFilter('sort', sort)}
+                onToggle={toggleTask}
+                onTogglePage={togglePage}
+                onOpen={setSelectedTaskId}
+              />
+            ) : null}
+
+            {list.data && list.data.meta.total > 0 ? (
+              <div className="flex flex-col gap-3 border-t border-border px-[var(--card-pad)] py-3 sm:flex-row sm:items-center sm:justify-between">
+                <label className="flex items-center gap-2 text-sm text-gray-500">
+                  每页
+                  <select
+                    className="h-9 rounded-[var(--radius-md)] border border-border bg-gray-0 px-2 text-sm text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+                    value={state.perPage}
+                    onChange={(event) =>
+                      update(
+                        { perPage: Number(event.target.value), page: 1 },
+                        { resetPage: false, replace: false },
+                      )
+                    }
+                  >
+                    {[20, 50, 100].map((value) => (
+                      <option key={value} value={value}>
+                        {value}
+                      </option>
+                    ))}
+                  </select>
+                  项
+                </label>
+                <div className="flex items-center justify-between gap-3 sm:justify-end">
+                  <span className="text-sm tabular-nums text-gray-500">
+                    第 {list.data.meta.page} / {Math.max(1, list.data.meta.totalPages)} 页
+                  </span>
                   <Button
                     type="button"
                     size="sm"
                     variant="secondary"
-                    onClick={() => list.refetch()}
+                    disabled={state.page <= 1}
+                    onClick={() =>
+                      update({ page: state.page - 1 }, { resetPage: false, replace: false })
+                    }
                   >
-                    重试
+                    上一页
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    disabled={state.page >= list.data.meta.totalPages}
+                    onClick={() =>
+                      update({ page: state.page + 1 }, { resetPage: false, replace: false })
+                    }
+                  >
+                    下一页
                   </Button>
                 </div>
-              </Alert>
-            </div>
-          ) : null}
-          {list.data && rows.length === 0 ? (
-            <EmptyState
-              icon={hasFilters ? Filter : ListChecks}
-              title={hasFilters ? '没有符合条件的任务' : '这个项目还没有任务'}
-              description={
-                hasFilters
-                  ? '调整或清除筛选条件，再看看其他任务。'
-                  : can('task:create')
-                    ? '从右上角快速新建第一项任务。'
-                    : '有权限的项目成员创建任务后会显示在这里。'
-              }
-              action={
-                hasFilters ? (
-                  <Button type="button" variant="secondary" onClick={clearFilters}>
-                    清除筛选
-                  </Button>
-                ) : undefined
-              }
-            />
-          ) : null}
-          {rows.length ? (
-            <TaskListTable
-              rows={rows}
-              sort={state.sort as ListSortTerm[]}
-              selectedIds={selection.selectedIds}
-              onSortChange={(sort) => setFilter('sort', sort)}
-              onToggle={toggleTask}
-              onTogglePage={togglePage}
-              onOpen={setSelectedTaskId}
-            />
-          ) : null}
-
-          {list.data && list.data.meta.total > 0 ? (
-            <div className="flex flex-col gap-3 border-t border-border px-[var(--card-pad)] py-3 sm:flex-row sm:items-center sm:justify-between">
-              <label className="flex items-center gap-2 text-sm text-gray-500">
-                每页
-                <select
-                  className="h-9 rounded-[var(--radius-md)] border border-border bg-gray-0 px-2 text-sm text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
-                  value={state.perPage}
-                  onChange={(event) =>
-                    update(
-                      { perPage: Number(event.target.value), page: 1 },
-                      { resetPage: false, replace: false },
-                    )
-                  }
-                >
-                  {[20, 50, 100].map((value) => (
-                    <option key={value} value={value}>
-                      {value}
-                    </option>
-                  ))}
-                </select>
-                项
-              </label>
-              <div className="flex items-center justify-between gap-3 sm:justify-end">
-                <span className="text-sm tabular-nums text-gray-500">
-                  第 {list.data.meta.page} / {Math.max(1, list.data.meta.totalPages)} 页
-                </span>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="secondary"
-                  disabled={state.page <= 1}
-                  onClick={() =>
-                    update({ page: state.page - 1 }, { resetPage: false, replace: false })
-                  }
-                >
-                  上一页
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="secondary"
-                  disabled={state.page >= list.data.meta.totalPages}
-                  onClick={() =>
-                    update({ page: state.page + 1 }, { resetPage: false, replace: false })
-                  }
-                >
-                  下一页
-                </Button>
               </div>
-            </div>
-          ) : null}
-        </CardContent>
-      </Card>
+            ) : null}
+          </CardContent>
+        </Card>
+        {splitOpen && selectedTaskId !== null ? (
+          <TaskSplitPanel
+            projectId={projectId}
+            taskId={selectedTaskId}
+            onClose={() => setSelectedTaskId(null)}
+          />
+        ) : null}
+      </div>
 
       <TaskBatchActionBar
         selectedIds={[...selection.selectedIds]}
@@ -395,7 +457,7 @@ export function TaskListViewContent({ projectId }: { projectId: number }) {
       />
       <TaskDetailDrawer
         projectId={projectId}
-        taskId={selectedTaskId}
+        taskId={splitOpen ? null : selectedTaskId}
         onOpenChange={(open) => {
           if (!open) setSelectedTaskId(null)
         }}

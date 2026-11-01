@@ -10,8 +10,6 @@ import {
   FolderKanban,
   LayoutGrid,
   Menu,
-  PanelLeftClose,
-  PanelLeftOpen,
   Plus,
   Rocket,
   Search,
@@ -42,7 +40,6 @@ import { isNextUiEnabledForOrg } from '@/lib/feature-flags/next-ui-gate'
 import { useNextTrackStore } from '@/stores/next-track-store'
 import { primaryNavGroups, secondaryNavItems } from '@/lib/navigation'
 import { projectKeys, projectsApi } from '@/lib/api/projects'
-import { sidebarToggleShortcut } from '@/lib/command-registry/built-in/layout'
 import { UserMenu } from './UserMenu'
 import { ThemeDensityMenu } from './ThemeDensityMenu'
 import { useCommandPalette } from './CommandPalette'
@@ -235,34 +232,6 @@ export function NextTrackEntryButton({ className }: { className?: string } = {})
   )
 }
 
-/** 侧栏折叠开关（桌面宽度）：OpenProject 式放在顶栏最左侧。 */
-export function SidebarCollapseToggle({ className }: { className?: string }) {
-  const collapsed = useUiStore((state) => state.sidebarCollapsed)
-  const toggle = useUiStore((state) => state.toggleSidebarCollapsed)
-  const label = collapsed ? '展开侧栏' : '折叠侧栏'
-  const Icon = collapsed ? PanelLeftOpen : PanelLeftClose
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <IconButton
-          aria-label={label}
-          aria-expanded={!collapsed}
-          onClick={toggle}
-          className={cn(headerButtonClass, className)}
-        >
-          <Icon className="h-5 w-5" aria-hidden />
-        </IconButton>
-      </TooltipTrigger>
-      <TooltipContent side="bottom" className="flex items-center gap-2">
-        {label}
-        <kbd className="shrink-0 rounded-[var(--radius-sm)] border border-current px-1.5 py-0.5 text-[10px] font-medium opacity-70">
-          {sidebarToggleShortcut()}
-        </kbd>
-      </TooltipContent>
-    </Tooltip>
-  )
-}
-
 /** 「项目」下拉：打开时才读取最近项目（最多 8 个）。 */
 export function ProjectQuickSwitcher({ className }: { className?: string }) {
   const router = useRouter()
@@ -392,7 +361,7 @@ export function GlobalModulesMenu({ className }: { className?: string }) {
  * 顶栏（v3-classic-ui-openproject-style，OpenProject 式全宽顶栏）：
  *
  * 结构（48px 高，横跨整个视窗，位于内容滚动容器之外，常驻可见）：
- *   左：侧栏开关（≥1024px 折叠/展开；更窄为「打开导航」抽屉） + logo + 「项目」下拉
+ *   左：窄屏（<1024px）「打开导航」抽屉 + logo + 「项目」下拉（桌面折叠开关在侧栏内，对齐 OpenProject 16.2）
  *   中：搜索触发（Cmd+K，唤起命令面板）
  *   右：新建 / 全局模块 / 通知 / Copilot / 新页面入口 / 外观（主题、色系、密度）/ 用户菜单
  *
@@ -421,8 +390,6 @@ export function Topbar(_props: TopbarProps = {}) {
       >
         <Menu className="h-5 w-5" aria-hidden />
       </IconButton>
-      {/* 桌面：折叠 / 展开侧栏 */}
-      <SidebarCollapseToggle className="hidden lg:inline-flex" />
 
       <Link
         href="/dashboard"

@@ -7,8 +7,9 @@
 
 @import 'tailwindcss';
 
-/* KaTeX 数学公式 CSS（本地打包，禁止 CDN 引用） */
-@import 'katex/dist/katex.min.css';
+/* KaTeX 数学公式 CSS（本地打包，禁止 CDN 引用）：只由渲染公式的组件引入
+   （components/files/markdown/MarkdownDocumentViewer.tsx、MathFormula.tsx），
+   不进全站首屏 CSS（v3-frontend-load-performance）。 */
 
 /* Native controls must be able to shrink inside narrow form grids. */
 input,

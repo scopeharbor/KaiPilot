@@ -17,7 +17,7 @@
  * ```
  */
 
-import { io, type Socket } from 'socket.io-client'
+import type { Socket } from 'socket.io-client'
 import { useAuthStore } from '@/stores/auth-store'
 import { API_BASE_URL, refreshSession } from '@/lib/api-client'
 
@@ -77,6 +77,24 @@ export function getWsUrl(): string {
   return base.replace(/^http/, 'ws')
 }
 
+/**
+ * socket.io-client 按需加载（v3-frontend-load-performance）：登录页与未登录状态不需要实时连接，
+ * 首次 connect 时才拉取这段约 40KB 的代码，之后复用同一个模块。
+ */
+type SocketIoFactory = typeof import('socket.io-client').io
+let socketIoLoader: Promise<SocketIoFactory> | null = null
+
+function loadSocketIo(): Promise<SocketIoFactory> {
+  if (!socketIoLoader) {
+    socketIoLoader = import('socket.io-client').then((mod) => mod.io)
+    // 加载失败不缓存失败结果，下次重连重新尝试
+    socketIoLoader.catch(() => {
+      socketIoLoader = null
+    })
+  }
+  return socketIoLoader
+}
+
 /** 回退延迟计算（指数退避） */
 function getBackoffDelay(attempt: number): number {
   const index = Math.min(attempt, RECONNECTION_DELAYS.length - 1)
@@ -91,6 +109,8 @@ export class RealtimeClient {
   private reconnectionAttempts = 0
   private shouldReconnect = true
   private currentProjectId: number | null = null
+  /** socket.io-client 仍在加载中，避免重复 connect 建出两个 socket */
+  private socketLoading = false
 
   /** 当前连接状态 */
   get status(): RealtimeConnectionStatus {
@@ -109,7 +129,7 @@ export class RealtimeClient {
    * 连接成功后自动加入之前加入的项目频道。
    */
   connect(): void {
-    if (this.socket?.connected) return
+    if (this.socket?.connected || this.socketLoading) return
 
     this.shouldReconnect = true
     this.setStatus('connecting')
@@ -126,6 +146,24 @@ export class RealtimeClient {
       return
     }
 
+    this.socketLoading = true
+    loadSocketIo().then(
+      (io) => {
+        this.socketLoading = false
+        // 加载期间已 disconnect，或已有连接：不再建 socket
+        if (!this.shouldReconnect || this.socket?.connected) return
+        this.openSocket(io, useAuthStore.getState().accessToken ?? token)
+      },
+      () => {
+        this.socketLoading = false
+        if (!this.shouldReconnect) return
+        this.setStatus('reconnecting')
+        this.scheduleReconnect()
+      },
+    )
+  }
+
+  private openSocket(io: SocketIoFactory, token: string): void {
     const wsUrl = getWsUrl()
     this.socket = io(wsUrl, {
       auth: { token },
