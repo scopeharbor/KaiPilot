@@ -34,6 +34,15 @@ vi.mock('@react-three/fiber', () => ({
   }),
 }))
 
+// SpaceMapOverlay 以 next/dynamic 懒加载 3D 画布。画布场景用到 drei，而 drei 是 CJS 依赖，经 Node 解析到真实的
+// @react-three/fiber（不受上面的 vi.mock 影响），在模拟的 Canvas 里调用真实 useFrame 会抛
+// 「R3F: Hooks can only be used within the Canvas component!」。懒加载何时完成取决于模块缓存时序，
+// 所以 CI 满载时偶发失败（预先 import 该模块即可稳定复现）。本文件验证 DOM 等价列表与悬浮浮窗，不验证 3D 画布本身，
+// 故把画布替换为占位；3D 降级行为由 next-spacemap-degradation.test.tsx 覆盖。
+vi.mock('@/components/next/3d/spacemap/SpaceMap3DCanvas', () => ({
+  SpaceMap3DCanvas: () => <div data-testid="spacemap-3d-canvas-placeholder" aria-hidden="true" />,
+}))
+
 const mockProjects: Project[] = [
   {
     id: 301,
