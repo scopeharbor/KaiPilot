@@ -246,10 +246,16 @@ describe('新轨两步验证向导', () => {
     fireEvent.click(submit)
 
     await waitFor(() => expect(disableSpy).toHaveBeenCalledWith('000000', 'secret'))
-    // 服务端错误码映射成中文文案（不回显原始 message）
-    const error = await container.querySelector('[data-two-factor-prompt-error]')
-    expect(error?.textContent).toContain('验证码不正确')
-    expect(error?.textContent).not.toContain('boom')
+    // 服务端错误码映射成中文文案（不回显原始 message）。
+    // 错误提示在请求失败后的下一次渲染才出现：必须等待，不能在 mock 被调用后立即读取
+    // （CI 覆盖率任务较慢时会读到 null）。
+    const error = await waitFor(() => {
+      const node = container.querySelector('[data-two-factor-prompt-error]')
+      expect(node).not.toBeNull()
+      return node!
+    })
+    expect(error.textContent).toContain('验证码不正确')
+    expect(error.textContent).not.toContain('boom')
 
     // 2FA 仍为启用状态，口令提示卡保留（可重试），提交按钮复位
     expect(
