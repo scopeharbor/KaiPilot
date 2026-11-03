@@ -97,6 +97,13 @@ export function LoginForm({
   const [submitting, setSubmitting] = useState(false)
   const startChallenge = useTwoFactorChallengeStore((state) => state.start)
 
+  // 用户填表时预取登录后的目标页（v3-frontend-load-performance）：登录成功跳转时路由数据与页面 JS
+  // 已在缓存里，不必等登录请求返回后才开始下载。`nextPath` 已由页面经 safeNextPath 过滤。
+  // 测试里的 router 替身可能没有 prefetch，故可选调用。
+  useEffect(() => {
+    router.prefetch?.(nextPath)
+  }, [router, nextPath])
+
   /** 会话落地：写 store 并跳转到目标路由。 */
   const completeSession = useCallback(
     (session: AuthSession, destination: string) => {

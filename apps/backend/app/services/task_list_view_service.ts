@@ -20,6 +20,32 @@ export const TASK_LIST_SORT_FIELDS = [
 
 export type TaskListSortField = (typeof TASK_LIST_SORT_FIELDS)[number]
 
+/** OpenProject 式分组字段（v3-classic-ui-openproject-table）。 */
+export const TASK_LIST_GROUP_FIELDS = ['status', 'priority', 'assignee'] as const
+
+export type TaskListGroupField = (typeof TASK_LIST_GROUP_FIELDS)[number]
+
+/** 分组列：状态 / 优先级取原值，负责人取用户 id（未分配为 null）。 */
+const GROUP_COLUMNS: Record<TaskListGroupField, string> = {
+  status: 'tasks.status',
+  priority: 'tasks.priority',
+  assignee: 'tasks.assignee_id',
+}
+
+export interface TaskListGroupSummary {
+  key: string | number | null
+  count: number
+  estimatedHours: number
+  actualHours: number
+}
+
+export interface TaskListSums {
+  count: number
+  estimatedHours: number
+  actualHours: number
+  progressPercent: number
+}
+
 export interface TaskListViewFilters {
   search?: string
   statuses?: TaskStatus[]
@@ -30,6 +56,10 @@ export interface TaskListViewFilters {
   sort?: string
   page?: number
   perPage?: number
+  /** 按字段分组：分组字段成为首要排序，并返回整份筛选结果的每组汇总。 */
+  groupBy?: TaskListGroupField
+  /** 返回整份筛选结果的合计。 */
+  sums?: boolean
 }
 
 interface SortTerm {
@@ -63,11 +93,39 @@ export default class TaskListViewService {
 
     const page = filters.page ?? 1
     const perPage = filters.perPage ?? 50
-    let query = Task.query()
-      .where('tasks.project_id', projectId)
-      .whereNull('tasks.deleted_at')
-      .preload('assignee')
-      .select('tasks.*')
+    let query = this.filtered(projectId, filters).preload('assignee').select('tasks.*')
+
+    const terms = this.withGroupTerm(this.parseSort(filters.sort ?? '+name'), filters.groupBy)
+    for (const term of terms) {
+      const expression = SORT_EXPRESSIONS[term.field]
+      query = query
+        .orderByRaw(`CASE WHEN ${expression} IS NULL THEN 1 ELSE 0 END ASC`)
+        .orderByRaw(`${expression} ${term.direction}`)
+    }
+    query = query.orderBy('tasks.id', 'asc')
+
+    const paginator = await query.paginate(page, perPage)
+    const meta = paginator.getMeta()
+    const groups = filters.groupBy
+      ? await this.groupSummaries(projectId, filters, filters.groupBy, terms[0]!.direction)
+      : undefined
+    const sums = filters.sums ? await this.sums(projectId, filters) : undefined
+    return {
+      data: paginator.all(),
+      meta: {
+        total: meta.total,
+        page: meta.currentPage,
+        perPage: meta.perPage,
+        totalPages: meta.lastPage,
+        ...(groups ? { groups } : {}),
+        ...(sums ? { sums } : {}),
+      },
+    }
+  }
+
+  /** 项目内未删除任务 + 筛选条件；列表、分组汇总与合计共用，保证统计口径一致。 */
+  private filtered(projectId: number, filters: TaskListViewFilters) {
+    let query = Task.query().where('tasks.project_id', projectId).whereNull('tasks.deleted_at')
 
     if (filters.statuses?.length) query = query.whereIn('tasks.status', filters.statuses)
     if (filters.priorities?.length) query = query.whereIn('tasks.priority', filters.priorities)
@@ -85,25 +143,69 @@ export default class TaskListViewService {
         if (numericId && Number.isSafeInteger(numericId)) builder.orWhere('tasks.id', numericId)
       })
     }
+    return query
+  }
 
-    for (const term of this.parseSort(filters.sort ?? '+name')) {
-      const expression = SORT_EXPRESSIONS[term.field]
-      query = query
-        .orderByRaw(`CASE WHEN ${expression} IS NULL THEN 1 ELSE 0 END ASC`)
-        .orderByRaw(`${expression} ${term.direction}`)
-    }
-    query = query.orderBy('tasks.id', 'asc')
+  /**
+   * 分组字段放到排序首位，使同组任务在分页之间连续；用户已按该字段排序时沿用其方向。
+   * 总排序字段仍不超过三个。
+   */
+  private withGroupTerm(terms: SortTerm[], groupBy?: TaskListGroupField): SortTerm[] {
+    if (!groupBy) return terms
+    const existing = terms.find((term) => term.field === groupBy)
+    const groupTerm: SortTerm = existing ?? { field: groupBy, direction: 'asc' }
+    return [groupTerm, ...terms.filter((term) => term.field !== groupBy)].slice(0, 3)
+  }
 
-    const paginator = await query.paginate(page, perPage)
-    const meta = paginator.getMeta()
+  /** 整份筛选结果的每组任务数与工时合计，顺序与分组排序一致（空值组在最后）。 */
+  private async groupSummaries(
+    projectId: number,
+    filters: TaskListViewFilters,
+    groupBy: TaskListGroupField,
+    direction: SortTerm['direction'],
+  ): Promise<TaskListGroupSummary[]> {
+    const column = GROUP_COLUMNS[groupBy]
+    const order = SORT_EXPRESSIONS[groupBy]
+    const rows = await this.filtered(projectId, filters)
+      .select(`${column} as group_key`)
+      .count('* as total')
+      .sum('tasks.estimated_hours as estimated_hours')
+      .sum('tasks.actual_hours as actual_hours')
+      .groupBy(column)
+      .orderByRaw(`CASE WHEN ${order} IS NULL THEN 1 ELSE 0 END ASC`)
+      .orderByRaw(`${order} ${direction}`)
+      .pojo<{
+        group_key: string | number | null
+        total: number | string
+        estimated_hours: number | string | null
+        actual_hours: number | string | null
+      }>()
+    return rows.map((row) => ({
+      key: groupBy === 'assignee' && row.group_key !== null ? Number(row.group_key) : row.group_key,
+      count: Number(row.total),
+      estimatedHours: toHours(row.estimated_hours),
+      actualHours: toHours(row.actual_hours),
+    }))
+  }
+
+  /** 整份筛选结果的合计：任务数、预计 / 实际工时合计、平均进度（取整）。 */
+  private async sums(projectId: number, filters: TaskListViewFilters): Promise<TaskListSums> {
+    const [row] = await this.filtered(projectId, filters)
+      .count('* as total')
+      .sum('tasks.estimated_hours as estimated_hours')
+      .sum('tasks.actual_hours as actual_hours')
+      .avg('tasks.progress_percent as progress_avg')
+      .pojo<{
+        total: number | string
+        estimated_hours: number | string | null
+        actual_hours: number | string | null
+        progress_avg: number | string | null
+      }>()
     return {
-      data: paginator.all(),
-      meta: {
-        total: meta.total,
-        page: meta.currentPage,
-        perPage: meta.perPage,
-        totalPages: meta.lastPage,
-      },
+      count: Number(row?.total ?? 0),
+      estimatedHours: toHours(row?.estimated_hours ?? null),
+      actualHours: toHours(row?.actual_hours ?? null),
+      progressPercent: Math.round(Number(row?.progress_avg ?? 0)),
     }
   }
 
@@ -136,4 +238,9 @@ export default class TaskListViewService {
       throw new ValidationException('截止日期起点不得晚于终点')
     }
   }
+}
+
+/** 工时合计：空值按 0；保留两位小数，避免浮点累加误差外露。 */
+function toHours(value: number | string | null): number {
+  return Math.round(Number(value ?? 0) * 100) / 100
 }

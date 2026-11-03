@@ -11,9 +11,11 @@ import { projectKeys, projectsApi } from '@/lib/api/projects'
 import { cn } from '@/lib/utils'
 import { focusRing } from '@/lib/variants'
 import { getGreetingLabel, selectDailyGreeting } from '@/lib/daily-greetings'
+import { GENERIC_SEGMENT_LABELS } from '@/lib/settings-navigation'
 
 /** 项目内路由段 → 中文（视图 + 常见子页），面包屑去英文 slug。 */
 const PROJECT_SEGMENT_LABELS: Record<string, string> = {
+  overview: '概览',
   kanban: '看板',
   list: '列表',
   gantt: '甘特图',
@@ -63,7 +65,7 @@ export function Breadcrumb() {
       const href = '/' + parts.slice(0, index + 1).join('/')
       // 第一段优先匹配 navigation 配置里的 label。
       const navMatch = allNavItems.find((item) => item.href === href)
-      let label = navMatch?.label ?? decodeURIComponent(segment)
+      let label = navMatch?.label ?? GENERIC_SEGMENT_LABELS[segment] ?? decodeURIComponent(segment)
       // 项目详情路径：[id] 段用项目名（加载中回退原段）、后续段用中文视图/子页名。
       if (projectId !== null && index === 1) {
         label = projectName ?? segment

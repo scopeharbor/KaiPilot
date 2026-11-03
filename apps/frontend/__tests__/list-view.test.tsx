@@ -169,7 +169,8 @@ describe('List view', () => {
     expect(onToggle).toHaveBeenCalledWith(task.id, true)
     fireEvent.click(screen.getByRole('button', { name: new RegExp(task.name) }))
     expect(onOpen).toHaveBeenCalledWith(task.id)
-    expect(container.querySelector('[data-task-id="11"]')).toHaveStyle({ minHeight: '36px' })
+    // OpenProject 式紧凑行：紧凑密度 32px（v3-classic-ui-openproject-views）
+    expect(container.querySelector('[data-task-id="11"]')).toHaveStyle({ minHeight: '32px' })
     expect(screen.getAllByText(/逾期/).length).toBeGreaterThan(0)
   })
 
@@ -203,6 +204,60 @@ describe('List view', () => {
     fireEvent.click(screen.getByRole('button', { name: new RegExp(task.name) }))
     expect(await screen.findByText(task.description!)).toBeInTheDocument()
     expect(tasksApi.get).toHaveBeenCalledWith(7, task.id)
+  })
+
+  test('OpenProject 式工具列：筛选按钮展开筛选面板；宽屏任务详情停靠为拆分面板，可关闭与切回抽屉', async () => {
+    login()
+    vi.spyOn(window, 'matchMedia').mockImplementation(
+      (query: string) =>
+        ({
+          matches: query === '(min-width: 1280px)',
+          media: query,
+          onchange: null,
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+          addListener: vi.fn(),
+          removeListener: vi.fn(),
+          dispatchEvent: vi.fn(),
+        }) as unknown as MediaQueryList,
+    )
+    vi.spyOn(projectMembersApi, 'list').mockResolvedValue([])
+    vi.spyOn(taskListViewApi, 'list').mockResolvedValue({
+      data: [task],
+      meta: { total: 1, page: 1, perPage: 50, totalPages: 1 },
+    })
+    vi.spyOn(tasksApi, 'get').mockResolvedValue(task)
+    const { default: ListPage } = await import('@/app/(dashboard)/projects/[id]/(views)/list/page')
+    render(<ListPage />, { wrapper: wrapper() })
+
+    // 筛选面板默认收起（无已生效筛选），点「筛选」展开
+    const filterButton = await screen.findByRole('button', { name: '筛选' })
+    expect(filterButton).toHaveAttribute('aria-expanded', 'false')
+    expect(document.querySelector('[data-list-filter-panel]')).toBeNull()
+    fireEvent.click(filterButton)
+    expect(filterButton).toHaveAttribute('aria-expanded', 'true')
+    expect(document.querySelector('[data-list-filter-panel]')?.textContent).toContain('截止日从')
+
+    // 宽屏：打开任务 → 右侧拆分面板，不出现抽屉对话框
+    fireEvent.click(await screen.findByRole('button', { name: `打开任务 #${task.id}` }))
+    const panel = await screen.findByRole('complementary', { name: '任务详情' })
+    expect(await screen.findByText(task.description!)).toBeInTheDocument()
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '全屏查看任务' })).toHaveAttribute(
+      'href',
+      `/projects/7/tasks/${task.id}`,
+    )
+    fireEvent.click(screen.getByRole('button', { name: '关闭任务详情' }))
+    expect(panel).not.toBeInTheDocument()
+
+    // 关闭「拆分视图」后改回抽屉
+    const split = screen.getByRole('button', { name: '拆分视图' })
+    expect(split).toHaveAttribute('aria-pressed', 'true')
+    fireEvent.click(split)
+    expect(split).toHaveAttribute('aria-pressed', 'false')
+    fireEvent.click(screen.getByRole('button', { name: `打开任务 #${task.id}` }))
+    expect(await screen.findByRole('dialog')).toBeInTheDocument()
+    expect(screen.queryByRole('complementary', { name: '任务详情' })).not.toBeInTheDocument()
   })
 
   test('page shows filtered-empty state', async () => {

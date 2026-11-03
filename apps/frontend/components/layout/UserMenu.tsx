@@ -22,13 +22,15 @@ import { signOutSession } from '@/lib/auth/sign-out'
 export interface UserMenuProps {
   /** 折叠/图标态：仅显示头像。 */
   compact?: boolean
+  /** 触发器额外样式（旧版顶栏用色系文字与悬停色）。 */
+  triggerClassName?: string
 }
 
 /**
- * 用户菜单——侧栏底部（compact=false，头像+姓名+邮箱触发）与顶栏右侧（compact=true，仅头像）。
+ * 用户菜单——顶栏右侧（compact=true，仅头像；v3-classic-ui-openproject-style 起不再放侧栏底部）。
  * 菜单内含：个人资料、账户设置、退出登录（占位/跳转，账户后端接线沿用既有 `logoutSession`）。
  */
-export function UserMenu({ compact = false }: UserMenuProps) {
+export function UserMenu({ compact = false, triggerClassName }: UserMenuProps) {
   const user = useAuthStore((state) => state.user)
   const hasHydrated = useAuthStore((state) => state.hasHydrated)
   const pathname = usePathname()
@@ -52,6 +54,7 @@ export function UserMenu({ compact = false }: UserMenuProps) {
           'flex min-h-10 items-center gap-3 rounded-[var(--radius-md)] p-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100',
           compact && 'justify-center gap-0 p-1',
           focusRing,
+          triggerClassName,
         )}
       >
         <LogIn className="h-5 w-5" aria-hidden />
@@ -73,6 +76,7 @@ export function UserMenu({ compact = false }: UserMenuProps) {
           'flex items-center gap-3 rounded-[var(--radius-md)] p-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100',
           compact && 'gap-0 p-1',
           focusRing,
+          triggerClassName,
         )}
       >
         <Avatar className={cn('h-8 w-8', compact && 'h-8 w-8')}>

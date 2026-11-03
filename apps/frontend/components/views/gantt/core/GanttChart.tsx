@@ -399,9 +399,14 @@ export function GanttChart({
       {/* 表头行：左上角占位 + 时间轴（随横向滚动平移）。 */}
       <div className="flex shrink-0 border-b border-border" style={{ height: TIME_AXIS_HEIGHT }}>
         <div
-          className="shrink-0 border-r border-border bg-gray-50"
+          data-gantt-left-header
+          className="flex shrink-0 items-end gap-2 border-r border-border bg-gray-50 px-3 pb-1.5 text-xs font-semibold text-gray-700"
           style={{ width: DEFAULT_LEFT_COLUMN_WIDTH }}
-        />
+          aria-hidden
+        >
+          {preset.showWbsCode ? <span className="w-10 shrink-0">WBS</span> : null}
+          <span>主题</span>
+        </div>
         <div className="relative flex-1 overflow-hidden bg-gray-50">
           <div style={{ transform: `translateX(${-vp.scrollLeft}px)`, willChange: 'transform' }}>
             <GanttTimeAxis

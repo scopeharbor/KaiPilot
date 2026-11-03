@@ -64,6 +64,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <Comp
         ref={ref}
+        data-slot="button"
+        data-variant={variant ?? 'primary'}
+        data-size={size ?? 'default'}
         className={cn(buttonVariants({ variant, size, className }))}
         disabled={disabled || loading}
         aria-busy={loading || undefined}

@@ -297,6 +297,13 @@ describe('5.2 dashboard workspace block', () => {
     expect(document.querySelector('[data-dashboard-activity]')).not.toBeNull()
     expect(document.querySelector('[data-dashboard-scope-note]')).toBeNull()
     expect(document.body.textContent).not.toContain('后续 change')
+    // OpenProject 式「我的页面」：三块均为带标题栏的小部件框（v3-classic-ui-openproject-pages）
+    const widgets = [...document.querySelectorAll('[data-dashboard-widget]')]
+    expect(widgets.map((widget) => widget.querySelector('h2')?.textContent)).toEqual([
+      '项目概览',
+      '最近项目',
+      '团队动态',
+    ])
   })
 
   it('没有嵌套卡片，也没有等权 icon grid', async () => {

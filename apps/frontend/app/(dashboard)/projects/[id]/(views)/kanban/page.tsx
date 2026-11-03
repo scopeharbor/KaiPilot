@@ -57,6 +57,14 @@ type Pages = Record<KanbanColumn, number>
 const EMPTY_BOARD: Board = { pending: [], in_progress: [], completed: [], other: [] }
 const INITIAL_PAGES: Pages = { pending: 1, in_progress: 1, completed: 1, other: 1 }
 
+/** 看板列状态点（与列表状态色同一语义色）。 */
+const KANBAN_COLUMN_DOT: Record<KanbanColumn, string> = {
+  pending: 'bg-gray-400',
+  in_progress: 'bg-info',
+  completed: 'bg-success',
+  other: 'bg-warning',
+}
+
 export default function ProjectKanbanPage() {
   const projectId = Number(useParams().id)
   return (
@@ -219,14 +227,15 @@ function KanbanBoard({ projectId }: { projectId: number }) {
   const hasFilters = Boolean(search || priority || assigneeId)
 
   return (
-    <div className="space-y-5 pb-12 pt-2">
-      <header className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-        <div className="space-y-1">
-          <p className="text-xs font-medium uppercase tracking-[0.12em] text-primary-600">
-            日常执行
-          </p>
-          <h2 className="text-2xl font-semibold text-gray-800 text-balance">任务看板</h2>
-          <p className="max-w-2xl text-sm text-gray-500">
+    <div className="space-y-4 pb-12 pt-4">
+      {/* OpenProject 式视图工具列：标题 + 一行说明，操作在右（v3-classic-ui-openproject-views） */}
+      <header
+        data-view-toolbar
+        className="flex flex-col gap-3 border-b border-border pb-3 xl:flex-row xl:items-end xl:justify-between"
+      >
+        <div className="min-w-0">
+          <h2 className="text-lg font-semibold text-gray-800">任务看板</h2>
+          <p className="mt-0.5 max-w-3xl text-xs text-gray-500">
             四列只是六种任务状态的清晰投影；拖动会经过原有状态机、权限与审计。
           </p>
         </div>
@@ -442,18 +451,26 @@ function KanbanLane({
     <section
       ref={droppable.setNodeRef}
       className={cn(
-        'flex w-[min(82vw,300px)] shrink-0 flex-col rounded-[var(--radius-lg)] border border-border bg-gray-50/80',
+        // OpenProject 式看板列：浅底方正列，列头带状态点与计数（v3-classic-ui-openproject-views）
+        'flex w-[min(82vw,300px)] shrink-0 flex-col rounded-[var(--radius-md)] border border-border bg-surface',
         'md:w-[300px]',
         'motion-reduce:transition-none',
         droppable.isOver && 'border-primary-300 bg-primary-50/50',
       )}
       aria-labelledby={`kanban-${column.id}`}
     >
-      <div className="flex items-center justify-between border-b border-border px-4 py-3">
-        <h3 id={`kanban-${column.id}`} className="font-medium text-gray-800">
+      <div
+        data-kanban-column-header
+        className="flex items-center gap-2 rounded-t-[var(--radius-md)] border-b border-border bg-gray-0 px-3 py-2"
+      >
+        <span
+          aria-hidden
+          className={cn('h-2 w-2 shrink-0 rounded-full', KANBAN_COLUMN_DOT[column.id])}
+        />
+        <h3 id={`kanban-${column.id}`} className="flex-1 text-sm font-semibold text-gray-800">
           {column.label}
         </h3>
-        <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-600">
+        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium tabular-nums text-gray-600">
           {query?.meta.total ?? rows.length}
         </span>
       </div>
@@ -461,7 +478,7 @@ function KanbanLane({
         items={rows.map((task) => `task-${task.id}`)}
         strategy={verticalListSortingStrategy}
       >
-        <div className="min-h-36 flex-1 space-y-3 p-3">
+        <div className="min-h-36 flex-1 space-y-2 p-2">
           {loading
             ? Array.from({ length: 3 }, (_, index) => (
                 <Skeleton key={index} className="h-32 w-full" />

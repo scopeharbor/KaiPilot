@@ -13,6 +13,7 @@ export type InputProps = React.InputHTMLAttributes<HTMLInputElement>
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, ...props }, ref) => (
     <input
+      data-slot="input"
       ref={ref}
       type={type}
       className={cn(

@@ -1,7 +1,8 @@
 'use client'
 
+import Link from 'next/link'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Bot } from 'lucide-react'
+import { Bot, Maximize2, X } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { Skeleton } from '@/components/ui/Skeleton'
 import {
@@ -20,16 +21,12 @@ import { TASK_STATUS_LABELS } from '@/lib/task-status'
 import { isAgentAssignee, AGENT_ACTION_LABEL } from '@/types/agent-assignee'
 import { CommentThread } from '@/components/views/comments/CommentThread'
 import { TaskExternalLinksPanel } from '@/components/views/tasks/TaskExternalLinksPanel'
+import { IconButton } from '@/components/ui/IconButton'
+import { buttonVariants } from '@/components/ui/Button'
+import { cn } from '@/lib/utils'
 
-export function TaskDetailDrawer({
-  projectId,
-  taskId,
-  onOpenChange,
-}: {
-  projectId: number
-  taskId: number | null
-  onOpenChange: (open: boolean) => void
-}) {
+/** 任务详情数据与负责人指派（抽屉与拆分面板共用）。 */
+function useTaskDetail(projectId: number, taskId: number | null) {
   const queryClient = useQueryClient()
   const hasPermission = useAuthStore((state) => state.hasPermission)
   const canAssign = hasPermission('task:update') || hasPermission('task:update:self')
@@ -50,146 +47,228 @@ export function TaskDetailDrawer({
       await invalidateTaskQueries(queryClient, projectId)
     },
   })
+  return { detail, members, assign, canAssign }
+}
 
+type TaskDetailState = ReturnType<typeof useTaskDetail>
+
+function TaskCopilotTrigger({ projectId, state }: { projectId: number; state: TaskDetailState }) {
+  const { detail } = state
+  if (!detail.data) return null
+  return (
+    <CopilotInlineTrigger
+      entity={{
+        entityType: 'task',
+        entityId: detail.data.id,
+        label: detail.data.name,
+        projectId,
+      }}
+      size="icon"
+      variant="ghost"
+    />
+  )
+}
+
+/** 任务详情正文：状态、说明、属性、评论与外部链接。 */
+function TaskDetailBody({
+  projectId,
+  taskId,
+  state,
+  className = 'space-y-5 p-6',
+}: {
+  projectId: number
+  taskId: number | null
+  state: TaskDetailState
+  className?: string
+}) {
+  const { detail, members, assign, canAssign } = state
+  return (
+    <div className={className}>
+      {detail.isLoading ? (
+        <>
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-40 w-full" />
+        </>
+      ) : null}
+      {detail.isError ? (
+        <p className="rounded-[var(--radius-md)] bg-danger-bg p-4 text-sm text-danger">
+          任务详情加载失败，请稍后重试。
+        </p>
+      ) : null}
+      {detail.data ? (
+        <>
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="primary">{TASK_STATUS_LABELS[detail.data.status]}</Badge>
+            <Badge variant="outline">进度 {detail.data.progressPercent}%</Badge>
+            {/* v3-copilot-agent-as-assignee：agent 负责人显示 AI 标签 */}
+            {isAgentAssignee(detail.data.assigneeType) ? (
+              <Badge variant="ai">
+                <Bot className="h-3 w-3" aria-hidden />
+                {AGENT_ACTION_LABEL}
+              </Badge>
+            ) : null}
+          </div>
+          <section>
+            <h3 className="text-sm font-medium text-gray-800">说明</h3>
+            <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-gray-600">
+              {detail.data.description || '暂无说明'}
+            </p>
+          </section>
+          <dl className="grid grid-cols-2 gap-4 rounded-[var(--radius-md)] bg-gray-50 p-4 text-sm">
+            <div>
+              <dt className="text-gray-500">负责人</dt>
+              <dd className="mt-1 font-medium text-gray-800">
+                {canAssign ? (
+                  isAgentAssignee(detail.data.assigneeType) ? (
+                    // v3-copilot-agent-as-assignee：agent 负责人不可从人类下拉选择
+                    <span className="inline-flex items-center gap-1.5 text-ai">
+                      <Bot className="h-4 w-4" aria-hidden />
+                      {detail.data.agentAssignee?.name || 'AI'}（{AGENT_ACTION_LABEL}）
+                    </span>
+                  ) : (
+                    <select
+                      className="h-9 w-full rounded-[var(--radius-md)] border border-border bg-gray-0 px-2 text-sm text-gray-800 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 disabled:opacity-60"
+                      value={detail.data.assigneeId ?? ''}
+                      disabled={assign.isPending}
+                      onChange={(event) =>
+                        assign.mutate(event.target.value ? Number(event.target.value) : null)
+                      }
+                      aria-label="指派负责人"
+                    >
+                      <option value="">未分配</option>
+                      {/* v3-copilot-agent-as-assignee：从成员列表中过滤掉 agent */}
+                      {(members.data ?? [])
+                        .filter(
+                          (member) =>
+                            !('assigneeType' in member && member.assigneeType === 'agent'),
+                        )
+                        .map((member) => (
+                          <option key={member.userId} value={member.userId}>
+                            {member.user?.fullName ||
+                              member.user?.email ||
+                              `成员 #${member.userId}`}
+                          </option>
+                        ))}
+                    </select>
+                  )
+                ) : isAgentAssignee(detail.data.assigneeType) ? (
+                  <span className="inline-flex items-center gap-1.5 text-ai">
+                    <Bot className="h-4 w-4" aria-hidden />
+                    {detail.data.agentAssignee?.name || 'AI'}（{AGENT_ACTION_LABEL}）
+                  </span>
+                ) : (
+                  detail.data.assignee?.fullName || detail.data.assignee?.email || '未分配'
+                )}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-gray-500">截止日期</dt>
+              <dd className="mt-1 font-medium text-gray-800">{detail.data.endDate || '未设置'}</dd>
+            </div>
+            <div>
+              <dt className="text-gray-500">子任务</dt>
+              <dd className="mt-1 font-medium text-gray-800">
+                {detail.data.subtasks?.length ?? detail.data.subtaskCount ?? 0}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-gray-500">依赖</dt>
+              <dd className="mt-1 font-medium text-gray-800">{detail.data.dependencyCount ?? 0}</dd>
+            </div>
+            <div>
+              <dt className="text-gray-500">评论</dt>
+              <dd className="mt-1 font-medium text-gray-800">{detail.data.commentCount ?? 0}</dd>
+            </div>
+          </dl>
+
+          {/* 评论区 */}
+          <CommentThread
+            projectId={projectId}
+            entityType="task"
+            entityId={taskId!}
+            taskId={taskId!}
+          />
+
+          {/* 外部链接 */}
+          <TaskExternalLinksPanel projectId={projectId} taskId={taskId!} />
+        </>
+      ) : null}
+    </div>
+  )
+}
+
+/** 任务详情抽屉（看板、日历等视图用；覆盖层）。 */
+export function TaskDetailDrawer({
+  projectId,
+  taskId,
+  onOpenChange,
+}: {
+  projectId: number
+  taskId: number | null
+  onOpenChange: (open: boolean) => void
+}) {
+  const state = useTaskDetail(projectId, taskId)
   return (
     <Sheet open={taskId !== null} onOpenChange={onOpenChange}>
       <SheetContent className="overflow-y-auto">
         <SheetHeader>
           <div className="flex items-center gap-2">
-            <SheetTitle>{detail.data?.name ?? '任务详情'}</SheetTitle>
-            {detail.data ? (
-              <CopilotInlineTrigger
-                entity={{
-                  entityType: 'task',
-                  entityId: detail.data.id,
-                  label: detail.data.name,
-                  projectId,
-                }}
-                size="icon"
-                variant="ghost"
-              />
-            ) : null}
+            <SheetTitle>{state.detail.data?.name ?? '任务详情'}</SheetTitle>
+            <TaskCopilotTrigger projectId={projectId} state={state} />
           </div>
           <SheetDescription>关闭后会保留当前看板筛选与滚动位置。</SheetDescription>
         </SheetHeader>
-        <div className="space-y-5 p-6">
-          {detail.isLoading ? (
-            <>
-              <Skeleton className="h-24 w-full" />
-              <Skeleton className="h-40 w-full" />
-            </>
-          ) : null}
-          {detail.isError ? (
-            <p className="rounded-[var(--radius-md)] bg-danger-bg p-4 text-sm text-danger">
-              任务详情加载失败，请稍后重试。
-            </p>
-          ) : null}
-          {detail.data ? (
-            <>
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="primary">{TASK_STATUS_LABELS[detail.data.status]}</Badge>
-                <Badge variant="outline">进度 {detail.data.progressPercent}%</Badge>
-                {/* v3-copilot-agent-as-assignee：agent 负责人显示 AI 标签 */}
-                {isAgentAssignee(detail.data.assigneeType) ? (
-                  <Badge variant="ai">
-                    <Bot className="h-3 w-3" aria-hidden />
-                    {AGENT_ACTION_LABEL}
-                  </Badge>
-                ) : null}
-              </div>
-              <section>
-                <h3 className="text-sm font-medium text-gray-800">说明</h3>
-                <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-gray-600">
-                  {detail.data.description || '暂无说明'}
-                </p>
-              </section>
-              <dl className="grid grid-cols-2 gap-4 rounded-[var(--radius-md)] bg-gray-50 p-4 text-sm">
-                <div>
-                  <dt className="text-gray-500">负责人</dt>
-                  <dd className="mt-1 font-medium text-gray-800">
-                    {canAssign ? (
-                      isAgentAssignee(detail.data.assigneeType) ? (
-                        // v3-copilot-agent-as-assignee：agent 负责人不可从人类下拉选择
-                        <span className="inline-flex items-center gap-1.5 text-ai">
-                          <Bot className="h-4 w-4" aria-hidden />
-                          {detail.data.agentAssignee?.name || 'AI'}（{AGENT_ACTION_LABEL}）
-                        </span>
-                      ) : (
-                        <select
-                          className="h-9 w-full rounded-[var(--radius-md)] border border-border bg-gray-0 px-2 text-sm text-gray-800 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 disabled:opacity-60"
-                          value={detail.data.assigneeId ?? ''}
-                          disabled={assign.isPending}
-                          onChange={(event) =>
-                            assign.mutate(event.target.value ? Number(event.target.value) : null)
-                          }
-                          aria-label="指派负责人"
-                        >
-                          <option value="">未分配</option>
-                          {/* v3-copilot-agent-as-assignee：从成员列表中过滤掉 agent */}
-                          {(members.data ?? [])
-                            .filter(
-                              (member) =>
-                                !('assigneeType' in member && member.assigneeType === 'agent'),
-                            )
-                            .map((member) => (
-                              <option key={member.userId} value={member.userId}>
-                                {member.user?.fullName ||
-                                  member.user?.email ||
-                                  `成员 #${member.userId}`}
-                              </option>
-                            ))}
-                        </select>
-                      )
-                    ) : isAgentAssignee(detail.data.assigneeType) ? (
-                      <span className="inline-flex items-center gap-1.5 text-ai">
-                        <Bot className="h-4 w-4" aria-hidden />
-                        {detail.data.agentAssignee?.name || 'AI'}（{AGENT_ACTION_LABEL}）
-                      </span>
-                    ) : (
-                      detail.data.assignee?.fullName || detail.data.assignee?.email || '未分配'
-                    )}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-gray-500">截止日期</dt>
-                  <dd className="mt-1 font-medium text-gray-800">
-                    {detail.data.endDate || '未设置'}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-gray-500">子任务</dt>
-                  <dd className="mt-1 font-medium text-gray-800">
-                    {detail.data.subtasks?.length ?? detail.data.subtaskCount ?? 0}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-gray-500">依赖</dt>
-                  <dd className="mt-1 font-medium text-gray-800">
-                    {detail.data.dependencyCount ?? 0}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-gray-500">评论</dt>
-                  <dd className="mt-1 font-medium text-gray-800">
-                    {detail.data.commentCount ?? 0}
-                  </dd>
-                </div>
-              </dl>
-
-              {/* 评论区 */}
-              <CommentThread
-                projectId={projectId}
-                entityType="task"
-                entityId={taskId!}
-                taskId={taskId!}
-              />
-
-              {/* 外部链接 */}
-              <TaskExternalLinksPanel projectId={projectId} taskId={taskId!} />
-            </>
-          ) : null}
-        </div>
+        <TaskDetailBody projectId={projectId} taskId={taskId} state={state} />
       </SheetContent>
     </Sheet>
+  )
+}
+
+/**
+ * 任务详情拆分面板（v3-classic-ui-openproject-parity，OpenProject 式 split screen）：
+ * 停靠在列表右侧、不遮挡表格；点另一行即切换详情；全屏按钮进入任务详情页。
+ */
+export function TaskSplitPanel({
+  projectId,
+  taskId,
+  onClose,
+}: {
+  projectId: number
+  taskId: number
+  onClose: () => void
+}) {
+  const state = useTaskDetail(projectId, taskId)
+  return (
+    <aside
+      data-task-split-panel
+      aria-label="任务详情"
+      className="flex max-h-[calc(100dvh-8rem)] min-w-0 flex-col overflow-hidden rounded-[var(--radius-md)] border border-border bg-gray-0"
+    >
+      <div className="flex items-center gap-1 border-b border-border bg-surface px-3 py-2">
+        <span className="shrink-0 font-mono text-xs text-primary-600">#{taskId}</span>
+        <h2 className="min-w-0 flex-1 truncate px-1 text-sm font-semibold text-gray-800">
+          {state.detail.data?.name ?? '任务详情'}
+        </h2>
+        <TaskCopilotTrigger projectId={projectId} state={state} />
+        <Link
+          href={`/projects/${projectId}/tasks/${taskId}`}
+          aria-label="全屏查看任务"
+          className={cn(buttonVariants({ variant: 'ghost' }), 'h-8 w-8 px-0')}
+        >
+          <Maximize2 className="h-4 w-4" aria-hidden />
+        </Link>
+        <IconButton aria-label="关闭任务详情" size="sm" onClick={onClose}>
+          <X className="h-4 w-4" aria-hidden />
+        </IconButton>
+      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <TaskDetailBody
+          projectId={projectId}
+          taskId={taskId}
+          state={state}
+          className="space-y-5 p-4"
+        />
+      </div>
+    </aside>
   )
 }

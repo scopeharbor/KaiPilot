@@ -10,6 +10,7 @@ export type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>
 export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ className, ...props }, ref) => (
     <textarea
+      data-slot="textarea"
       ref={ref}
       className={cn(
         'flex min-h-20 w-full rounded-[var(--radius-sm)] border border-border bg-gray-0 px-3 py-2 text-sm text-gray-800',

@@ -7,8 +7,9 @@
 
 @import 'tailwindcss';
 
-/* KaTeX 数学公式 CSS（本地打包，禁止 CDN 引用） */
-@import 'katex/dist/katex.min.css';
+/* KaTeX 数学公式 CSS（本地打包，禁止 CDN 引用）：只由渲染公式的组件引入
+   （components/files/markdown/MarkdownDocumentViewer.tsx、MathFormula.tsx），
+   不进全站首屏 CSS（v3-frontend-load-performance）。 */
 
 /* Native controls must be able to shrink inside narrow form grids. */
 input,
@@ -172,6 +173,9 @@ textarea {
   --shadow-xl: 0 24px 56px rgba(15, 23, 42, 0.14), 0 8px 16px rgba(15, 23, 42, 0.06);
   --shadow-focus: 0 0 0 3px var(--ring); /* ??focus ring */
   --shadow-ai: 0 0 0 3px var(--ai-ring); /* AI focus ring */
+  /* 卡片阴影（默认等于 md / lg；旧版色系下改为边框环，见 classic-theme.css） */
+  --shadow-card: var(--shadow-md);
+  --shadow-card-hover: var(--shadow-lg);
 
   /* z-index 语义分层（DESIGN.md §3，不用魔法值） */
   --z-dropdown: 1000;

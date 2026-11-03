@@ -987,6 +987,18 @@ export function checkEdgeConfig(): GateCheck[] {
       'SSE 未关闭代理缓冲',
     ),
   )
+  const gzipTypes = /^[ \t]*gzip_types ([^;]*);/m.exec(src)?.[1]?.split(/\s+/) ?? []
+  checks.push(
+    check(
+      'edge.gzip-json',
+      /^[ \t]*gzip on;/m.test(src) &&
+        /^[ \t]*gzip_proxied any;/m.test(src) &&
+        gzipTypes.includes('application/json') &&
+        !gzipTypes.includes('text/event-stream'),
+      '代理响应 gzip 压缩 JSON，且不压缩 SSE（text/event-stream）',
+      'edge 未压缩 API JSON，或把 SSE 纳入压缩（会缓冲流式输出）',
+    ),
+  )
   const apiLocation = /location \/api\/v1\/ \{([^}]*)\}/s.exec(src)?.[1] ?? ''
   const apiProxyBufferSize = Number(/proxy_buffer_size (\d+)k;/.exec(apiLocation)?.[1] ?? 0)
   const apiProxyBuffers = /proxy_buffers (\d+) (\d+)k;/.exec(apiLocation)

@@ -5,6 +5,8 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+// KaTeX 样式只随文档查看器加载（v3-frontend-load-performance：移出全站 globals.css）
+import 'katex/dist/katex.min.css'
 import rehypeHighlight from 'rehype-highlight'
 import type { Components } from 'react-markdown'
 import { useCopyCode } from '@/hooks/use-copy-code'

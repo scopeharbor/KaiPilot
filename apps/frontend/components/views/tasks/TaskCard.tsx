@@ -69,7 +69,7 @@ export function TaskCard({ task, variant = 'kanban', disabled, onOpen, onMove }:
         // 整卡即拖动手柄（Trello 式）：无位移=点击打开、位移≥6px=拖动（PointerSensor 激活阈值）。
         !disabled && 'cursor-grab touch-none active:cursor-grabbing',
         sortable.isDragging && 'z-10 cursor-grabbing opacity-60 shadow-[var(--shadow-lg)]',
-        variant === 'compact' ? 'p-3' : 'p-4',
+        variant === 'compact' ? 'p-2.5' : 'p-3',
         // v3-copilot-agent-as-assignee：agent 负责任务的虚线边框 + 浅 AI 底纹
         isAgent && 'border-dashed border-ai/40 bg-ai-bg/30',
       )}
@@ -193,7 +193,7 @@ export function TaskCard({ task, variant = 'kanban', disabled, onOpen, onMove }:
         </div>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-2">
+      <div className="mt-2 flex flex-wrap items-center gap-1.5">
         {/* v3-copilot-agent-as-assignee：agent 负责人用 AI 标签（图标+文字，不只靠颜色） */}
         {isAgent ? (
           <Badge variant="ai">
@@ -207,10 +207,17 @@ export function TaskCard({ task, variant = 'kanban', disabled, onOpen, onMove }:
         ) : null}
       </div>
 
-      <div className="mt-3 flex items-center justify-between gap-3 text-xs text-gray-500">
+      <div className="mt-2 flex items-center justify-between gap-3 text-xs text-gray-500">
         <span className="inline-flex min-w-0 items-center gap-1">
           {isAgent ? (
             <Bot className="h-3.5 w-3.5 text-ai" aria-hidden />
+          ) : task.assignee ? (
+            <span
+              aria-hidden
+              className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary-100 text-[10px] font-semibold text-primary-700"
+            >
+              {(task.assignee.fullName || task.assignee.email || '?').slice(0, 1).toUpperCase()}
+            </span>
           ) : (
             <CircleUserRound className="h-3.5 w-3.5" aria-hidden />
           )}

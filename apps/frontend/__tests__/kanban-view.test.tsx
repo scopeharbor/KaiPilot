@@ -142,6 +142,8 @@ describe('Kanban view', () => {
     // 卡片正面不再显示全局 #id 编号。
     expect(screen.queryByText(`#${task.id}`)).not.toBeInTheDocument()
     expect(screen.getByText('项目经理')).toBeInTheDocument()
+    // OpenProject 式紧凑卡片：负责人首字头像（v3-classic-ui-openproject-views）。
+    expect(screen.getByText('项')).toBeInTheDocument()
   })
 
   test('TaskDetailDrawer loads the latest task by id and keeps context on close', async () => {
@@ -172,6 +174,12 @@ describe('Kanban view', () => {
     expect(screen.getByRole('heading', { name: '进行中' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: '已完成' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: '其他' })).toBeInTheDocument()
+    // OpenProject 式列头：状态色点 + 列名 + 计数；视图标题区为紧凑工具列。
+    const headers = document.querySelectorAll('[data-kanban-column-header]')
+    expect(headers).toHaveLength(4)
+    expect(headers[0]!.querySelector('.rounded-full.bg-gray-400')).toBeTruthy()
+    await waitFor(() => expect(headers[0]!.textContent).toBe('待处理1'))
+    expect(document.querySelector('[data-view-toolbar]')?.textContent).toContain('任务看板')
 
     fireEvent.click(screen.getAllByRole('button', { name: '快速创建' })[0]!)
     fireEvent.change(screen.getByPlaceholderText('任务名称'), {

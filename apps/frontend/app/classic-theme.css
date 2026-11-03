@@ -1,0 +1,508 @@
+/* ============================================================================
+ * 旧版界面 OpenProject 式视觉与精选色系（v3-classic-ui-openproject-style）
+ *
+ * 作用域：只在 `<html data-classic-palette>` 存在时生效。该属性由根布局首屏脚本（非 /next 路径）
+ * 与旧版 AppShell（挂载写入、卸载移除）维护；新版界面不设该属性，`:root` 原令牌与 `--nx-*` 均不受影响。
+ * 本文件只覆盖既有设计令牌并定义 `--classic-*` / `--shell-*`，不定义 `--nx-*`。
+ *
+ * 色系清单与菜单预览见 `lib/classic-palettes.ts`；每套色系的浅色 / 深色块由同一张表生成，
+ * 测试校验变量齐全、文字对比度 ≥ 4.5:1。参考 OpenProject 的信息架构，配色与实现均为自有。
+ * ==========================================================================*/
+
+/* ---------------------------------------------------------------------------
+ * 1. 结构令牌（浅色）：Primer 风格中性灰、方正圆角、以边框分层的卡片
+ * -------------------------------------------------------------------------*/
+:root[data-classic-palette] {
+  --gray-0: #ffffff;
+  --gray-50: #f6f8fa;
+  --gray-100: #eff2f5;
+  --gray-200: #d1d9e0;
+  --gray-300: #b7c0c9;
+  --gray-400: #8c959f;
+  --gray-500: #59636e;
+  --gray-600: #424a53;
+  --gray-700: #24292f;
+  --gray-800: #1f2328;
+  --gray-900: #0d1117;
+
+  /* 页面标题字阶收敛（OpenProject 式紧凑标题，v3-classic-ui-openproject-views）：2xl 28→22、3xl 36→28 */
+  --fs-2xl: 1.375rem;
+  --lh-2xl: 1.875rem;
+  --fs-3xl: 1.75rem;
+  --lh-3xl: 2.25rem;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 6px;
+  --radius-xl: 8px;
+  --radius-2xl: 12px;
+
+  --shadow-xs: 0 1px 0 rgba(31, 35, 40, 0.04);
+  --shadow-sm: 0 1px 0 rgba(31, 35, 40, 0.04), 0 1px 3px rgba(31, 35, 40, 0.06);
+  --shadow-md: 0 1px 3px rgba(31, 35, 40, 0.12), 0 8px 24px rgba(66, 74, 83, 0.12);
+  --shadow-lg: 0 1px 3px rgba(31, 35, 40, 0.12), 0 8px 24px rgba(66, 74, 83, 0.16);
+  --shadow-xl: 0 12px 28px rgba(31, 35, 40, 0.18), 0 2px 6px rgba(31, 35, 40, 0.08);
+  --shadow-card: 0 0 0 1px var(--border);
+  --shadow-card-hover: 0 0 0 1px var(--border-strong), 0 1px 3px rgba(31, 35, 40, 0.06);
+
+  /* 主色 50–900 由强调色推导（浅色：50 最浅、900 最深） */
+  --primary-50: color-mix(in srgb, var(--classic-accent) 8%, #ffffff);
+  --primary-100: color-mix(in srgb, var(--classic-accent) 16%, #ffffff);
+  --primary-200: color-mix(in srgb, var(--classic-accent) 30%, #ffffff);
+  --primary-300: color-mix(in srgb, var(--classic-accent) 50%, #ffffff);
+  --primary-400: color-mix(in srgb, var(--classic-accent) 76%, #ffffff);
+  --primary-500: var(--classic-accent);
+  --primary-600: color-mix(in srgb, var(--classic-accent) 86%, #000000);
+  --primary-700: color-mix(in srgb, var(--classic-accent) 72%, #000000);
+  --primary-800: color-mix(in srgb, var(--classic-accent) 58%, #000000);
+  --primary-900: color-mix(in srgb, var(--classic-accent) 46%, #000000);
+  --info: var(--primary-600);
+  --info-bg: var(--primary-50);
+  --ring: color-mix(in srgb, var(--classic-accent) 30%, transparent);
+
+  --shell-header-h: 48px;
+
+  /* 未知色系 id 时的兜底：等同默认色系「开项蓝」 */
+  --classic-accent: #3b6bef;
+  --shell-header-bg: #1e3a8a;
+  --shell-header-fg: #ffffff;
+  --shell-header-hover: rgba(255, 255, 255, 0.14);
+  --shell-header-border: transparent;
+  --shell-sidebar-bg: #f3f5f8;
+  --shell-sidebar-fg: #1f2328;
+  --shell-sidebar-muted: #59636e;
+  --shell-sidebar-hover: rgba(31, 35, 40, 0.06);
+  --shell-sidebar-border: #d1d9e0;
+  --shell-sidebar-active-bg: #dbe5fb;
+  --shell-sidebar-active-fg: #1e3a8a;
+}
+
+/* ---------------------------------------------------------------------------
+ * 2. 结构令牌（深色）：选择器比 [data-mode='dark'] 更具体，保证深色值覆盖第 1 节
+ * -------------------------------------------------------------------------*/
+:root[data-classic-palette][data-mode='dark'] {
+  --gray-0: #0d1117;
+  --gray-50: #151b23;
+  --gray-100: #1f252d;
+  --gray-200: #30363d;
+  --gray-300: #474f59;
+  --gray-400: #6e7681;
+  --gray-500: #8d96a0;
+  --gray-600: #b1bac4;
+  --gray-700: #d1d7e0;
+  --gray-800: #e6edf3;
+  --gray-900: #f0f6fc;
+
+  --shadow-xs: 0 1px 0 rgba(1, 4, 9, 0.3);
+  --shadow-sm: 0 1px 0 rgba(1, 4, 9, 0.3), 0 1px 3px rgba(1, 4, 9, 0.3);
+  --shadow-md: 0 0 0 1px #30363d, 0 8px 24px rgba(1, 4, 9, 0.6);
+  --shadow-lg: 0 0 0 1px #30363d, 0 8px 24px rgba(1, 4, 9, 0.7);
+  --shadow-xl: 0 0 0 1px #30363d, 0 12px 28px rgba(1, 4, 9, 0.8);
+  --shadow-card: 0 0 0 1px var(--border);
+  --shadow-card-hover: 0 0 0 1px var(--border-strong);
+
+  /* 主色 50–900（深色：沿用原深色令牌的方向，50 最暗、900 最亮） */
+  --primary-50: color-mix(in srgb, var(--classic-accent) 12%, #0d1117);
+  --primary-100: color-mix(in srgb, var(--classic-accent) 20%, #0d1117);
+  --primary-200: color-mix(in srgb, var(--classic-accent) 32%, #0d1117);
+  --primary-300: color-mix(in srgb, var(--classic-accent) 48%, #0d1117);
+  --primary-400: color-mix(in srgb, var(--classic-accent) 76%, #0d1117);
+  --primary-500: var(--classic-accent);
+  --primary-600: color-mix(in srgb, var(--classic-accent) 82%, #ffffff);
+  --primary-700: color-mix(in srgb, var(--classic-accent) 66%, #ffffff);
+  --primary-800: color-mix(in srgb, var(--classic-accent) 46%, #ffffff);
+  --primary-900: color-mix(in srgb, var(--classic-accent) 26%, #ffffff);
+  --ring: color-mix(in srgb, var(--classic-accent) 40%, transparent);
+
+  --classic-accent: #4f8cff;
+  --shell-header-bg: #14275e;
+  --shell-header-fg: #ffffff;
+  --shell-header-hover: rgba(255, 255, 255, 0.12);
+  --shell-header-border: #30363d;
+  --shell-sidebar-bg: #161b22;
+  --shell-sidebar-fg: #e6edf3;
+  --shell-sidebar-muted: #8d96a0;
+  --shell-sidebar-hover: rgba(255, 255, 255, 0.07);
+  --shell-sidebar-border: #30363d;
+  --shell-sidebar-active-bg: #3b6bef;
+  --shell-sidebar-active-fg: #ffffff;
+}
+
+/* ---------------------------------------------------------------------------
+ * 3. 精选色系（每套浅色 + 深色各一块，由同一张表生成）
+ * -------------------------------------------------------------------------*/
+/* 开项蓝（brand）：彩色顶栏 + 浅色侧栏（对齐 OpenProject 16.2 起的默认浅色侧栏） */
+:root[data-classic-palette='brand'] {
+  --classic-accent: #3b6bef;
+  --shell-header-bg: #1e3a8a;
+  --shell-header-fg: #ffffff;
+  --shell-header-hover: rgba(255, 255, 255, 0.14);
+  --shell-header-border: transparent;
+  --shell-sidebar-bg: #f3f5f8;
+  --shell-sidebar-fg: #1f2328;
+  --shell-sidebar-muted: #59636e;
+  --shell-sidebar-hover: rgba(31, 35, 40, 0.06);
+  --shell-sidebar-border: #d1d9e0;
+  --shell-sidebar-active-bg: #dbe5fb;
+  --shell-sidebar-active-fg: #1e3a8a;
+}
+
+:root[data-classic-palette='brand'][data-mode='dark'] {
+  --classic-accent: #4f8cff;
+  --shell-header-bg: #14275e;
+  --shell-header-fg: #ffffff;
+  --shell-header-hover: rgba(255, 255, 255, 0.12);
+  --shell-header-border: #30363d;
+  --shell-sidebar-bg: #161b22;
+  --shell-sidebar-fg: #e6edf3;
+  --shell-sidebar-muted: #8d96a0;
+  --shell-sidebar-hover: rgba(255, 255, 255, 0.07);
+  --shell-sidebar-border: #30363d;
+  --shell-sidebar-active-bg: #3b6bef;
+  --shell-sidebar-active-fg: #ffffff;
+}
+
+/* 晴空浅色（sky） */
+:root[data-classic-palette='sky'] {
+  --classic-accent: #0969da;
+  --shell-header-bg: #ffffff;
+  --shell-header-fg: #1f2328;
+  --shell-header-hover: rgba(31, 35, 40, 0.07);
+  --shell-header-border: #d1d9e0;
+  --shell-sidebar-bg: #f6f8fa;
+  --shell-sidebar-fg: #1f2328;
+  --shell-sidebar-muted: #59636e;
+  --shell-sidebar-hover: rgba(31, 35, 40, 0.06);
+  --shell-sidebar-border: #d1d9e0;
+  --shell-sidebar-active-bg: #ddf4ff;
+  --shell-sidebar-active-fg: #0550ae;
+}
+
+:root[data-classic-palette='sky'][data-mode='dark'] {
+  --classic-accent: #4493f8;
+  --shell-header-bg: #161b22;
+  --shell-header-fg: #e6edf3;
+  --shell-header-hover: rgba(255, 255, 255, 0.12);
+  --shell-header-border: #30363d;
+  --shell-sidebar-bg: #0d1117;
+  --shell-sidebar-fg: #e6edf3;
+  --shell-sidebar-muted: #8d96a0;
+  --shell-sidebar-hover: rgba(255, 255, 255, 0.07);
+  --shell-sidebar-border: #30363d;
+  --shell-sidebar-active-bg: #1f6feb;
+  --shell-sidebar-active-fg: #ffffff;
+}
+
+/* 森林绿（forest） */
+:root[data-classic-palette='forest'] {
+  --classic-accent: #1a7f37;
+  --shell-header-bg: #14532d;
+  --shell-header-fg: #ffffff;
+  --shell-header-hover: rgba(255, 255, 255, 0.14);
+  --shell-header-border: transparent;
+  --shell-sidebar-bg: #1c2620;
+  --shell-sidebar-fg: #e3ebe5;
+  --shell-sidebar-muted: #95a69a;
+  --shell-sidebar-hover: rgba(255, 255, 255, 0.08);
+  --shell-sidebar-border: transparent;
+  --shell-sidebar-active-bg: #1a7f37;
+  --shell-sidebar-active-fg: #ffffff;
+}
+
+:root[data-classic-palette='forest'][data-mode='dark'] {
+  --classic-accent: #3fb950;
+  --shell-header-bg: #0f2a1a;
+  --shell-header-fg: #ffffff;
+  --shell-header-hover: rgba(255, 255, 255, 0.12);
+  --shell-header-border: #30363d;
+  --shell-sidebar-bg: #111813;
+  --shell-sidebar-fg: #e3ebe5;
+  --shell-sidebar-muted: #8fa294;
+  --shell-sidebar-hover: rgba(255, 255, 255, 0.07);
+  --shell-sidebar-border: #30363d;
+  --shell-sidebar-active-bg: #1a7f37;
+  --shell-sidebar-active-fg: #ffffff;
+}
+
+/* 湖水青（teal） */
+:root[data-classic-palette='teal'] {
+  --classic-accent: #0e7490;
+  --shell-header-bg: #134e4a;
+  --shell-header-fg: #ffffff;
+  --shell-header-hover: rgba(255, 255, 255, 0.14);
+  --shell-header-border: transparent;
+  --shell-sidebar-bg: #1b2a2b;
+  --shell-sidebar-fg: #e1ecec;
+  --shell-sidebar-muted: #93a9aa;
+  --shell-sidebar-hover: rgba(255, 255, 255, 0.08);
+  --shell-sidebar-border: transparent;
+  --shell-sidebar-active-bg: #0e7490;
+  --shell-sidebar-active-fg: #ffffff;
+}
+
+:root[data-classic-palette='teal'][data-mode='dark'] {
+  --classic-accent: #2cb5c9;
+  --shell-header-bg: #0c2a28;
+  --shell-header-fg: #ffffff;
+  --shell-header-hover: rgba(255, 255, 255, 0.12);
+  --shell-header-border: #30363d;
+  --shell-sidebar-bg: #101a1b;
+  --shell-sidebar-fg: #e1ecec;
+  --shell-sidebar-muted: #8ca3a4;
+  --shell-sidebar-hover: rgba(255, 255, 255, 0.07);
+  --shell-sidebar-border: #30363d;
+  --shell-sidebar-active-bg: #0e7490;
+  --shell-sidebar-active-fg: #ffffff;
+}
+
+/* 勃艮第红（wine） */
+:root[data-classic-palette='wine'] {
+  --classic-accent: #be123c;
+  --shell-header-bg: #7a1f2b;
+  --shell-header-fg: #ffffff;
+  --shell-header-hover: rgba(255, 255, 255, 0.14);
+  --shell-header-border: transparent;
+  --shell-sidebar-bg: #2a1f22;
+  --shell-sidebar-fg: #f0e6e8;
+  --shell-sidebar-muted: #b09a9f;
+  --shell-sidebar-hover: rgba(255, 255, 255, 0.08);
+  --shell-sidebar-border: transparent;
+  --shell-sidebar-active-bg: #be123c;
+  --shell-sidebar-active-fg: #ffffff;
+}
+
+:root[data-classic-palette='wine'][data-mode='dark'] {
+  --classic-accent: #f2577a;
+  --shell-header-bg: #3a1117;
+  --shell-header-fg: #ffffff;
+  --shell-header-hover: rgba(255, 255, 255, 0.12);
+  --shell-header-border: #30363d;
+  --shell-sidebar-bg: #1a1214;
+  --shell-sidebar-fg: #f0e6e8;
+  --shell-sidebar-muted: #a8949a;
+  --shell-sidebar-hover: rgba(255, 255, 255, 0.07);
+  --shell-sidebar-border: #30363d;
+  --shell-sidebar-active-bg: #be123c;
+  --shell-sidebar-active-fg: #ffffff;
+}
+
+/* 石墨橙（graphite） */
+:root[data-classic-palette='graphite'] {
+  --classic-accent: #c2410c;
+  --shell-header-bg: #24292f;
+  --shell-header-fg: #ffffff;
+  --shell-header-hover: rgba(255, 255, 255, 0.14);
+  --shell-header-border: transparent;
+  --shell-sidebar-bg: #2d333b;
+  --shell-sidebar-fg: #e6edf3;
+  --shell-sidebar-muted: #a2abb6;
+  --shell-sidebar-hover: rgba(255, 255, 255, 0.08);
+  --shell-sidebar-border: transparent;
+  --shell-sidebar-active-bg: #c2410c;
+  --shell-sidebar-active-fg: #ffffff;
+}
+
+:root[data-classic-palette='graphite'][data-mode='dark'] {
+  --classic-accent: #f0883e;
+  --shell-header-bg: #161b22;
+  --shell-header-fg: #e6edf3;
+  --shell-header-hover: rgba(255, 255, 255, 0.12);
+  --shell-header-border: #30363d;
+  --shell-sidebar-bg: #1c2128;
+  --shell-sidebar-fg: #e6edf3;
+  --shell-sidebar-muted: #8d96a0;
+  --shell-sidebar-hover: rgba(255, 255, 255, 0.07);
+  --shell-sidebar-border: #30363d;
+  --shell-sidebar-active-bg: #c2410c;
+  --shell-sidebar-active-fg: #ffffff;
+}
+
+/* 暮光紫（violet） */
+:root[data-classic-palette='violet'] {
+  --classic-accent: #6941c6;
+  --shell-header-bg: #3b2a7a;
+  --shell-header-fg: #ffffff;
+  --shell-header-hover: rgba(255, 255, 255, 0.14);
+  --shell-header-border: transparent;
+  --shell-sidebar-bg: #27233a;
+  --shell-sidebar-fg: #ebe7f5;
+  --shell-sidebar-muted: #a59cc0;
+  --shell-sidebar-hover: rgba(255, 255, 255, 0.08);
+  --shell-sidebar-border: transparent;
+  --shell-sidebar-active-bg: #6941c6;
+  --shell-sidebar-active-fg: #ffffff;
+}
+
+:root[data-classic-palette='violet'][data-mode='dark'] {
+  --classic-accent: #a48afa;
+  --shell-header-bg: #1f1640;
+  --shell-header-fg: #ffffff;
+  --shell-header-hover: rgba(255, 255, 255, 0.12);
+  --shell-header-border: #30363d;
+  --shell-sidebar-bg: #17142a;
+  --shell-sidebar-fg: #ebe7f5;
+  --shell-sidebar-muted: #9d94b8;
+  --shell-sidebar-hover: rgba(255, 255, 255, 0.07);
+  --shell-sidebar-border: #30363d;
+  --shell-sidebar-active-bg: #6941c6;
+  --shell-sidebar-active-fg: #ffffff;
+}
+
+/* ---------------------------------------------------------------------------
+ * 4. 外壳内页面元素（只在旧版外壳 [data-classic-shell] 内）：OpenProject 式方正表格
+ * -------------------------------------------------------------------------*/
+[data-classic-shell] table thead th {
+  background-color: var(--surface);
+  color: var(--gray-700);
+  font-weight: 600;
+}
+
+[data-classic-shell] table thead tr:first-child th:first-child {
+  border-top-left-radius: var(--radius-md);
+}
+
+[data-classic-shell] table thead tr:first-child th:last-child {
+  border-top-right-radius: var(--radius-md);
+}
+
+[data-classic-shell] table tbody tr:hover > td {
+  background-color: color-mix(in srgb, var(--primary-50) 70%, transparent);
+}
+
+/* ---------------------------------------------------------------------------
+ * 5. 内页（v3-classic-ui-openproject-pages）：OpenProject 式页面标题、小部件卡片与 Primer 式控件
+ *    只在旧版色系属性存在时生效；本文件不在 Tailwind 的 @layer 内，覆盖同名工具类。
+ * -------------------------------------------------------------------------*/
+
+/* 5.1 页面标题：所有旧版页面的 h1 统一为 20px 半粗 */
+[data-classic-shell] [data-page-content] h1 {
+  color: var(--heading);
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: var(--lh-xl);
+}
+
+/* 5.2 页面标题区：页面第一块含 h1 的区域（或首个 h1 本身）加底部分隔线。
+ *     项目子页面的首块是项目头（另有视图 Tab 分隔），改为对项目头之后的页面根应用。 */
+:is(
+    [data-classic-shell] [data-page-content] > :first-child:not([data-project-header]),
+    [data-classic-shell] [data-page-content] > [data-project-header] ~ *
+  )
+  > :is(:first-child:has(h1), h1:first-child) {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+
+/* 5.3 卡片 → 小部件框：CardHeader 为灰底标题栏，标题 14px 半粗 */
+:root[data-classic-palette] [data-slot='card-header'] {
+  background-color: var(--surface);
+  border-bottom: 1px solid var(--border);
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+  padding-bottom: 10px;
+  padding-top: 10px;
+}
+
+:root[data-classic-palette] [data-slot='card-title'] {
+  font-size: var(--fs-base);
+  font-weight: 600;
+  line-height: var(--lh-base);
+}
+
+:root[data-classic-palette] [data-slot='card-header'] [data-slot='card-description'] {
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+}
+
+:root[data-classic-palette]
+  [data-slot='card-header']
+  + :is([data-slot='card-content'], [data-slot='card-footer']) {
+  padding-top: var(--card-pad);
+}
+
+/* 5.3b 标题写在卡片内容首行的卡片（未用 CardHeader）：首行标题区同样渲染为灰底标题栏。
+ *      内容区有内边距时用负外边距铺满；内容区为 p-0（标题行自带内边距）时只加底色与分隔线。 */
+:root[data-classic-palette]
+  [data-slot='card']
+  > [data-slot='card-content']:first-child:not([class~='p-0'])
+  > :first-child:is(
+    h2,
+    h3,
+    :has(> :is(h2, h3):first-child),
+    :has(> :first-child > :is(h2, h3):first-child)
+  ) {
+  background-color: var(--surface);
+  border-bottom: 1px solid var(--border);
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+  margin: calc(-1 * var(--card-pad)) calc(-1 * var(--card-pad)) var(--card-pad);
+  padding: 10px var(--card-pad);
+}
+
+:root[data-classic-palette]
+  [data-slot='card']
+  > [data-slot='card-content'][class~='p-0']:first-child
+  > :first-child:is(
+    :has(> :is(h2, h3):first-child),
+    :has(> :first-child > :is(h2, h3):first-child)
+  ) {
+  background-color: var(--surface);
+  border-bottom: 1px solid var(--border);
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+  padding-bottom: 10px;
+  padding-top: 10px;
+}
+
+:root[data-classic-palette]
+  [data-slot='card']
+  > [data-slot='card-content']:first-child
+  > :is(h2, h3):first-child,
+:root[data-classic-palette]
+  [data-slot='card']
+  > [data-slot='card-content']:first-child
+  > :first-child
+  > :is(h2, h3):first-child,
+:root[data-classic-palette]
+  [data-slot='card']
+  > [data-slot='card-content']:first-child
+  > :first-child
+  > :first-child
+  > :is(h2, h3):first-child {
+  font-size: var(--fs-base);
+  line-height: var(--lh-base);
+}
+
+/* 5.4 Primer 式按钮：次要 / 描边按钮为浅灰底；精确指针下控件高 32px（触屏保持 44px 触摸目标） */
+:root[data-classic-palette]
+  [data-slot='button']:is([data-variant='secondary'], [data-variant='outline']) {
+  background-color: var(--gray-50);
+  border-color: var(--border);
+}
+
+:root[data-classic-palette]
+  [data-slot='button']:is([data-variant='secondary'], [data-variant='outline']):hover {
+  background-color: var(--gray-100);
+}
+
+/* 5.5 Primer 式标签：圆角胶囊 */
+:root[data-classic-palette] [data-slot='badge'] {
+  border-radius: 9999px;
+}
+
+@media (pointer: fine) {
+  :root[data-classic-palette] [data-slot='button'][data-size='default'] {
+    height: 32px;
+    padding-inline: 12px;
+  }
+
+  :root[data-classic-palette] [data-slot='button'][data-size='sm'] {
+    height: 28px;
+    padding-inline: 10px;
+  }
+
+  :root[data-classic-palette] :is([data-slot='input'], [data-slot='select-trigger']) {
+    height: 32px;
+  }
+}

@@ -160,37 +160,37 @@ describe('AppShell 布局', () => {
     expect(screen.queryByText(/AI 快速创建/)).not.toBeInTheDocument()
   })
 
-  test('Sidebar 折叠切换在展开/折叠两态都只占品牌同一行', async () => {
+  test('侧栏内的折叠开关切换折叠，按钮名与 aria-expanded 随状态变化', async () => {
     loginAs(['project:view'])
-    const { Sidebar } = await import('@/components/layout/Sidebar')
+    const { SidebarCollapseToggle } = await import('@/components/layout/Sidebar')
     const { useUiStore } = await import('@/stores/ui-store')
     act(() => useUiStore.getState().setSidebarCollapsed(false))
 
-    renderWithProviders(<Sidebar />)
+    renderWithProviders(<SidebarCollapseToggle />)
     const collapseBtn = screen.getByRole('button', { name: '折叠侧栏' })
     expect(collapseBtn.getAttribute('aria-expanded')).toBe('true')
-    // 展开态：品牌链接与折叠按钮同属 h-14 头部这一行。
-    expect(collapseBtn.closest('div')).toBe(
-      screen.getByRole('link', { name: /开项 KaiPilot 首页/ }).parentElement,
-    )
 
     fireEvent.click(collapseBtn)
 
-    // 折叠态：不再有第二个常驻控件，logo 位就地换手为「展开侧栏」。
     expect(useUiStore.getState().sidebarCollapsed).toBe(true)
     const expandBtn = screen.getByRole('button', { name: '展开侧栏' })
     expect(expandBtn.getAttribute('aria-expanded')).toBe('false')
-    expect(screen.queryByRole('link', { name: /开项 KaiPilot 首页/ })).not.toBeInTheDocument()
 
     act(() => useUiStore.getState().setSidebarCollapsed(false))
   })
 
-  test('Sidebar 固定形态（移动抽屉/平板）不出现折叠控件', async () => {
+  test('平板强制折叠与移动抽屉形态不出现折叠控件；只有移动抽屉带首页品牌行', async () => {
     loginAs(['project:view'])
     const { Sidebar } = await import('@/components/layout/Sidebar')
-    renderWithProviders(<Sidebar forceCollapsed hideCollapseToggle />)
+    const desktop = renderWithProviders(<Sidebar />)
+    expect(screen.getByRole('button', { name: '折叠侧栏' })).toBeInTheDocument()
+    desktop.unmount()
+    const { unmount } = renderWithProviders(<Sidebar forceCollapsed />)
     expect(screen.queryByRole('button', { name: /侧栏/ })).not.toBeInTheDocument()
-    // 强制折叠时 logo 仍是首页链接（换手行为只属于用户可切换的桌面态）。
+    expect(screen.queryByRole('link', { name: /开项 KaiPilot 首页/ })).not.toBeInTheDocument()
+    unmount()
+
+    renderWithProviders(<Sidebar forceCollapsed={false} showBrand />)
     expect(screen.getByRole('link', { name: /开项 KaiPilot 首页/ })).toBeInTheDocument()
   })
 

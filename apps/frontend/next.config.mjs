@@ -30,7 +30,7 @@ const nextConfig = {
   transpilePackages: ['@aiproj/types'],
   // 共享包（NodeNext 后端）内部用 `.js` 扩展写相对导入，webpack 需要
   // extensionAlias 把 `.js` 映射回 `.ts`。
-  webpack: (config) => {
+  webpack: (config, { isServer }) => {
     config.resolve.extensionAlias = {
       ...(config.resolve.extensionAlias ?? {}),
       '.js': ['.ts', '.tsx', '.js'],
@@ -46,6 +46,11 @@ const nextConfig = {
     config.resolve.fallback = {
       ...(config.resolve.fallback ?? {}),
       crypto: false,
+    }
+    // v3-frontend-load-performance：浏览器端彻底不打包 crypto 的 browserify 垫片（bn.js / asn1.js 约 300KB），
+    // fallback 之外再用 alias 置空——Next 自带的 node 内置模块垫片优先于 fallback 生效。
+    if (!isServer) {
+      config.resolve.alias = { ...(config.resolve.alias ?? {}), crypto: false }
     }
     // 简体/繁体文字变体（spec: text-variant）：`cc-loader` 在 SWC/TS 编译前把
     // 含 CJK 的单行 JSXText 改写为 `<CC s tw hk />` 并注入 import（规则见

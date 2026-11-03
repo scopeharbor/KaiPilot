@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/DropdownMenu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip'
+import { CLASSIC_PALETTES } from '@/lib/classic-palettes'
 
 export const THEME_OPTIONS: Array<{
   value: 'light' | 'dark' | 'system'
@@ -29,29 +30,37 @@ export const DENSITY_OPTIONS: Array<{ value: Density; label: string; Icon: typeo
   { value: 'compact', label: '紧凑', Icon: Rows2 },
 ]
 
+export interface ThemeDensityMenuProps {
+  /** 触发按钮的额外样式（旧版顶栏用色系文字色）。 */
+  triggerClassName?: string
+}
+
 /**
  * 外观菜单（build-app-shell-layout / spec app-shell-navigation §顶栏）。
  *
  * 主题——`next-themes`（`data-mode` 属性，浅/深/跟随系统）；
+ * 色系——`ui-store`（`data-classic-palette` 属性，旧版界面精选色系，v3-classic-ui-openproject-style）；
  * 密度——`ui-store`（`data-density` 属性，舒适/紧凑）。
- * 两套开关正交（design.md D2），此菜单同处集中提供入口。
+ * 三套开关正交（design.md D2），此菜单同处集中提供入口。
  */
-export function ThemeDensityMenu() {
+export function ThemeDensityMenu({ triggerClassName }: ThemeDensityMenuProps = {}) {
   const { theme, setTheme } = useTheme()
   const density = useUiStore((state) => state.density)
   const setDensity = useUiStore((state) => state.setDensity)
+  const classicPalette = useUiStore((state) => state.classicPalette)
+  const setClassicPalette = useUiStore((state) => state.setClassicPalette)
 
   return (
     <DropdownMenu>
       <Tooltip>
         <TooltipTrigger asChild>
           <DropdownMenuTrigger asChild>
-            <IconButton aria-label="外观菜单">
+            <IconButton aria-label="外观菜单" className={triggerClassName}>
               <Palette className="h-4 w-4" aria-hidden />
             </IconButton>
           </DropdownMenuTrigger>
         </TooltipTrigger>
-        <TooltipContent>外观（主题与密度）</TooltipContent>
+        <TooltipContent>外观（主题、色系与密度）</TooltipContent>
       </Tooltip>
       <DropdownMenuContent align="end" sideOffset={8} className="min-w-56">
         <DropdownMenuLabel>主题</DropdownMenuLabel>
@@ -66,6 +75,33 @@ export function ThemeDensityMenu() {
             >
               <OptionIcon className="h-4 w-4" aria-hidden />
               <span className="flex-1">{option.label}</span>
+              {active ? <Check className="h-4 w-4 text-primary-500" aria-hidden /> : null}
+            </DropdownMenuItem>
+          )
+        })}
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel>色系</DropdownMenuLabel>
+        {CLASSIC_PALETTES.map((palette) => {
+          const active = classicPalette === palette.id
+          return (
+            <DropdownMenuItem
+              key={palette.id}
+              onSelect={() => setClassicPalette(palette.id)}
+              className="pr-2"
+              data-classic-palette-option={palette.id}
+            >
+              <span
+                aria-hidden
+                className="inline-flex h-4 w-6 shrink-0 overflow-hidden rounded-[var(--radius-sm)] border border-border"
+              >
+                <span className="h-full w-1/3" style={{ backgroundColor: palette.swatch.header }} />
+                <span
+                  className="h-full w-1/3"
+                  style={{ backgroundColor: palette.swatch.sidebar }}
+                />
+                <span className="h-full w-1/3" style={{ backgroundColor: palette.swatch.accent }} />
+              </span>
+              <span className="flex-1">{palette.label}</span>
               {active ? <Check className="h-4 w-4 text-primary-500" aria-hidden /> : null}
             </DropdownMenuItem>
           )

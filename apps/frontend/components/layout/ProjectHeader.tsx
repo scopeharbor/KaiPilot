@@ -27,12 +27,37 @@ import {
   type ContradictionSeverity,
 } from '@aiproj/types'
 
+const PROJECT_STATUS_LABELS: Record<string, string> = {
+  draft: '草稿',
+  planning: '规划中',
+  active: '进行中',
+  on_hold: '暂停',
+  completed: '已完成',
+  cancelled: '已取消',
+  archived: '已归档',
+}
+
+const PROJECT_STATUS_VARIANTS: Record<string, 'neutral' | 'info' | 'success' | 'warning'> = {
+  active: 'info',
+  completed: 'success',
+  on_hold: 'warning',
+}
+
+/** 项目内入口（v1-runtime-defect-repair：共享项目头中的项目内入口必须为客户端软跳转）。 */
+const PROJECT_HEADER_LINKS = [
+  { segment: 'tasks', label: '任务批量管理' },
+  { segment: 'members', label: '成员管理' },
+  { segment: 'change-requests', label: '变更请求' },
+  { segment: 'settings', label: '项目设置' },
+] as const
+
 /**
- * 共享项目头（build-app-shell-layout / spec project-view-tabs 「共享项目头」场景）：
+ * 共享项目头（v3-classic-ui-openproject-views，OpenProject 式精简标题列）：
  *
- * - 挂 `projects/[id]/layout.tsx`——在 6 视图 Tab 之上；切换 Tab 时保持不变（不整页重载）。
- * - 内容：项目名/描述/操作 + 关键统计卡片 + 最近活动摘要 + ProjectTabs。
- * - 承载了原 `projects/[id]/page.tsx` 的所有信息（改造前唯一入口），页面移到 layout 后由所有视图共用。
+ * - 挂 `projects/[id]/layout.tsx`——所有项目视图共用；切换视图时保持不变（不整页重载）。
+ * - 内容：项目编码 + 状态、项目名、项目内入口（软跳转）、归档 / 恢复 / 删除、视图 Tab。
+ * - 统计、指标警告、矛盾与创新工作台摘要、最近活动移到项目概览（`ProjectOverview`，
+ *   `/projects/:id/overview`），视图页打开即见内容。
  */
 export function ProjectHeader() {
   const params = useParams()
@@ -58,10 +83,6 @@ function ProjectHeaderContent({ id }: { id: number }) {
     queryKey: projectKeys.detail(id),
     queryFn: () => projectsApi.get(id),
   })
-  const dashboard = useQuery({
-    queryKey: projectKeys.dashboard(id),
-    queryFn: () => projectDashboardApi.get(id),
-  })
 
   const archive = useMutation({
     mutationFn: () => projectsApi.archive(id),
@@ -81,8 +102,122 @@ function ProjectHeaderContent({ id }: { id: number }) {
 
   if (project.isLoading) {
     return (
-      <div className="space-y-6 py-8" aria-label="正在加载项目">
-        <Skeleton className="h-32 w-full" />
+      <div className="space-y-3 pb-1 pt-5" aria-label="正在加载项目">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-7 w-72" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+    )
+  }
+  if (project.isError || !project.data) {
+    return <Alert className="my-8" variant="danger" title="项目加载失败" />
+  }
+
+  const status = project.data.status
+  return (
+    <div data-project-header className="pt-5">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 text-xs text-gray-500">
+            <span className="font-mono">{project.data.code || '未设置项目编码'}</span>
+            <Badge variant={PROJECT_STATUS_VARIANTS[status] ?? 'neutral'}>
+              {PROJECT_STATUS_LABELS[status] ?? status}
+            </Badge>
+          </div>
+          <h1 className="mt-1 truncate text-xl font-semibold text-gray-800">{project.data.name}</h1>
+        </div>
+        <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2">
+          <nav aria-label="项目内入口" className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            {PROJECT_HEADER_LINKS.map((link) => (
+              <Link
+                key={link.segment}
+                className="text-sm font-medium text-primary-600 hover:underline"
+                href={`/projects/${id}/${link.segment}`}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+          <div className="flex flex-wrap gap-2">
+            <PermissionGuard require="project:update">
+              {status === 'archived' ? (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  loading={restore.isPending}
+                  onClick={() => restore.mutate()}
+                >
+                  恢复项目
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  loading={archive.isPending}
+                  onClick={() => archive.mutate()}
+                >
+                  归档项目
+                </Button>
+              )}
+            </PermissionGuard>
+            <PermissionGuard require="project:delete">
+              <Button
+                size="sm"
+                variant="danger"
+                loading={remove.isPending}
+                onClick={() => {
+                  if (window.confirm('确认删除该项目？')) remove.mutate()
+                }}
+              >
+                删除项目
+              </Button>
+            </PermissionGuard>
+          </div>
+        </div>
+      </div>
+      <div className="mt-3">
+        <ProjectTabs />
+      </div>
+    </div>
+  )
+}
+
+/**
+ * 项目概览（v3-classic-ui-openproject-views，OpenProject 式 Overview）：项目信息、指标警告、
+ * 关键指标、矛盾与创新工作台摘要、最近活动。挂在 `/projects/:id/overview`，
+ * `/projects/:id` 重定向到默认视图前也先显示它。
+ */
+export function ProjectOverview() {
+  const params = useParams()
+  const id = Number(params.id)
+  const organizationId = useAuthStore(selectEffectiveOrganizationId)
+  if (organizationId === null) {
+    return <Alert className="my-8">请先选择组织</Alert>
+  }
+  return (
+    <PermissionGuard
+      require="project:view"
+      fallback={<Alert className="my-8">无权访问该项目</Alert>}
+    >
+      <ProjectOverviewContent id={id} />
+    </PermissionGuard>
+  )
+}
+
+function ProjectOverviewContent({ id }: { id: number }) {
+  const project = useQuery({
+    queryKey: projectKeys.detail(id),
+    queryFn: () => projectsApi.get(id),
+  })
+  const dashboard = useQuery({
+    queryKey: projectKeys.dashboard(id),
+    queryFn: () => projectDashboardApi.get(id),
+  })
+
+  if (project.isLoading) {
+    return (
+      <div className="space-y-6 py-6" aria-label="正在加载项目概览">
+        <Skeleton className="h-24 w-full" />
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
           {Array.from({ length: 6 }, (_, index) => (
             <Skeleton key={index} className="h-28 w-full" />
@@ -129,52 +264,14 @@ function ProjectHeaderContent({ id }: { id: number }) {
     '—'
 
   return (
-    <div className="space-y-6 py-8">
+    <div data-project-overview className="space-y-6 py-6">
       <Card variant="outlined">
-        <CardContent className="flex flex-col gap-5 pt-[var(--card-pad)] md:flex-row md:items-start md:justify-between">
-          <div className="min-w-0 space-y-2">
-            <p className="font-mono text-xs text-gray-500">
-              {project.data.code || '未设置项目编码'}
-            </p>
-            <h1 className="text-2xl font-semibold text-gray-800 text-balance">
-              {project.data.name}
-            </h1>
-            <p className="max-w-[70ch] text-sm text-gray-600 text-pretty">
-              {project.data.description || '尚未填写描述'}
-            </p>
-          </div>
-          <div className="flex shrink-0 flex-wrap gap-3">
-            <PermissionGuard require="project:update">
-              {project.data.status === 'archived' ? (
-                <Button
-                  variant="secondary"
-                  loading={restore.isPending}
-                  onClick={() => restore.mutate()}
-                >
-                  恢复项目
-                </Button>
-              ) : (
-                <Button
-                  variant="secondary"
-                  loading={archive.isPending}
-                  onClick={() => archive.mutate()}
-                >
-                  归档项目
-                </Button>
-              )}
-            </PermissionGuard>
-            <PermissionGuard require="project:delete">
-              <Button
-                variant="danger"
-                loading={remove.isPending}
-                onClick={() => {
-                  if (window.confirm('确认删除该项目？')) remove.mutate()
-                }}
-              >
-                删除项目
-              </Button>
-            </PermissionGuard>
-          </div>
+        <CardContent className="space-y-2 pt-[var(--card-pad)]">
+          <h2 className="text-lg font-semibold text-gray-800">项目信息</h2>
+          <p className="font-medium text-gray-800">{project.data.name}</p>
+          <p className="max-w-[70ch] text-sm text-gray-600 text-pretty">
+            {project.data.description || '尚未填写描述'}
+          </p>
         </CardContent>
       </Card>
 
@@ -200,133 +297,119 @@ function ProjectHeaderContent({ id }: { id: number }) {
         <StatCard label="剩余天数" value={remainingDays} />
       </section>
 
-      <ContradictionSummaryCard
-        projectId={id}
-        summary={dashboard.data?.contradictionSummary}
-        loading={dashboard.isLoading}
-      />
+      {/* OpenProject 式概览小部件：两列（v3-classic-ui-openproject-parity） */}
+      <div data-project-overview-widgets className="grid items-start gap-6 xl:grid-cols-2">
+        <div className="min-w-0 space-y-6">
+          <ContradictionSummaryCard
+            projectId={id}
+            summary={dashboard.data?.contradictionSummary}
+            loading={dashboard.isLoading}
+          />
 
-      <TrizInnovationWorkbenchSummaryCard
-        projectId={id}
-        summary={dashboard.data?.trizInnovationWorkbenchSummary}
-        loading={dashboard.isLoading}
-      />
-
-      <Card variant="outlined">
-        <CardContent className="pt-[var(--card-pad)]">
-          <div className="flex items-center justify-between gap-4">
-            <h2 className="text-lg font-semibold text-gray-800">最近活动</h2>
-            <div className="flex flex-wrap items-center gap-4">
-              <Link
-                className="text-sm font-medium text-primary-600 hover:underline"
-                href={`/projects/${id}/tasks`}
-              >
-                任务批量管理
-              </Link>
-              <Link
-                className="text-sm font-medium text-primary-600 hover:underline"
-                href={`/projects/${id}/members`}
-              >
-                成员管理
-              </Link>
-              <Link
-                className="text-sm font-medium text-primary-600 hover:underline"
-                href={`/projects/${id}/change-requests`}
-              >
-                变更请求
-              </Link>
-              <PermissionGuard require="triz_decision:view" fallback={null}>
-                <Link
-                  className="text-sm font-medium text-primary-600 hover:underline"
-                  href={`/projects/${id}/triz-decision-center`}
-                >
-                  TRIZ 决策中心
-                </Link>
-              </PermissionGuard>
-              <PermissionGuard require="triz_resource_analyzer:view" fallback={null}>
-                <Link
-                  className="text-sm font-medium text-primary-600 hover:underline"
-                  href={`/projects/${id}/triz-resource-analyzer`}
-                >
-                  TRIZ 资源分析
-                </Link>
-              </PermissionGuard>
-              <PermissionGuard require="triz_evolution_trend_analysis:view" fallback={null}>
-                <Link
-                  className="text-sm font-medium text-primary-600 hover:underline"
-                  href={`/projects/${id}/triz-evolution-trend`}
-                >
-                  进化趋势
-                </Link>
-              </PermissionGuard>
-              <PermissionGuard require="triz_function_analysis:view" fallback={null}>
-                <Link
-                  className="text-sm font-medium text-primary-600 hover:underline"
-                  href={`/projects/${id}/triz/function-analysis`}
-                >
-                  功能分析图
-                </Link>
-              </PermissionGuard>
-              <PermissionGuard require="triz_skill_layer:view" fallback={null}>
-                <Link
-                  className="text-sm font-medium text-primary-600 hover:underline"
-                  href={`/projects/${id}/triz-skill-layer`}
-                >
-                  TRIZ Skill Layer
-                </Link>
-              </PermissionGuard>
-              <PermissionGuard require="triz_pm_phase_integration:view" fallback={null}>
-                <Link
-                  className="text-sm font-medium text-primary-600 hover:underline"
-                  href={`/projects/${id}/triz-pm-phase`}
-                >
-                  TRIZ-PM 阶段整合
-                </Link>
-              </PermissionGuard>
-              <PermissionGuard require="triz_assistant:view" fallback={null}>
-                <Link
-                  className="text-sm font-medium text-primary-600 hover:underline"
-                  href={`/projects/${id}/triz/assistant`}
-                >
-                  AI-TRIZ 助手
-                </Link>
-              </PermissionGuard>
-              <Link
-                className="text-sm font-medium text-primary-600 hover:underline"
-                href={`/projects/${id}/settings`}
-              >
-                项目设置
-              </Link>
-            </div>
-          </div>
-          <ul className="mt-4 max-h-80 divide-y divide-border overflow-y-auto pr-1 [scrollbar-color:var(--color-gray-300)_transparent]">
-            {dashboard.data?.recentActivity.map(
-              (item: ProjectDashboard['recentActivity'][number]) => (
-                <li key={item.id} className="py-3 first:pt-0 last:pb-0">
-                  <article className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                    <strong className="font-medium text-gray-800">
-                      {activityLabel(item.event, item.action)}
-                    </strong>
-                    <time className="text-xs text-gray-500" dateTime={item.createdAt}>
-                      {new Date(item.createdAt).toLocaleString('zh-CN')}
-                    </time>
-                  </article>
-                </li>
-              ),
-            )}
-            {dashboard.data && dashboard.data.recentActivity.length === 0 ? (
-              <li className="py-4 text-sm text-gray-500">暂无活动</li>
-            ) : null}
-            {dashboard.isLoading ? (
-              <li className="py-3">
-                <Skeleton className="h-5 w-full" />
-              </li>
-            ) : null}
-          </ul>
-        </CardContent>
-      </Card>
-
-      <ProjectTabs />
+          <TrizInnovationWorkbenchSummaryCard
+            projectId={id}
+            summary={dashboard.data?.trizInnovationWorkbenchSummary}
+            loading={dashboard.isLoading}
+          />
+        </div>
+        <div className="min-w-0 space-y-6">
+          {/* 无任何可见入口（缺少 TRIZ 权限）时整块隐藏 */}
+          <Card variant="outlined" data-project-innovation-tools className="has-[nav:empty]:hidden">
+            <CardContent className="pt-[var(--card-pad)]">
+              <h2 className="text-lg font-semibold text-gray-800">创新工具</h2>
+              <nav aria-label="创新工具" className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                <PermissionGuard require="triz_decision:view" fallback={null}>
+                  <Link
+                    className="text-sm font-medium text-primary-600 hover:underline"
+                    href={`/projects/${id}/triz-decision-center`}
+                  >
+                    TRIZ 决策中心
+                  </Link>
+                </PermissionGuard>
+                <PermissionGuard require="triz_resource_analyzer:view" fallback={null}>
+                  <Link
+                    className="text-sm font-medium text-primary-600 hover:underline"
+                    href={`/projects/${id}/triz-resource-analyzer`}
+                  >
+                    TRIZ 资源分析
+                  </Link>
+                </PermissionGuard>
+                <PermissionGuard require="triz_evolution_trend_analysis:view" fallback={null}>
+                  <Link
+                    className="text-sm font-medium text-primary-600 hover:underline"
+                    href={`/projects/${id}/triz-evolution-trend`}
+                  >
+                    进化趋势
+                  </Link>
+                </PermissionGuard>
+                <PermissionGuard require="triz_function_analysis:view" fallback={null}>
+                  <Link
+                    className="text-sm font-medium text-primary-600 hover:underline"
+                    href={`/projects/${id}/triz/function-analysis`}
+                  >
+                    功能分析图
+                  </Link>
+                </PermissionGuard>
+                <PermissionGuard require="triz_skill_layer:view" fallback={null}>
+                  <Link
+                    className="text-sm font-medium text-primary-600 hover:underline"
+                    href={`/projects/${id}/triz-skill-layer`}
+                  >
+                    TRIZ Skill Layer
+                  </Link>
+                </PermissionGuard>
+                <PermissionGuard require="triz_pm_phase_integration:view" fallback={null}>
+                  <Link
+                    className="text-sm font-medium text-primary-600 hover:underline"
+                    href={`/projects/${id}/triz-pm-phase`}
+                  >
+                    TRIZ-PM 阶段整合
+                  </Link>
+                </PermissionGuard>
+                <PermissionGuard require="triz_assistant:view" fallback={null}>
+                  <Link
+                    className="text-sm font-medium text-primary-600 hover:underline"
+                    href={`/projects/${id}/triz/assistant`}
+                  >
+                    AI-TRIZ 助手
+                  </Link>
+                </PermissionGuard>
+              </nav>
+            </CardContent>
+          </Card>
+          <Card variant="outlined">
+            <CardContent className="pt-[var(--card-pad)]">
+              <div className="flex items-center justify-between gap-4">
+                <h2 className="text-lg font-semibold text-gray-800">最近活动</h2>
+              </div>
+              <ul className="mt-4 max-h-80 divide-y divide-border overflow-y-auto pr-1 [scrollbar-color:var(--color-gray-300)_transparent]">
+                {dashboard.data?.recentActivity.map(
+                  (item: ProjectDashboard['recentActivity'][number]) => (
+                    <li key={item.id} className="py-3 first:pt-0 last:pb-0">
+                      <article className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                        <strong className="font-medium text-gray-800">
+                          {activityLabel(item.event, item.action)}
+                        </strong>
+                        <time className="text-xs text-gray-500" dateTime={item.createdAt}>
+                          {new Date(item.createdAt).toLocaleString('zh-CN')}
+                        </time>
+                      </article>
+                    </li>
+                  ),
+                )}
+                {dashboard.data && dashboard.data.recentActivity.length === 0 ? (
+                  <li className="py-4 text-sm text-gray-500">暂无活动</li>
+                ) : null}
+                {dashboard.isLoading ? (
+                  <li className="py-3">
+                    <Skeleton className="h-5 w-full" />
+                  </li>
+                ) : null}
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }

@@ -183,6 +183,115 @@ test.group('Task list view API', (group) => {
     assert.isNull(assigneeSort.body().data.at(-1).assigneeId)
   })
 
+  test('groups by status over the full filtered result and returns sums', async ({
+    client,
+    assert,
+  }) => {
+    const owner = await createUser({ email: uniqueEmail('list-group') })
+    const organization = await createOrganization(owner)
+    const project = await setupProject(organization, owner)
+    await createTask(project.id, 'a1', {
+      status: 'in_progress',
+      progressPercent: 20,
+      estimatedHours: 2,
+      actualHours: 1,
+    })
+    await createTask(project.id, 'a2', {
+      status: 'in_progress',
+      progressPercent: 40,
+      estimatedHours: 3,
+    })
+    await createTask(project.id, 'a3', {
+      status: 'in_progress',
+      progressPercent: 60,
+      actualHours: 0.5,
+    })
+    await createTask(project.id, 'b', { status: 'not_started', estimatedHours: 5 })
+    await createTask(project.id, 'c', {
+      status: 'completed',
+      progressPercent: 100,
+      estimatedHours: 1.5,
+      actualHours: 1,
+    })
+    await createTask(project.id, '已删除', {
+      status: 'in_progress',
+      estimatedHours: 100,
+      deletedAt: DateTime.now(),
+    })
+    const token = await login(client, owner)
+
+    const response = await client
+      .get(`/api/v1/projects/${project.id}/list?groupBy=status&sums=1&sort=-name&perPage=2`)
+      .header('Authorization', `Bearer ${token}`)
+    assert.equal(response.status(), 200, JSON.stringify(response.body()))
+    // 分组字段成为首要排序（状态流程顺序），组内再按用户排序（名称倒序）
+    assert.deepEqual(
+      response.body().data.map((task: { name: string }) => task.name),
+      ['b', 'a3'],
+    )
+    const meta = response.body().meta
+    assert.equal(meta.total, 5)
+    assert.deepEqual(meta.groups, [
+      { key: 'not_started', count: 1, estimatedHours: 5, actualHours: 0 },
+      { key: 'in_progress', count: 3, estimatedHours: 5, actualHours: 1.5 },
+      { key: 'completed', count: 1, estimatedHours: 1.5, actualHours: 1 },
+    ])
+    assert.deepEqual(meta.sums, {
+      count: 5,
+      estimatedHours: 11.5,
+      actualHours: 2.5,
+      progressPercent: 44,
+    })
+
+    const filtered = await client
+      .get(`/api/v1/projects/${project.id}/list?groupBy=status&sums=true&status=in_progress`)
+      .header('Authorization', `Bearer ${token}`)
+    filtered.assertStatus(200)
+    assert.deepEqual(filtered.body().meta.groups, [
+      { key: 'in_progress', count: 3, estimatedHours: 5, actualHours: 1.5 },
+    ])
+    assert.equal(filtered.body().meta.sums.count, 3)
+
+    const plain = await client
+      .get(`/api/v1/projects/${project.id}/list`)
+      .header('Authorization', `Bearer ${token}`)
+    plain.assertStatus(200)
+    assert.notProperty(plain.body().meta, 'groups')
+    assert.notProperty(plain.body().meta, 'sums')
+  })
+
+  test('groups by assignee with the unassigned group last', async ({ client, assert }) => {
+    const owner = await createUser({ email: uniqueEmail('list-group-owner'), fullName: '乙负责人' })
+    const assignee = await createUser({
+      email: uniqueEmail('list-group-assignee'),
+      fullName: 'A 成员',
+    })
+    const organization = await createOrganization(owner)
+    const project = await setupProject(organization, owner, [assignee])
+    await createTask(project.id, '未分配任务')
+    await createTask(project.id, '成员任务一', { assigneeId: assignee.id })
+    await createTask(project.id, '成员任务二', { assigneeId: assignee.id })
+    const token = await login(client, owner)
+
+    const response = await client
+      .get(`/api/v1/projects/${project.id}/list?groupBy=assignee`)
+      .header('Authorization', `Bearer ${token}`)
+    assert.equal(response.status(), 200, JSON.stringify(response.body()))
+    assert.deepEqual(
+      response
+        .body()
+        .meta.groups.map((summary: { key: number | null; count: number }) => [
+          summary.key,
+          summary.count,
+        ]),
+      [
+        [assignee.id, 2],
+        [null, 1],
+      ],
+    )
+    assert.isNull(response.body().data.at(-1).assigneeId)
+  })
+
   test('rejects invalid filters, dates, sort fields and oversized pages', async ({ client }) => {
     const owner = await createUser({ email: uniqueEmail('list-validation') })
     const organization = await createOrganization(owner)
@@ -195,6 +304,8 @@ test.group('Task list view API', (group) => {
       'dateFrom=2026-99-99',
       'dateFrom=2026-08-01&dateTo=2026-07-01',
       'perPage=101',
+      'groupBy=name',
+      'sums=maybe',
     ]
 
     for (const query of invalidQueries) {
@@ -205,7 +316,10 @@ test.group('Task list view API', (group) => {
     }
   })
 
-  test('requires authentication and conceals projects across organizations', async ({ client }) => {
+  test('requires authentication and conceals projects across organizations', async ({
+    client,
+    assert,
+  }) => {
     const owner = await createUser({ email: uniqueEmail('list-private-owner') })
     const outsider = await createUser({ email: uniqueEmail('list-private-outsider') })
     const organization = await createOrganization(owner)
@@ -222,5 +336,11 @@ test.group('Task list view API', (group) => {
       .get(`/api/v1/projects/${project.id}/list`)
       .header('Authorization', `Bearer ${outsiderToken}`)
     forbidden.assertStatus(404)
+
+    const forbiddenSummary = await client
+      .get(`/api/v1/projects/${project.id}/list?groupBy=status&sums=1`)
+      .header('Authorization', `Bearer ${outsiderToken}`)
+    forbiddenSummary.assertStatus(404)
+    assert.notProperty(forbiddenSummary.body(), 'meta')
   })
 })
